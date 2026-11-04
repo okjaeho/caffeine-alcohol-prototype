@@ -408,6 +408,25 @@ button.card:active{transform:scale(.985)}
 .hlab{display:flex;justify-content:space-between;margin:6px 0 0 50px;font-size:11px;color:var(--ink-3)}
 .bdays span{white-space:nowrap;overflow:visible}
 .hsm{font-size:15px;font-weight:600;color:var(--ink-3);margin-left:4px}
+.wheels{display:flex;gap:12px;margin-top:32px}
+.wheels.one{max-width:240px;margin-left:auto;margin-right:auto}
+.wheel{flex:1;min-width:0}
+.wl{font-size:14px;font-weight:600;color:var(--ink-3);text-align:center;margin-bottom:8px}
+.wbox{position:relative;height:220px;border-radius:20px;background:var(--fill);overflow:hidden}
+.whl{position:absolute;left:8px;right:8px;top:88px;height:44px;border-radius:12px;background:var(--card);box-shadow:0 1px 4px rgba(0,20,50,.1)}
+.wlist{position:relative;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;padding:88px 0;scrollbar-width:none;outline:none;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 32%,#000 68%,transparent)}
+.wlist::-webkit-scrollbar{display:none}
+.wlist:focus-visible{box-shadow:inset 0 0 0 2px var(--accent);border-radius:20px}
+.wi{height:44px;display:grid;place-items:center;scroll-snap-align:center;font-size:19px;font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums;cursor:pointer;transition:color .12s}
+.wi.on{color:var(--ink);font-size:25px;font-weight:800}
+.wu{position:absolute;right:16px;top:110px;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--ink-2);pointer-events:none}
+.seg.mini{display:inline-grid;grid-template-columns:auto auto;margin:0;padding:3px;border-radius:12px;background:var(--card)}
+.seg.mini button{height:34px;padding:0 12px;font-size:14px;border-radius:9px}
+.seg.mini button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.score.risk{color:var(--warn);background:var(--warn-soft)}
+.score.high{color:var(--danger);background:var(--danger-soft)}
+.score.low{color:var(--alc);background:var(--alc-soft)}
 .whyt{margin-top:18px}
 .whyt p{font-size:14px;font-weight:600;color:var(--ink-3)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -600,7 +619,7 @@ const COND_Q = {insomnia:'잠들기 어려운 날이 많아요', heart:'심장�
 let storageOK = true;
 function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { storageOK = false; return null; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { storageOK = false; } }
-const fresh = () => ({profile:null, records:[], feedback:[], favs:[], kc:1, ka:1});
+const fresh = () => ({profile:null, records:[], feedback:[], favs:[], units:{caf:'mg', alc:'glass'}, kc:1, ka:1});
 const S = Object.assign(fresh(), load() || {});
 
 /* ---------- 유틸 ---------- */
@@ -620,6 +639,18 @@ const PARSE = v => v === 'true' ? true : v === 'false' ? false : /^-?\d+(\.\d+)?
 const WD = ['일','월','화','수','목','금','토'];
 const SEV = {danger:2, warn:1};
 const bySev = (a, b) => SEV[b.lv] - SEV[a.lv];
+/* 표시 단위 (계산은 mg·g 그대로, 보여 줄 때만 바꿈) */
+const UC = {mg:{t:'mg', sh:'mg', mg:1}, tall:{t:'아메리카노 톨', sh:'톨', s:'355ml · 카페인 150mg', mg:150, nm:'아메리카노', u:'잔'},
+  grande:{t:'아메리카노 그란데', sh:'그란데', s:'473ml · 카페인 225mg', mg:225, nm:'그란데 아메리카노', u:'잔'}, mega:{t:'메가커피 아메리카노', sh:'메가', s:'ICE 710ml · 카페인 236mg', mg:236, nm:'메가 아아', u:'잔'},
+  can:{t:'에너지드링크 캔', sh:'캔', s:'핫식스 250ml · 카페인 60mg', mg:60, nm:'에너지드링크', u:'캔'}};
+const UA = {glass:{t:'소주잔', sh:'소주잔', s:`보통 따르는 양 ${SOJU_ML}ml · 알코올 ${fmt1(SOJU_G)}g`, g:SOJU_G, nm:'소주', u:'잔'},
+  bottle:{t:'소주 병', sh:'소주 병', s:`360ml · 알코올 ${fmt1(360 * 0.16 * ETH)}g`, g:360 * 0.16 * ETH, nm:'소주', u:'병'},
+  beer:{t:'맥주 500cc', sh:'500cc', s:`4.5% · 알코올 ${fmt1(500 * 0.045 * ETH)}g`, g:500 * 0.045 * ETH, nm:'맥주 500cc', u:'잔'}, g:{t:'순수 알코올 g', sh:'g', g:1}};
+const nf = x => x >= 10 ? String(Math.round(x)) : fmt1(x);
+const uC = (v, short) => { const u = UC[S.units.caf] || UC.mg; return u.mg === 1 || (v > 0 && v / u.mg < 0.1) ? Math.round(v) + 'mg' : (short ? '' : u.nm + ' ') + nf(v / u.mg) + u.u; };
+const uA = (v, short) => { const u = UA[S.units.alc] || UA.g; return u.g === 1 || (v > 0 && v / u.g < 0.1) ? fmt1(v) + 'g' : (short ? '' : u.nm + ' ') + nf(v / u.g) + u.u; };
+const altC = v => S.units.caf === 'mg' ? `아메리카노 ${nf(v / AME_MG)}잔` : Math.round(v) + 'mg';
+const altA = v => S.units.alc === 'g' ? `소주 ${nf(v / SOJU_G)}잔` : fmt1(v) + 'g';
 function dayLabel(k) {
   const diff = Math.round((dayStart(dayKey(Date.now())) - dayStart(k)) / DAY);
   if (diff === 0) return '오늘'; if (diff === 1) return '어제'; if (diff === 2) return '그제';
@@ -668,7 +699,8 @@ function normProfile(d) {
   const height = Number(d.height) || (sex === 'm' ? 174 : sex === 'f' ? 161 : 167);
   const birth = Number(d.birth) || (THIS_YEAR - (d.adult === false ? 17 : 22)), adult = THIS_YEAR - birth >= 19;
   return {weight, height, birth, sex, adult, pregnant:sex !== 'm' && d.pregnant === true, cafSens:d.cafSens || 'mid', bed:d.bed || '01:00',
-    conds:[...(d.conds || [])], smoke:d.smoke || 'none', meds:[...(d.meds || [])], flush:adult ? (d.flush || 'none') : 'none'};
+    conds:[...(d.conds || [])], smoke:d.smoke || 'none', meds:[...(d.meds || [])], flush:adult ? (d.flush || 'none') : 'none',
+    ahealth:adult ? [...(d.ahealth || [])] : [], afreq:adult && d.afreq != null ? Number(d.afreq) : null, aqty:d.aqty != null ? Number(d.aqty) : null, abinge:d.abinge != null ? Number(d.abinge) : null, ride:d.ride === true};
 }
 const SENS_K = {low:1, mid:0.92, high:0.72}, COND_K = {insomnia:0.88, heart:0.85, anxiety:0.85, stomach:0.92};
 const SEV_Y = {caf:{ok:0, jitter:1, sleep:0.8, stomach:0.6}, alc:{ok:0, mild:0.5, bad:1, blackout:1}};
@@ -702,13 +734,22 @@ function cafInfo(p = S.profile, fb = S.feedback) {
   return {limit, pub, score:Math.round(limit / pub * 100), tags, half:cafHalf(p), bedR:35 * ({low:1.4, mid:1, high:0.7}[p.cafSens] || 1), single:Math.min(200, 3 * p.weight) * k, n:L.n};
 }
 const tbw = p => p.sex === 'm' ? 2.447 - 0.09516 * ageOf(p) + 0.1074 * p.height + 0.3362 * p.weight : -2.097 + 0.1069 * p.height + 0.2466 * p.weight;
+const AH_K = {liver:0.5, hep:0.3, gout:0.6, bp:0.8, dm:0.8};   // 간 질환은 가능하면 금주, 통풍은 하루 1~2잔 이하(ACR) 등을 반영한 보정
+function auditOf(p) {   // AUDIT-C (0~12점). 절단점은 해외 연구 범위(남 4~6, 여 3~4)의 가운데
+  if (p.afreq == null) return null;
+  const score = p.afreq + (p.afreq ? (p.aqty || 0) + (p.abinge || 0) : 0), cut = p.sex === 'm' ? 5 : 4;
+  return {score, lv:score >= cut + 3 ? 'high' : score >= cut ? 'risk' : 'low'};
+}
 function alcInfo(p = S.profile, fb = S.feedback) {
   if (!p.adult) return {limit:0, disabled:true, tags:[], score:0};
   const male = p.sex === 'm', pub = male ? 40 : 20, body = clamp(tbw(p) / (male ? 42 : 29), 0.6, 1);
   const fl = {often:0.5, some:0.75, none:1}[p.flush] ?? 1, md = p.meds.includes('psy') ? 0.6 : p.meds.includes('adhd') ? 0.85 : 1;
-  const k = body * fl * md, L = learn(fb, 'alc', pub * k), limit = Math.max(1, Math.round(pub * k * L.f * 2) / 2);
-  const tags = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적 기준'] : []), ...(fl < 1 ? ['얼굴 빨개짐'] : []), ...(md < 1 ? ['복용 중인 약'] : []), ...(L.n ? [`피드백 ${L.n}번`] : [])];
-  return {limit, pub, score:Math.round(limit / pub * 100), tags, binge:male ? 47 : 33, n:L.n};
+  const ah = p.ahealth || [], hk = Math.max(0.25, ah.reduce((a, h) => a * (AH_K[h] || 1), 1)) * (p.conds.includes('stomach') ? 0.9 : 1);
+  const k = body * fl * md * hk, L = learn(fb, 'alc', pub * k), limit = Math.max(1, Math.round(pub * k * L.f * 2) / 2);
+  const tags = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적 기준'] : []), ...(fl < 1 ? ['얼굴 빨개짐'] : []), ...(md < 1 ? ['복용 중인 약'] : []),
+    ...(ah.some(h => h === 'liver' || h === 'hep') ? ['간 건강'] : []), ...(ah.includes('gout') ? ['통풍'] : []), ...(ah.some(h => h === 'bp' || h === 'dm') ? ['혈압·혈당'] : []),
+    ...(p.conds.includes('stomach') ? ['위장'] : []), ...(L.n ? [`피드백 ${L.n}번`] : [])];
+  return {limit, pub, score:Math.round(limit / pub * 100), tags, binge:male ? 47 : 33, weekly:Math.round(pub * 2.5 * k * L.f), audit:auditOf(p), n:L.n};
 }
 
 /* ---------- 체내 카페인 / 혈중알코올 ---------- */
@@ -771,6 +812,9 @@ function status(recs = S.records, now = Date.now()) {
     if (bac.ahead >= 0.08) A.push({id:'bac-08', lv:'danger', text:`혈중알코올이 ${bac.ahead.toFixed(3)}%까지 올라가요. 면허취소 기준(0.08%)을 넘는 양이에요`});
     else if (bac.ahead >= 0.03) A.push({id:'bac-03', lv:'warn', text:`혈중알코올이 ${bac.ahead.toFixed(3)}%까지 올라가요. 면허정지 기준(0.03%) 이상이라 운전하면 안 돼요`});
     if (recentCaf >= 40 && recentAlc > 0) A.push({id:'combo', lv:'warn', text:'카페인과 술을 3시간 안에 같이 마셨어요. 카페인은 취기를 덜 느끼게 해서 더 마시기 쉬워요'});
+    if ((p.ahealth || []).some(h => h === 'liver' || h === 'hep') && alc > 0) A.push({id:'liver', lv:'warn', text:'간 질환이 있으면 적은 양도 간에 부담이 돼요. 오늘은 이쯤에서 멈추는 게 좋아요'});
+    if ((p.ahealth || []).includes('dm') && recs.some(r => r.alc > 0 && r.food === false && win(r, 3 * H))) A.push({id:'dm', lv:'danger', text:'당뇨가 있으면 빈속에 마신 술 때문에 저혈당이 올 수 있어요. 뭐라도 같이 드세요'});
+    if (p.ride && bac.now >= 0.005) A.push({id:'ride', lv:'danger', text:`아직 술이 남아 있어요. ${bac.soberAt ? timeLabel(bac.soberAt) + ' 전에는' : '술이 다 깰 때까지'} 운전이나 킥보드를 타지 마세요`});
     if (p.meds.includes('psy') && recentAlc > 0) A.push({id:'meds', lv:'danger', text:'먹고 있는 약과 술이 만나면 위험할 수 있어요. 약사나 의사에게 꼭 확인해 주세요'});
   }
   return {key, today, ci, ai, caf, alc, bed, body, atBed, bac, alerts:A};
@@ -1070,6 +1114,17 @@ function cupRow(n, k) {
   return h + '</div>';
 }
 const why = info => `<div class="whyt" data-in><p>이런 정보를 반영했어요</p><div class="tags">${info.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div></div>`;
+const WH = 44;   // 휠 한 칸 높이
+function wheel(id, min, max, val, unit, label) {
+  let items = ''; for (let v = min; v <= max; v++) items += `<div class="wi" data-i="${v - min}">${v}</div>`;
+  return `<div class="wheel" data-in><p class="wl">${label}</p><div class="wbox"><div class="whl" aria-hidden="true"></div><div class="wlist" id="${id}" data-min="${min}" data-max="${max}" data-val="${Math.round(val)}" tabindex="0" role="spinbutton" aria-label="${label}" aria-valuemin="${min}" aria-valuemax="${max}" aria-valuenow="${Math.round(val)}">${items}</div><span class="wu">${unit}</span></div></div>`;
+}
+function wheelInit(root) { root.querySelectorAll('.wlist').forEach(w => { w.scrollTop = (Number(w.dataset.val) - Number(w.dataset.min)) * WH; wheelMark(w); }); }
+function wheelMark(w) {
+  const min = Number(w.dataset.min), max = Number(w.dataset.max), i = clamp(Math.round(w.scrollTop / WH), 0, max - min), v = min + i;
+  if (w._i !== i) { w._i = i; w.dataset.val = v; w.setAttribute('aria-valuenow', v); w.querySelectorAll('.wi.on').forEach(e => e.classList.remove('on')); const e = w.children[i]; if (e) e.classList.add('on'); }
+  return v;
+}
 const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return w + (c >= 0 && c < 11172 && c % 28 ? a : b); };
 function photoBanner(d) {
   return d.photo ? `<div class="photo" data-in><img src="${d.photo}" alt="첨부한 사진"><p><b>사진을 붙였어요.</b> 어떤 음료인지 골라 주세요. 자동 인식은 다음 버전에서 연결해요.</p><button class="icon-btn sm" data-a="photo-clear" aria-label="사진 빼기">${I.xs}</button></div>` : '';
@@ -1078,14 +1133,16 @@ function photoBanner(d) {
 /* =========================================================
    단계별 화면
    ========================================================= */
-const OB_Q = ['body', 'birth', 'sex', 'preg', 'sens', 'conds', 'smoke', 'meds', 'bed', 'flush'];
+const OB_Q = ['body', 'birth', 'sex', 'preg', 'sens', 'conds', 'smoke', 'meds', 'bed', 'flush', 'ahealth', 'afreq', 'aqty', 'abinge', 'ride'];
+const ALC_Q = ['flush', 'ahealth', 'afreq', 'aqty', 'abinge', 'ride'];
+const AH_Q = {liver:'지방간이 있거나 간 수치가 높다고 들었어요', hep:'B형이나 C형 간염이 있어요', gout:'통풍이 있어요', bp:'고혈압이 있어요', dm:'당뇨가 있어요'};
 const validB = b => { const n = Number(b); return n >= 1930 && n <= THIS_YEAR - 8; };
 const adultOf = d => validB(d.birth) ? THIS_YEAR - Number(d.birth) >= 19 : d.adult !== false;
-const obList = d => OB_Q.filter(s => !(s === 'preg' && d.sex === 'm') && !(s === 'flush' && !adultOf(d)));
+const obList = d => OB_Q.filter(s => !(s === 'preg' && d.sex === 'm') && !(ALC_Q.includes(s) && !adultOf(d)) && !((s === 'aqty' || s === 'abinge') && d.afreq === 0));
 const obNext = (d, s) => { const L = obList(d), i = L.indexOf(s); return i >= 0 && i < L.length - 1 ? L[i + 1] : 'calc'; };
 const obProg = (d, s) => { const L = obList(d); return (L.indexOf(s) + 1) / L.length; };
-const validW = w => { const n = Number(w); return n >= 30 && n <= 200; };
-const validH = h => { const n = Number(h); return n >= 120 && n <= 220; };
+const validW = w => { const n = Number(w); return n >= 20 && n <= 300; };
+const validH = h => { const n = Number(h); return n >= 100 && n <= 230; };
 const validBody = d => validW(d.weight) && validH(d.height);
 const MEDS_Q = {oc:'먹는 피임약', adhd:'ADHD 약이나 각성제', psy:'항우울제·수면제·신경안정제'};
 const NEXT = {ob: (d, s) => obNext(d, s)};
@@ -1104,6 +1161,7 @@ function itemRec(d) {
   const t = whenTime(d), q = d.qty || 1; let r;
   if (d.custom) { if (!customValid(d)) return null; r = customRec(d, q, t); }
   else { const it = BYID[d.id]; if (!it) return null; r = makeRec(it, Object.assign({}, d.o, {qty:q}), t); }
+  if (r.alc > 0) { r.food = d.food !== false; if (!r.food) r.sub += ' · 빈속'; }
   if (d.photo) r.photo = d.photo;
   return r;
 }
@@ -1119,8 +1177,8 @@ function favRec(f, t) {
 }
 function openItem(it, o) {
   if (it.mix) { const c = cleanOpts(it, o), p = pour(it, c); return openItem(BYID.mixb, mixOpts(gOf(it, c).id, [[ingKey(it.mix.a.n), p.a], [ingKey(it.mix.b.n), p.b]])); }   // 예전 조합은 혼합주로 열기
-  const d = ui.flow.d; Object.assign(d, {id:it.id, k:it.k, custom:false, o:cleanOpts(it, o), qty:1, ago:0, time:null}); go('item'); }
-function openCustom(c) { const d = ui.flow.d; Object.assign(d, {custom:true, id:null, k:c.k || 'caf', name:c.name || '', mg:c.mg != null ? c.mg : '', ml:c.ml != null ? c.ml : '', abv:c.abv != null ? c.abv : '', o:{}, qty:1, ago:0, time:null}); go('item'); }
+  const d = ui.flow.d; Object.assign(d, {id:it.id, k:it.k, custom:false, o:cleanOpts(it, o), qty:1, ago:0, time:null, food:true}); go('item'); }
+function openCustom(c) { const d = ui.flow.d; Object.assign(d, {custom:true, id:null, k:c.k || 'caf', name:c.name || '', mg:c.mg != null ? c.mg : '', ml:c.ml != null ? c.ml : '', abv:c.abv != null ? c.abv : '', o:{}, qty:1, ago:0, time:null, food:true}); go('item'); }
 function defaultKind() {
   if (alcInfo().disabled) return 'caf';
   const now = Date.now(), last = S.records.filter(r => r.t <= now && now - r.t < 3 * H).sort((a, b) => b.t - a.t)[0];
@@ -1384,6 +1442,7 @@ function panelHTML(d, it) {
   const g = it && it.glasses ? gOf(it, d.o) : null, u = g && g.pack ? g.u : '잔', q = d.qty || 1, sh = (d.o && d.o.shots) || 0;
   let h = `<div class="panel" id="panel" data-in>`;
   if (it && it.k === 'caf' && it.shot) h += `<div class="prow"><span>샷 추가<small>1샷에 ${it.shot}mg</small></span><span class="step"><button data-a="sh" data-d="-1" aria-label="샷 하나 빼기" ${sh ? '' : 'disabled'}>−</button><b id="sv">${sh ? '+' + sh + '샷' : '없음'}</b><button data-a="sh" data-d="1" aria-label="샷 하나 추가" ${sh >= 4 ? 'disabled' : ''}>+</button></span></div>`;
+  if ((it && it.k === 'alc') || (!it && d.k === 'alc')) h += `<div class="prow"><span>안주<small>빈속이면 더 빨리 취해요</small></span><span class="seg mini">${[[1, '먹으면서'], [0, '빈속에']].map(([v, t]) => `<button data-a="food" data-v="${v}" aria-pressed="${(d.food !== false) === !!v}">${t}</button>`).join('')}</span></div>`;
   h += `<div class="prow"><span>몇 ${u}</span><span class="step"><button data-a="qty" data-d="-1" aria-label="반 ${u} 줄이기" ${q <= 0.5 ? 'disabled' : ''}>−</button><b id="qv">${fmtQty(q, u)}</b><button data-a="qty" data-d="1" aria-label="반 ${u} 늘리기" ${q >= 10 ? 'disabled' : ''}>+</button></span></div>`;
   h += `<div class="prow col"><span>언제</span><div class="hscroll">${WHEN.map(([v, t]) => `<button class="chip" data-a="when" data-v="${v}" aria-pressed="${d.ago === v}">${t}</button>`).join('')}<label class="chip tchip ${d.ago == null ? 'on' : ''}">${I.clock}<input type="time" id="rtime" value="${esc(d.time || hm(Date.now()))}" aria-label="다른 시각 고르기"></label></div></div>`;
   return h + '</div>';
@@ -1393,28 +1452,33 @@ function pvData(d) {
   const before = status(), after = status([...S.records, rec]);
   const isAlc = rec.alc > 0 && !after.ai.disabled, k = isAlc ? 'alc' : 'caf';
   const v0 = isAlc ? before.alc : before.caf, v1 = isAlc ? after.alc : after.caf, lim = isAlc ? after.ai.limit : after.ci.limit;
-  const unit = isAlc ? 'g' : 'mg', f = v => isAlc ? fmt1(v) : Math.round(v), pct1 = Math.round(v1 / lim * 100);
+  const X = isAlc ? uA : uC, unit = '', f = v => X(v, true), pct1 = Math.round(v1 / lim * 100);
   const news = after.alerts.filter(a => !before.alerts.some(b => b.id === a.id) && !/-(over|80)$/.test(a.id)).sort(bySev);
   const now = d.ago === 0; let h, tone = '';
   if (v1 > lim && v0 <= lim) { h = now ? '잠깐만요, 이 잔이면 권장량을 넘어요' : '이 기록으로 오늘 권장량을 넘어요'; tone = 'over'; }
-  else if (v1 > lim) { h = `권장량보다 ${f(v1 - lim)}${unit} 더 마시게 돼요`; tone = 'over'; }
+  else if (v1 > lim) { h = `권장량보다 ${X(v1 - lim)} 더 마시게 돼요`; tone = 'over'; }
   else if (pct1 >= 80) { h = `기록하면 오늘 권장량의 ${pct1}%예요`; tone = 'warn'; }
-  else h = `기록해도 아직 ${f(lim - v1)}${unit} 남아요`;
-  const amt = isAlc ? `알코올 +${fmt1(rec.alc)}g · 소주 ${fmt1(rec.alc / SOJU_G)}잔만큼${rec.caf > 0 ? ` · 카페인 ${Math.round(rec.caf)}mg` : ''}` : `카페인 +${fmtMg(rec.caf)}`;
+  else h = `기록해도 아직 ${X(lim - v1)} 남아요`;
+  const amt = (isAlc ? (S.units.alc === 'g' ? `알코올 +${fmt1(rec.alc)}g · 소주 ${fmt1(rec.alc / SOJU_G)}잔만큼` : `+${uA(rec.alc)} · 알코올 ${fmt1(rec.alc)}g`) + (rec.caf > 0 ? ` · 카페인 ${Math.round(rec.caf)}mg` : '')
+    : S.units.caf === 'mg' ? `카페인 +${fmtMg(rec.caf)}` : `+${uC(rec.caf)} · ${fmtMg(rec.caf)}`);
   return {k, h, tone, amt, v0, v1, lim, unit, f, p0:Math.min(100, v0 / lim * 100), p1:Math.min(100, v1 / lim * 100), color:barColor(v1 / lim, k), news,
     ask:now && (tone === 'over' || news.some(a => a.lv === 'danger'))};
 }
 function pvHTML(x) {
   if (!x) return '';
-  return `<div class="vis pv" data-k="${x.k}"><div class="vis-row"><span id="pva">${esc(x.amt)}</span><span><b id="pvv" class="${x.v1 > x.lim ? 'over' : ''}">${x.f(x.v1)}</b> / ${x.lim}${x.unit}</span></div>
+  return `<div class="vis pv" data-k="${x.k}"><div class="vis-row"><span id="pva">${esc(x.amt)}</span><span><b id="pvv" class="${x.v1 > x.lim ? 'over' : ''}">${x.f(x.v1)}</b> / ${x.f(x.lim)}</span></div>
     <span class="gauge live"><i class="prev" id="pg0" style="width:${x.p0.toFixed(1)}%;background:${x.color}"></i><i id="pg1" style="width:${x.p1.toFixed(1)}%;background:${x.color}"></i></span>
-    <div class="vis-foot"><span>지금 ${x.f(x.v0)}${x.unit}</span><span>권장 ${x.lim}${x.unit}</span></div>
+    <div class="vis-foot"><span>지금 ${x.f(x.v0)}${x.unit}</span><span>권장 ${x.f(x.lim)}</span></div>
     <div class="alist" id="pval">${x.news.slice(0, 2).map(alertRow).join('')}</div></div>`;
 }
 const emptyMsg = () => ui.flow && ui.flow.d && ui.flow.d.id === 'mixb' ? '술을 하나 이상 넣어 주세요' : '양을 넣으면 오늘 남은 양을 미리 보여 드려요';
 const ctaState = x => x ? (x.ask ? 'ask' : 'ok') : 'no';
 const ctaBtns = x => x && x.ask ? `<div class="btn-row"><button class="btn sec" data-a="rec-skip">안 마실래요</button><button class="btn" data-a="rec-commit">그래도 마실래요</button></div>` : `<button class="btn" data-a="rec-commit" ${x ? '' : 'disabled'}>기록하기</button>`;
 const ctaHTML = x => `<div class="cta" id="ctaw"><p class="cta-sum ${x ? x.tone : ''}" id="ctas">${x ? x.h : emptyMsg()}</p><div id="ctab" data-s="${ctaState(x)}">${ctaBtns(x)}</div></div>`;
+function unitList(k) {
+  const L = k === 'caf' ? UC : UA;
+  return `<h2 class="sec2" data-in>${k === 'caf' ? '카페인' : '술'}</h2><div class="opts" style="margin-top:10px">${Object.entries(L).map(([id, u]) => `<button class="opt" data-a="unit" data-k="${k}" data-v="${id}" aria-pressed="${S.units[k] === id}" data-in><span class="opt-t">${u.t}${u.s ? `<small>${u.s}</small>` : ''}</span><span class="ck">${I.check}</span></button>`).join('')}</div>`;
+}
 function favList() {
   const now = Date.now(), rows = S.favs.map(f => {
     const r = favRec(f, now); if (!r) return ''; const k = r.alc > 0 ? 'alc' : 'caf';
@@ -1431,14 +1495,12 @@ const STEPS = {
         <div class="hero" aria-hidden="true" data-in><span class="hb"><i class="hl caf" data-fill="350" style="height:62%"></i></span><span class="hb sm"><i class="hl alc" data-fill="350" style="height:40%"></i></span></div>
         ${head('마시기 전에,<br>오늘 얼마나 남았는지<br>알려드릴게요', '커피 한 잔, 술 한 잔이 내 몸에 얼마나 쌓였는지 보여 주고, 멈출 때를 먼저 알려 드려요.', '기록')}</div>
         ${cta(btn('시작하기', 'ob-start') + '<p class="cta-note">질문 몇 개면 끝나요</p>')}`}),
-    body: d => ({html: bar({prog:obProg(d, 'body')}) + head('키와 몸무게를<br>알려주세요', '권장량과 혈중알코올을 계산하는 데만 써요.') +
-        `<div class="grid2" data-in><label class="big-in sm"><input id="ob-h" type="number" inputmode="decimal" placeholder="0" value="${esc(d.height || '')}" aria-label="키"><span>cm</span></label><label class="big-in sm"><input id="ob-w" type="number" inputmode="decimal" placeholder="0" value="${esc(d.weight || '')}" aria-label="몸무게"><span>kg</span></label></div><p class="err" id="ob-w-err" hidden>키는 120~220cm, 몸무게는 30~200kg 사이로 넣어 주세요</p>` +
-        cta(btn('다음', 'ob-w-next', validBody(d) ? '' : 'disabled')),
-      mount:(el, re) => { if (re) return; const i = el.querySelector(validH(d.height) ? '#ob-w' : '#ob-h'); setTimeout(() => { if (cur === el) try { i.focus({preventScroll:true}); } catch (e) {} }, DUR + 80); }}),
+    body: d => ({html: bar({prog:obProg(d, 'body')}) + head('키와 몸무게를<br>알려주세요', '위아래로 굴려서 맞춰 주세요. 권장량과 혈중알코올을 계산하는 데만 써요.') +
+        `<div class="wheels">${wheel('w-h', 100, 230, d.height || 170, 'cm', '키')}${wheel('w-w', 20, 250, d.weight || 60, 'kg', '몸무게')}</div>` + cta(btn('다음', 'ob-w-next')),
+      mount:el => wheelInit(el)}),
     birth: d => ({html: bar({prog:obProg(d, 'birth')}) + head('태어난 해가<br>언제예요?', '성인인지 확인하고, 나이에 따른 몸의 수분량을 계산할 때 써요.') +
-        `<label class="big-in" data-in><input id="ob-b" type="number" inputmode="numeric" placeholder="${THIS_YEAR - 21}" value="${esc(d.birth || '')}" aria-label="태어난 해"><span>년</span></label><p class="err" id="ob-b-err" hidden>태어난 해를 네 자리로 넣어 주세요</p>` +
-        cta(btn('다음', 'ob-b-next', validB(d.birth) ? '' : 'disabled')),
-      mount:(el, re) => { if (re) return; const i = el.querySelector('#ob-b'); setTimeout(() => { if (cur === el) try { i.focus({preventScroll:true}); } catch (e) {} }, DUR + 80); }}),
+        `<div class="wheels one">${wheel('w-b', 1940, THIS_YEAR - 8, d.birth || THIS_YEAR - 21, '년', '태어난 해')}</div>` + cta(btn('다음', 'ob-b-next')),
+      mount:el => wheelInit(el)}),
     sex: d => ({html: bar({prog:obProg(d, 'sex')}) + head('성별을 알려주세요', '혈중알코올을 계산할 때 몸의 수분 비율이 달라서 필요해요.') +
         opts('sex', d.sex, [{v:'m', t:'남성'}, {v:'f', t:'여성'}, {v:'x', t:'밝히고 싶지 않아요', s:'더 보수적인 기준으로 계산해요'}])}),
     preg: d => ({html: bar({prog:obProg(d, 'preg')}) + head('지금 임신 중이거나<br>수유 중이신가요?', '해당되면 카페인 기준을 더 낮게 잡아요.') +
@@ -1457,6 +1519,17 @@ const STEPS = {
         opts('bed', d.bed, [{v:'23:00', t:'밤 11시'}, {v:'00:00', t:'밤 12시'}, {v:'01:00', t:'새벽 1시'}, {v:'02:00', t:'새벽 2시'}, {v:'03:00', t:'새벽 3시 이후'}])}),
     flush: d => ({html: bar({prog:obProg(d, 'flush')}) + head('술 마시면 얼굴이<br>빨개지는 편인가요?', '금방 빨개진다면 알코올을 분해하는 효소(ALDH2)가 약할 수 있어요. 같은 양도 몸에 더 부담이 돼요.') +
         opts('flush', d.flush, [{v:'often', t:'한두 잔에도 빨개져요'}, {v:'some', t:'많이 마시면 빨개져요'}, {v:'none', t:'거의 안 빨개져요'}])}),
+    ahealth: d => ({html: bar({prog:obProg(d, 'ahealth')}) + head('술과 관련해서<br>이런 게 있나요?', '해당하는 걸 모두 골라 주세요. 술 권장량과 경고에 반영해요.') +
+        `<div class="opts">${Object.entries(AH_Q).map(([k, l]) => `<button class="opt" data-a="ah" data-v="${k}" aria-pressed="${d.ahealth.includes(k)}" data-in><span class="opt-t">${l}</span><span class="ck">${I.check}</span></button>`).join('')}</div>` +
+        cta(`<button class="btn" data-a="ob-ah-next" id="ah-btn">${d.ahealth.length ? '다음' : '없어요, 다음'}</button>`)}),
+    afreq: d => ({html: bar({prog:obProg(d, 'afreq')}) + head('술은 얼마나 자주<br>마시는 편이에요?', '음주 습관을 확인하는 표준 질문(AUDIT-C)이에요.') +
+        opts('afreq', d.afreq, [{v:0, t:'거의 안 마셔요'}, {v:1, t:'한 달에 한 번 이하'}, {v:2, t:'한 달에 2~4번'}, {v:3, t:'일주일에 2~3번'}, {v:4, t:'일주일에 4번 이상'}])}),
+    aqty: d => ({html: bar({prog:obProg(d, 'aqty')}) + head('마시는 날엔 보통<br>몇 잔쯤 마셔요?', '소주잔 기준이에요. 맥주 500cc 한 잔은 소주 3~4잔쯤이에요.') +
+        opts('aqty', d.aqty, [{v:0, t:'1~2잔'}, {v:1, t:'3~4잔'}, {v:2, t:'5~6잔'}, {v:3, t:'7~9잔', s:'소주 1병쯤'}, {v:4, t:'10잔 이상'}])}),
+    abinge: d => ({html: bar({prog:obProg(d, 'abinge')}) + head('한 번에 소주 1병 넘게<br>마시는 날은 얼마나 돼요?', '맥주 500cc로는 두세 잔쯤이에요.') +
+        opts('abinge', d.abinge, [{v:0, t:'없어요'}, {v:1, t:'한 달에 한 번보다 적게'}, {v:2, t:'한 달에 한 번쯤'}, {v:3, t:'일주일에 한 번쯤'}, {v:4, t:'거의 매일'}])}),
+    ride: d => ({html: bar({prog:obProg(d, 'ride')}) + head('운전을 하거나<br>전동킥보드를 타나요?', '술이 완전히 깨는 시각을 더 잘 보이게 알려 드릴게요.') +
+        opts('ride', d.ride, [{v:true, t:'네, 자주 타요'}, {v:false, t:'거의 안 타요'}])}),
     calc: () => ({html:`<div class="center"><div class="spinner" aria-hidden="true" data-in></div><h1 class="h" data-in>권장량을 계산하고 있어요</h1><p class="sub" data-in>공개 기준에 답변을 반영하는 중이에요</p></div>`,
       mount:(el, re) => { if (re) return; const f = ui.flow; setTimeout(() => { if (ui.flow === f && f.cur === 'calc') { f.cur = 'resCaf'; paintFlow('fwd'); } }, 1500); }}),
     resCaf: d => {
@@ -1469,8 +1542,11 @@ const STEPS = {
     },
     resAlc: d => {
       const p = normProfile(d), ai = alcInfo(p), g03 = 0.03 * tbw(p) / 0.08 / 0.8;
-      const parts = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적인 기준'] : []), ...(p.flush !== 'none' ? ['얼굴이 빨개지는 정도'] : []), ...(p.meds.length ? ['먹는 약'] : [])];
-      const reason = `${josa(parts.join(', '), '을', '를')} 반영했어요. 빨리 마시면 소주 ${fmt1(g03 / SOJU_G)}잔쯤에 운전 금지 기준(0.03%)에 닿아요.`;
+      const parts = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적인 기준'] : []), ...(p.flush !== 'none' ? ['얼굴이 빨개지는 정도'] : []), ...(p.meds.length ? ['먹는 약'] : []), ...(p.ahealth.length ? ['건강 상태'] : [])];
+      let reason = `${josa(parts.join(', '), '을', '를')} 반영했어요.`;
+      if (p.afreq > 0 && p.aqty != null) { const r = [1.5, 3.5, 5.5, 8, 11][p.aqty] * SOJU_G / ai.limit; reason += r > 1.05 ? ` 평소 마시는 양(소주 ${['1~2', '3~4', '5~6', '7~9', '10'][p.aqty]}잔${p.aqty === 4 ? ' 이상' : ''})은 권장량의 ${fmt1(r)}배예요.` : ' 평소 마시는 양은 권장량 안이에요.'; }
+      reason += ` 빨리 마시면 소주 ${fmt1(g03 / SOJU_G)}잔쯤에 운전 금지 기준(0.03%)에 닿아요.`;
+      if (p.ahealth.some(h => h === 'liver' || h === 'hep')) reason += ' 간 질환이 있으면 되도록 마시지 않는 게 가장 좋아요.';
       return {html: bar({}) + head(`술은 하루<br><span class="num alc" data-count="${ai.limit}" data-dec="1">${ai.limit}</span>g까지가 좋아요`, `소주로 치면 ${fmt1(ai.limit / SOJU_G)}잔 정도예요.`, '알코올', 'alc') +
         cupRow(ai.limit / SOJU_G, 'alc') + `<p class="reason" data-in>${esc(reason)}</p>` + why(ai) + finishCta(d)};
     },
@@ -1502,12 +1578,13 @@ const STEPS = {
   },
   fav: {list: () => favList()},
   day: {view: d => vDay(d)},
+  units: {pick: () => ({html: bar({}) + head('표시 단위', '남은 양과 권장량을 어떤 단위로 볼지 골라 주세요. 계산 결과는 같아요.') + unitList('caf') + (alcInfo().disabled ? '' : unitList('alc'))})},
 
   /* ----- 다음 날 피드백 ----- */
   fb: {
     ask: d => {
       const p = d.queue[d.i], caf = p.kind === 'caf', lbl = dayLabel(p.day), info = caf ? cafInfo() : alcInfo();
-      const h = caf ? `${lbl} 아메리카노 ${fmt1(p.amt / AME_MG)}잔만큼<br>카페인을 드셨어요` : `${lbl} 소주 ${fmt1(p.amt / SOJU_G)}잔만큼<br>술을 드셨어요`;
+      const h = caf ? `${lbl} ${S.units.caf === 'mg' ? `아메리카노 ${fmt1(p.amt / AME_MG)}잔` : uC(p.amt)}만큼<br>카페인을 드셨어요` : `${lbl} ${S.units.alc === 'g' ? `소주 ${fmt1(p.amt / SOJU_G)}잔` : uA(p.amt)}만큼<br>술을 드셨어요`;
       const sub = `${caf ? Math.round(p.amt) + 'mg' : fmt1(p.amt) + 'g'}, 권장량의 ${Math.round(p.amt / info.limit * 100)}%였어요. ${caf ? '몸은 어떠셨어요?' : '다음 날 몸은 어떠셨어요?'}`;
       return {html: bar({back:false, close:true, prog:d.queue.length > 1 ? (d.i + 1) / d.queue.length : null}) + head(h, sub, caf ? '카페인' : '알코올', caf ? 'caf' : 'alc') +
         `<div class="opts">${FB[p.kind].map(o => `<button class="opt" data-a="fbans" data-v="${o[0]}" aria-pressed="false" data-in><span class="opt-t">${o[1]}</span></button>`).join('')}</div>
@@ -1595,15 +1672,17 @@ function lineChart({pts, x0, x1, yMax, stroke, fill, hlines = [], vmarks = [], d
    탭 화면
    ========================================================= */
 function gaugeCard(k, st) {
-  const caf = k === 'caf', val = caf ? st.caf : st.alc, lim = caf ? st.ci.limit : st.ai.limit, unit = caf ? 'mg' : 'g';
-  const f = v => caf ? Math.round(v) : fmt1(v), left = lim - val, over = left < 0;
-  const big = over ? `권장량을 ${f(-left)}${unit} 넘었어요` : `${f(left)}${unit} 남았어요`;
-  const more = left / (caf ? AME_MG : SOJU_G);
-  const sub = over ? (caf ? '오늘 카페인은 여기까지만 해요' : '오늘은 그만 마시고 물 한 잔 어때요?')
-    : `${caf ? '아메리카노' : '소주'} ${more >= 0.5 ? halfFloor(more) + '잔 정도 더 괜찮아요' : '반 잔도 안 남았어요'}`;
+  const caf = k === 'caf', val = caf ? st.caf : st.alc, lim = caf ? st.ci.limit : st.ai.limit, X = caf ? uC : uA, alt = caf ? altC : altA;
+  const left = lim - val, over = left < 0;
+  const tiny = !over && left < (caf ? 15 : 1.5);
+  const big = over ? `권장량을 ${X(-left)} 넘었어요` : tiny ? '거의 다 마셨어요' : `${X(left)} 남았어요`;
+  const sub = over ? (caf ? '오늘 카페인은 여기까지만 해요' : '오늘은 그만 마시고 물 한 잔 어때요?') : tiny ? `${caf ? Math.round(left) + 'mg' : fmt1(left) + 'g'}만 남았어요` : `${alt(left)} 정도 더 괜찮아요`;
   const pct = Math.min(100, val / lim * 100), from = ui.lastPct[k]; ui.lastPct[k] = pct;
   let extra = '';
-  if (!caf && st.bac.any && st.bac.ahead > 0) extra = `<span class="c-extra"><span>혈중알코올 <b>${st.bac.now >= 0.0005 ? st.bac.now.toFixed(3) + '%' : '오르는 중'}</b></span><span>${st.bac.soberAt ? timeLabel(st.bac.soberAt) + '쯤 0%' : ''}</span></span>`;
+  if (!caf && st.bac.any && st.bac.ahead > 0) {
+    const sober = st.bac.soberAt ? timeLabel(st.bac.soberAt) : '';
+    extra = `<span class="c-extra"><span>혈중알코올 <b>${st.bac.now >= 0.0005 ? st.bac.now.toFixed(3) + '%' : '오르는 중'}</b></span><span>${sober ? (S.profile.ride ? `운전은 <b>${sober}</b> 이후` : sober + '쯤 0%') : ''}</span></span>`;
+  }
   if (caf) {
     const now = Date.now(), cut = cafCutoff(now);
     if (st.atBed >= st.ci.bedR) extra = `<span class="c-extra"><span>${timeLabel(st.bed)}에 잘 때</span><span><b>${Math.round(st.atBed)}mg</b> 남아요</span></span>`;
@@ -1614,7 +1693,7 @@ function gaugeCard(k, st) {
     <span class="c-label"><i class="dot" style="background:var(--${k})"></i>${caf ? '카페인' : '알코올'}${I.chev}</span>
     <span class="c-big ${over ? 'over' : ''}">${big}</span><span class="c-sub">${sub}</span>
     <span class="gauge"><i data-grow="${from.toFixed(1)}" style="width:${pct.toFixed(1)}%;background:${barColor(val / lim, k)}"></i></span>
-    <span class="c-foot"><span>오늘 ${f(val)}${unit}</span><span>권장 ${lim}${unit}</span></span>${extra}</button>`;
+    <span class="c-foot"><span>오늘 ${X(val, true)}</span><span>권장 ${X(lim, true)}</span></span>${extra}</button>`;
 }
 function vHome() {
   const st = status(), pend = pending(), d = new Date(dayStart(dayKey(Date.now())));
@@ -1652,9 +1731,9 @@ function dayLabels(days, today) {
   return `<div class="bdays" style="grid-template-columns:repeat(${N},minmax(0,1fr));gap:${N > 7 ? 2 : 8}px">${days.map((d, i) => `<span class="${d === today ? 'on' : ''}">${N <= 7 ? (d === today ? '오늘' : WD[new Date(dayStart(d)).getDay()]) : ((N - 1 - i) % 7 === 0 ? (d === today ? '오늘' : mdLabel(d)) : '')}</span>`).join('')}</div>`;
 }
 function bars(vals, limit, unit, k, days, today) {
-  const N = vals.length, PH = 96, scale = Math.max(limit * 1.25, ...vals) || 1, F = x => unit === 'mg' ? Math.round(x) : fmt1(x);
-  return `<div class="bars" style="grid-template-columns:repeat(${N},minmax(0,1fr));gap:${N > 7 ? 2 : 8}px">${vals.map((x, i) => `<button class="bw" data-a="day" data-d="${days[i]}" aria-label="${dayLabel(days[i])} ${F(x)}${unit}">${N <= 7 ? `<span class="v">${x > 0 ? F(x) : ''}</span>` : ''}<i class="b" style="height:${x > 0 ? Math.max(4, Math.round(x / scale * PH)) : 4}px;background:${x > limit ? 'var(--danger)' : x > 0 ? `var(--${k})` : 'var(--fill)'};opacity:${days[i] === today || x > limit ? 1 : x > 0 ? 0.55 : 1}"></i></button>`).join('')}
-    <div class="lim" style="bottom:${Math.round(limit / scale * PH)}px"><span>권장 ${limit}${unit}</span></div></div>` + dayLabels(days, today);
+  const N = vals.length, PH = 96, scale = Math.max(limit * 1.25, ...vals) || 1, F = typeof unit === 'function' ? unit : (x => unit === 'mg' ? Math.round(x) + 'mg' : fmt1(x) + 'g');
+  return `<div class="bars" style="grid-template-columns:repeat(${N},minmax(0,1fr));gap:${N > 7 ? 2 : 8}px">${vals.map((x, i) => `<button class="bw" data-a="day" data-d="${days[i]}" aria-label="${dayLabel(days[i])} ${F(x)}">${N <= 7 ? `<span class="v">${x > 0 ? F(x) : ''}</span>` : ''}<i class="b" style="height:${x > 0 ? Math.max(4, Math.round(x / scale * PH)) : 4}px;background:${x > limit ? 'var(--danger)' : x > 0 ? `var(--${k})` : 'var(--fill)'};opacity:${days[i] === today || x > limit ? 1 : x > 0 ? 0.55 : 1}"></i></button>`).join('')}
+    <div class="lim" style="bottom:${Math.round(limit / scale * PH)}px"><span>권장 ${F(limit)}</span></div></div>` + dayLabels(days, today);
 }
 function dual(days, cv, av, ci, ai, combo, today) {
   const N = days.length, PH = 96, CAP = 1.6, Hh = x => Math.round(Math.min(CAP, x) / CAP * PH);
@@ -1719,10 +1798,10 @@ function vReport() {
   }
   // 3) 카페인 / 알코올
   const cDays = cv.filter(x => x > 0).length, avg = cDays ? Math.round(cv.reduce((a, b) => a + b, 0) / cDays) : 0;
-  h += `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--caf)"></i>카페인 · ${per}</span><span class="c-big sm">${X.cOver ? `권장량을 ${X.cOver}번 넘었어요` : '모두 권장량 안이었어요'}</span><span class="c-sub">마신 날 평균 ${avg}mg</span>${bars(cv, ci.limit, 'mg', 'caf', days, today)}</section>`;
+  h += `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--caf)"></i>카페인 · ${per}</span><span class="c-big sm">${X.cOver ? `권장량을 ${X.cOver}번 넘었어요` : '모두 권장량 안이었어요'}</span><span class="c-sub">마신 날 평균 ${uC(avg)}</span>${bars(cv, ci.limit, v => uC(v, true), 'caf', days, today)}</section>`;
   if (!off) {
     const dd = av.filter(x => x > 0).length, tot = av.reduce((a, b) => a + b, 0);
-    h += `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--alc)"></i>알코올 · ${per}</span><span class="c-big sm">${dd === 0 ? '술을 안 마셨어요' : X.aOver ? `${dd}일 마셨고, ${X.aOver}번 넘었어요` : `${dd}일 마셨고, 모두 권장량 안이에요`}</span><span class="c-sub">${dd ? `모두 합치면 소주 ${fmt1(tot / SOJU_G)}잔만큼이에요` : '좋은 흐름이에요'}</span>${bars(av, ai.limit, 'g', 'alc', days, today)}</section>`;
+    h += `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--alc)"></i>알코올 · ${per}</span><span class="c-big sm">${dd === 0 ? '술을 안 마셨어요' : X.aOver ? `${dd}일 마셨고, ${X.aOver}번 넘었어요` : `${dd}일 마셨고, 모두 권장량 안이에요`}</span><span class="c-sub">${dd ? `${N === 7 ? '이번 주' : '주 평균'} ${uA(N === 7 ? tot : tot / 4)} · 주간 권장 ${uA(ai.weekly)}` : '좋은 흐름이에요'}</span>${bars(av, ai.limit, v => uA(v, true), 'alc', days, today)}</section>`;
   }
   // 4) 자주 마신 것
   const top = k => { const m = {}; recs.filter(r => k === 'alc' ? r.alc > 0 : r.caf > 0 && !(r.alc > 0)).forEach(r => { const x = m[r.name] || (m[r.name] = {n:0, v:0}); x.n++; x.v += k === 'alc' ? r.alc : r.caf; }); return Object.entries(m).sort((a, b) => b[1].n - a[1].n || b[1].v - a[1].v).slice(0, 3); };
@@ -1746,9 +1825,9 @@ function vDay(d) {
   const c = sum(rs, 'caf'), a = sum(rs, 'alc'), bedLeft = cafBody(bedAt(k));
   const dt = new Date(dayStart(k));
   return {html: bar({}) + head(`${dayLabel(k)}${['오늘', '어제', '그제'].includes(dayLabel(k)) ? ` <small class="hsm">${dt.getMonth() + 1}월 ${dt.getDate()}일</small>` : ''}`, rs.length ? `${rs.length}번 기록했어요` : '기록이 없어요') +
-    `<div class="vis" data-in><div class="vis-row"><span>카페인</span><span><b class="${c > ci.limit ? 'over' : ''}">${Math.round(c)}</b> / ${ci.limit}mg</span></div>
+    `<div class="vis" data-in><div class="vis-row"><span>카페인</span><span><b class="${c > ci.limit ? 'over' : ''}">${uC(c, true)}</b> / ${uC(ci.limit, true)}</span></div>
       <span class="gauge"><i style="width:${Math.min(100, c / ci.limit * 100).toFixed(1)}%;background:${barColor(c / ci.limit, 'caf')}"></i></span>
-      ${ai.disabled ? '' : `<div class="vis-row" style="margin-top:16px"><span>알코올</span><span><b class="${a > ai.limit ? 'over' : ''}">${fmt1(a)}</b> / ${ai.limit}g</span></div>
+      ${ai.disabled ? '' : `<div class="vis-row" style="margin-top:16px"><span>알코올</span><span><b class="${a > ai.limit ? 'over' : ''}">${uA(a, true)}</b> / ${uA(ai.limit, true)}</span></div>
       <span class="gauge"><i style="width:${Math.min(100, a / ai.limit * 100).toFixed(1)}%;background:${barColor(a / ai.limit, 'alc')}"></i></span>`}
       <div class="vis-foot"><span>잘 때 남은 카페인 ${Math.round(bedLeft)}mg</span><span>${bedLeft >= ci.bedR ? '잠에 영향' : '괜찮은 수준'}</span></div></div>
     <h2 class="sec2" data-in>기록</h2><div class="rlist" data-in>${rs.map(recRow).join('') || '<p class="none">이날은 기록이 없어요</p>'}</div>`};
@@ -1757,13 +1836,20 @@ function vDay(d) {
 function scoreCard(k, info) {
   const caf = k === 'caf';
   return `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--${k})"></i>${caf ? '카페인' : '알코올'}<span class="score">${info.score}점</span></span>
-    <span class="c-big">하루 ${info.limit}${caf ? 'mg' : 'g'}</span><span class="c-sub">${caf ? `아메리카노 ${fmt1(info.limit / AME_MG)}잔` : `소주 ${fmt1(info.limit / SOJU_G)}잔`} 정도</span>${why(info)}</section>`;
+    <span class="c-big">하루 ${caf ? uC(info.limit) : uA(info.limit)}</span><span class="c-sub">${caf ? altC(info.limit) : altA(info.limit)} 정도${!caf && info.weekly ? ` · 일주일에 ${uA(info.weekly)}까지` : ''}</span>${why(info)}</section>`;
+}
+function auditCard(ai) {
+  const a = ai.audit; if (!a) return '';
+  const T = {low:['위험 음주 가능성이 낮아요', '지금처럼 기록하면서 관리해 보세요.'], risk:['위험 음주에 해당할 수 있어요', '마시는 횟수나 한 번에 마시는 양을 조금 줄여 보세요.'],
+    high:['음주 습관을 점검해 보는 게 좋아요', '가까운 보건소나 정신건강복지센터에서 무료로 상담받을 수 있어요.']}[a.lv];
+  return `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--alc)"></i>음주 습관 체크<span class="score ${a.lv}">${a.score} / 12</span></span><span class="c-big sm">${T[0]}</span><span class="c-sub">${T[1]}</span><p class="disc" style="margin-top:10px;padding:0">처음 설정에서 답한 음주 빈도와 양으로 계산한 AUDIT-C 점수예요. 정보 다시 입력하기에서 바꿀 수 있어요.</p></section>`;
 }
 function vMe() {
   const ci = cafInfo(), ai = alcInfo(), hasDemo = S.records.some(r => r.demo);
-  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai)}
+  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
     <p class="disc" data-in>점수 100점은 공개 기준량을 그대로 쓴다는 뜻이에요. 내 몸 정보와 다음 날 피드백이 쌓일수록 내 몸에 맞게 조정돼요.</p>
     <div class="list" data-in><button class="li" data-a="edit">정보 다시 입력하기${I.chev}</button>
+      <button class="li" data-a="units">표시 단위<span class="li-n">${(UC[S.units.caf] || UC.mg).sh}${ai.disabled ? '' : ' · ' + (UA[S.units.alc] || UA.g).sh}</span>${I.chev}</button>
       <button class="li" data-a="favs-me">즐겨찾기 관리<span class="li-n">${S.favs.length}개</span>${I.chev}</button>
       <button class="li" data-a="${hasDemo ? 'unseed' : 'seed'}">${hasDemo ? '예시 기록 지우기' : '예시 기록 넣기'}${I.chev}</button>
       <button class="li danger" data-a="reset">모든 데이터 지우기${I.chev}</button></div>
@@ -1786,7 +1872,7 @@ function toast(text, undo) {
 /* =========================================================
    동작
    ========================================================= */
-const draft = () => ({weight:'', height:'', birth:'', sex:null, pregnant:null, cafSens:null, conds:[], smoke:null, meds:[], bed:null, flush:null});
+const draft = () => ({weight:'', height:'', birth:'', sex:null, pregnant:null, cafSens:null, conds:[], smoke:null, meds:[], bed:null, flush:null, ahealth:[], afreq:null, aqty:null, abinge:null, ride:null});
 const ACT = {
   back: () => goBack(),
   close: () => closeFlow(),
@@ -1795,14 +1881,19 @@ const ACT = {
   // 처음 설정
   'ob-start': () => go('body'),
   'ob-w-next': () => {
-    const f = ui.flow;
-    if (!validBody(f.d)) { const e = cur.querySelector('#ob-w-err'); if (e) e.hidden = false; return; }
-    f.d.weight = Math.round(Number(f.d.weight) * 10) / 10; f.d.height = Math.round(Number(f.d.height)); go(obNext(f.d, 'body'));
+    const f = ui.flow, h = cur.querySelector('#w-h'), w = cur.querySelector('#w-w');
+    f.d.height = wheelMark(h); f.d.weight = wheelMark(w); go(obNext(f.d, 'body'));
   },
   'ob-b-next': () => {
-    const f = ui.flow; if (!validB(f.d.birth)) { const e = cur.querySelector('#ob-b-err'); if (e) e.hidden = false; return; }
-    f.d.birth = Number(f.d.birth); f.d.adult = THIS_YEAR - f.d.birth >= 19; go(obNext(f.d, 'birth'));
+    const f = ui.flow; f.d.birth = wheelMark(cur.querySelector('#w-b')); f.d.adult = THIS_YEAR - f.d.birth >= 19; go(obNext(f.d, 'birth'));
   },
+  ah: el => {
+    const c = ui.flow.d.ahealth, v = el.dataset.v, i = c.indexOf(v);
+    if (i < 0) c.push(v); else c.splice(i, 1);
+    el.setAttribute('aria-pressed', String(i < 0));
+    const b = cur.querySelector('#ah-btn'); if (b) b.textContent = c.length ? '다음' : '없어요, 다음';
+  },
+  'ob-ah-next': () => go(obNext(ui.flow.d, 'ahealth')),
   med: el => {
     const c = ui.flow.d.meds, v = el.dataset.v, i = c.indexOf(v);
     if (i < 0) c.push(v); else c.splice(i, 1);
@@ -1887,6 +1978,9 @@ const ACT = {
     toast('즐겨찾기에서 뺐어요', () => { S.favs.splice(i, 0, f); save(); swapCur(); });
   },
   'photo-clear': () => { ui.flow.d.photo = null; swapCur(); },
+  food: el => { ui.flow.d.food = el.dataset.v === '1'; updPanel(); updPv(); },
+  unit: el => { S.units[el.dataset.k] = el.dataset.v; save(); el.parentNode.querySelectorAll('.opt').forEach(b => b.setAttribute('aria-pressed', String(b === el))); },
+  units: () => startFlow('units', 'pick', {}, 'fwd'),
   'ing-add': el => { const d = ui.flow.d, it = BYID[d.id]; if (mixAdd(d, it, el.dataset.v)) { const sl = el.parentNode.scrollLeft; swapCur(); const hs = cur.querySelectorAll('.ingadd .hscroll')[ING[el.dataset.v].abv ? 0 : 1]; if (hs) hs.scrollLeft = sl; } },
   'ing-del': el => { const d = ui.flow.d, it = BYID[d.id], g = gOf(it, d.o), i = Number(el.dataset.i), v = mixVols(g, d.o); d.o.ings.splice(i, 1); v.splice(i, 1); d.o.tops = mixTops(g, v); swapCur(); },
   'ing-step': el => { const d = ui.flow.d, it = BYID[d.id]; mixStep(d, it, Number(el.dataset.i), Number(el.dataset.d)); updGlass(); },
@@ -1929,7 +2023,7 @@ const ACT = {
   // 내 기준
   seed: () => { seed(); ui.lastPct = {caf:0, alc:0}; if (ui.tab === 'me') swapCur(); else { ui.tab = 'home'; paintTab('fade'); } toast('2주 치 예시 기록을 넣었어요'); },
   unseed: () => { unseed(); swapCur(); toast('예시 기록을 지웠어요'); },
-  edit: () => startFlow('ob', 'body', Object.assign(draft(), S.profile, {conds:[...(S.profile.conds || [])], meds:[...(S.profile.meds || [])], edit:true}), 'fwd'),
+  edit: () => startFlow('ob', 'body', Object.assign(draft(), S.profile, {conds:[...(S.profile.conds || [])], meds:[...(S.profile.meds || [])], ahealth:[...(S.profile.ahealth || [])], edit:true}), 'fwd'),
   reset: () => startFlow('reset', 'confirm', {}, 'up'),
   'reset-do': () => {
     Object.assign(S, fresh()); try { localStorage.removeItem(KEY); } catch (e) {}
@@ -1972,6 +2066,8 @@ function updGlass(focusH) {
 }
 
 document.addEventListener('click', e => {
+  const wi = e.target.closest && e.target.closest('.wi');
+  if (wi) { const w = wi.parentNode; w.scrollTo({top:Number(wi.dataset.i) * WH, behavior:reduce ? 'auto' : 'smooth'}); return; }
   const el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
   if (el.closest('.screen') && el.closest('.screen') !== cur) return;
   const fn = ACT[el.dataset.a]; if (fn) { e.preventDefault(); fn(el, e); }
@@ -2007,6 +2103,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && ui.flow) { goBack(); return; }
+  if (e.target.classList && e.target.classList.contains('wlist') && /^Arrow(Up|Down)$/.test(e.key)) { e.preventDefault(); e.target.scrollTop += (e.key === 'ArrowUp' ? -1 : 1) * WH; return; }
   if (e.key === 'Enter' && e.target.id === 'ob-h') { e.preventDefault(); const w = cur.querySelector('#ob-w'); if (w) w.focus(); }
   if (e.key === 'Enter' && e.target.id === 'ob-w') { e.preventDefault(); ACT['ob-w-next'](); }
   if (e.key === 'Enter' && e.target.id === 'ob-b') { e.preventDefault(); ACT['ob-b-next'](); }
@@ -2022,6 +2119,7 @@ function gT(e, it, d) {
   const r = svg.getBoundingClientRect(), G = gGeom(gOf(it, d.o));
   return clamp((G.y0 - (e.clientY - r.top) * (GV.H / r.height)) / G.bh, 0, 1);
 }
+document.addEventListener('scroll', e => { const w = e.target; if (w && w.classList && w.classList.contains('wlist')) wheelMark(w); }, true);
 document.addEventListener('pointerdown', e => {
   const gb = e.target.closest && e.target.closest('#gbox'), f = ui.flow;
   if (!gb || !f || f.cur !== 'item' || gb.closest('.screen') !== cur) return;
