@@ -1,0 +1,2054 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<title>기록</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="기록">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: native-style screen stack. One question per screen, slide transitions, sticky bottom CTA.
+   Home = gray grouped background, white cards with one big sentence each. Coffee brown / soju green as data colors, blue for actions. */
+:root{
+  --bg:#FFFFFF; --bg-2:#F2F4F6; --card:#FFFFFF; --ink:#191F28; --ink-2:#4E5968; --ink-3:#8B95A1; --line:#E5E8EB;
+  --fill:#F2F4F6; --fill-2:#E3E7EB; --accent:#2F6FEB; --accent-soft:#EAF1FE; --on-accent:#FFFFFF; --toast-link:#8AB6FF;
+  --caf:#8A5A3B; --caf-soft:#F4ECE6; --alc:#13A26B; --alc-soft:#E2F5EC;
+  --warn:#B06A00; --warn-bar:#F5A623; --warn-soft:#FFF4E0; --danger:#E5384A; --danger-soft:#FDEBED;
+  --liq-clear:#CFE8F6; --liq-beer:#F4B63C; --liq-foam:#FFF4D4; --liq-wine:#A3203F; --liq-mak:#E9E1CE; --liq-whisky:#C97C2E; --liq-soda:#DDF1E4; --liq-energy:#EBC94B; --liq-green:#7CCB5A; --liq-cream:#E6D3B3; --liq-cola:#5A3A26;
+  --shadow:0 10px 30px rgba(0,20,50,.16);
+  --f:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17171C; --bg-2:#101013; --card:#1F1F26; --ink:#ECECEF; --ink-2:#B1B1BA; --ink-3:#80808A; --line:#2B2B33;
+  --fill:#26262E; --fill-2:#34343E; --accent:#4C8DF6; --accent-soft:#1B2840; --on-accent:#FFFFFF; --toast-link:#2F6FEB;
+  --caf:#D3A07A; --caf-soft:#2B221C; --alc:#3CCB8F; --alc-soft:#14291F;
+  --warn:#FFB547; --warn-bar:#F5A623; --warn-soft:#30260F; --danger:#FF5D6C; --danger-soft:#3A1C21;
+  --liq-clear:#36566A; --liq-beer:#D99A22; --liq-foam:#EADFC2; --liq-wine:#B8344F; --liq-mak:#8A826E; --liq-whisky:#B06A22; --liq-soda:#2F5747; --liq-energy:#B8962B; --liq-green:#4E9A36; --liq-cream:#9C8763; --liq-cola:#7A5238;
+  --shadow:0 10px 30px rgba(0,0,0,.55); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17171C; --bg-2:#101013; --card:#1F1F26; --ink:#ECECEF; --ink-2:#B1B1BA; --ink-3:#80808A; --line:#2B2B33;
+  --fill:#26262E; --fill-2:#34343E; --accent:#4C8DF6; --accent-soft:#1B2840; --on-accent:#FFFFFF; --toast-link:#2F6FEB;
+  --caf:#D3A07A; --caf-soft:#2B221C; --alc:#3CCB8F; --alc-soft:#14291F;
+  --warn:#FFB547; --warn-bar:#F5A623; --warn-soft:#30260F; --danger:#FF5D6C; --danger-soft:#3A1C21;
+  --liq-clear:#36566A; --liq-beer:#D99A22; --liq-foam:#EADFC2; --liq-wine:#B8344F; --liq-mak:#8A826E; --liq-whisky:#B06A22; --liq-soda:#2F5747; --liq-energy:#B8962B; --liq-green:#4E9A36; --liq-cream:#9C8763; --liq-cola:#7A5238;
+  --shadow:0 10px 30px rgba(0,0,0,.55); color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{height:100%;margin:0;overflow:hidden;background:var(--bg-2);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.5;letter-spacing:-.01em;word-break:keep-all;overflow-wrap:break-word;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;letter-spacing:inherit}
+input{font:inherit;color:inherit;letter-spacing:inherit}
+p,h1,h2,h3{margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+#root{position:relative;height:100%;max-width:480px;margin:0 auto;background:var(--bg);overflow:hidden}
+@media (min-width:500px){#root{box-shadow:0 0 0 1px var(--line)}}
+#stage{position:absolute;inset:0}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;display:flex;flex-direction:column;background:var(--bg);
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.screen.tabscr{z-index:1;background:var(--bg-2);padding-bottom:100px}
+.screen.flow{z-index:10}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;min-height:56px;margin:0 -10px;background:var(--bg)}
+.icon-btn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink);flex:none}
+.icon-btn:active{background:var(--fill)}
+.icon-btn.sm{width:34px;height:34px;border-radius:10px;color:var(--ink-3)}
+.icon-sp{width:44px;flex:none}
+.prog{flex:1;height:4px;border-radius:2px;background:var(--fill);overflow:hidden;margin:0 12px}
+.prog i{display:block;height:100%;border-radius:2px;background:var(--accent)}
+.sp{flex:1}
+
+/* type */
+.eyebrow{font-size:15px;font-weight:700;color:var(--accent);margin-top:20px}
+.eyebrow.caf{color:var(--caf)} .eyebrow.alc{color:var(--alc)}
+.eyebrow + .h{margin-top:6px}
+.h{font-size:26px;line-height:1.42;font-weight:700;letter-spacing:-.025em;margin-top:20px;text-wrap:balance}
+.h .num{font-variant-numeric:tabular-nums;color:var(--accent)}
+.h .num.caf{color:var(--caf)} .h .num.alc{color:var(--alc)}
+.sub{font-size:16px;line-height:1.6;color:var(--ink-2);margin-top:10px}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;margin-block:auto}
+.center .h{margin-top:24px}
+
+/* options */
+.opts{display:flex;flex-direction:column;gap:10px;margin-top:32px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:16px 20px;border-radius:16px;background:var(--fill);font-size:17px;font-weight:600;transition:background-color .15s,box-shadow .15s,transform .12s}
+.opt:active{transform:scale(.985)}
+.opt-t{flex:1;min-width:0}
+.opt small{display:block;font-size:14px;font-weight:400;color:var(--ink-3);margin-top:2px}
+.opt .r{flex:none;font-size:16px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.opt[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt[aria-pressed="true"] small,.opt[aria-pressed="true"] .r{color:var(--accent)}
+.ck{flex:none;width:26px;height:26px;border-radius:50%;background:var(--fill-2);color:var(--fill);display:grid;place-items:center;transition:background-color .15s,color .15s}
+.opt[aria-pressed="true"] .ck{background:var(--accent);color:var(--on-accent)}
+
+/* inputs */
+.big-in{display:flex;align-items:baseline;gap:8px;margin-top:44px;padding-bottom:10px;border-bottom:2px solid var(--line);transition:border-color .2s;cursor:text}
+.big-in:focus-within{border-color:var(--accent)}
+.big-in input{flex:0 1 auto;min-width:1.2ch;width:2.4ch;max-width:100%;border:0;background:none;outline:none;padding:0;font-size:40px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.big-in input::placeholder{color:var(--fill-2)}
+.big-in span{font-size:24px;font-weight:700;color:var(--ink-2)}
+.big-in.sm{margin-top:36px} .big-in.sm input{font-size:32px} .big-in.sm span{font-size:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.err{color:var(--danger);font-size:14px;margin-top:8px}
+.field{display:block;margin-top:28px}
+.field > span{display:block;font-size:14px;font-weight:600;color:var(--ink-3);margin-bottom:8px}
+.text-in{width:100%;height:52px;padding:0 16px;border-radius:14px;border:0;background:var(--fill);font-size:16px;outline:none}
+.text-in:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+
+/* cta */
+.cta{position:sticky;bottom:0;z-index:2;margin-top:auto;padding:28px 0 16px;background:linear-gradient(to top,var(--bg) 72%,transparent)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:56px;border-radius:16px;background:var(--accent);color:var(--on-accent);font-size:17px;font-weight:700;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.3;cursor:default;transform:none}
+.btn.sec{background:var(--fill);color:var(--ink);margin:0;font-size:17px;letter-spacing:inherit;align-items:center;gap:0}
+.btn.warn{background:var(--danger)}
+.btn-row{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.txt-btn{display:block;margin:10px auto 0;padding:8px 14px;font-size:15px;font-weight:600;color:var(--ink-3);text-align:center}
+.cta-note{text-align:center;font-size:14px;color:var(--ink-3);margin-top:12px}
+
+/* welcome */
+.welcome{padding-top:36px}
+.hero{display:flex;align-items:flex-end;gap:16px;height:140px}
+.hb{position:relative;width:76px;height:124px;border:3px solid var(--ink);border-top:0;border-radius:0 0 22px 22px;overflow:hidden}
+.hb.sm{width:54px;height:86px;border-radius:0 0 16px 16px}
+.hb::after{content:"";position:absolute;left:0;right:0;top:24%;border-top:2px dashed var(--danger)}
+.hl{position:absolute;left:0;right:0;bottom:0}
+.hl.caf{background:var(--caf)} .hl.alc{background:var(--alc)}
+
+/* result */
+.cups{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin-top:28px}
+.mini{position:relative;width:30px;height:40px;border:2.5px solid var(--ink-3);border-top:0;border-radius:0 0 9px 9px;overflow:hidden}
+.mini i{position:absolute;left:0;right:0;bottom:0}
+.mini.caf i{background:var(--caf)} .mini.alc i{background:var(--alc)}
+.reason{margin-top:24px;padding:16px 18px;border-radius:16px;background:var(--fill);font-size:15px;line-height:1.55;color:var(--ink-2)}
+.why{margin-top:10px}
+.why summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:2px;font-size:15px;font-weight:600;color:var(--ink-3);padding:8px 2px}
+.why summary::-webkit-details-marker{display:none}
+.why summary svg{transition:transform .2s}
+.why[open] summary svg{transform:rotate(90deg)}
+.factors{list-style:none;margin:2px 0 0;padding:0}
+.factors li{display:flex;justify-content:space-between;gap:12px;padding:11px 2px;border-top:1px solid var(--line);font-size:14.5px;color:var(--ink-2)}
+.factors li span:last-child{font-weight:600;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.factors li.total{font-weight:700;color:var(--ink)}
+.spinner{width:48px;height:48px;border-radius:50%;border:4px solid var(--fill);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.res-ic{width:76px;height:76px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.res-ic.soft{background:var(--accent-soft);color:var(--accent)}
+.res-ic .draw{stroke-dasharray:20}
+
+/* record flow */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:32px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:20px 18px 18px;border-radius:22px;background:var(--fill);min-height:156px;transition:transform .12s}
+.tile:active{transform:scale(.97)}
+.tile-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;margin-bottom:auto}
+.tile.caf .tile-ic{background:var(--caf-soft);color:var(--caf)}
+.tile.alc .tile-ic{background:var(--alc-soft);color:var(--alc)}
+.tile b{font-size:18px;font-weight:700;margin-top:16px}
+.tile small{font-size:13.5px;color:var(--ink-3)}
+.sec2{font-size:15px;font-weight:700;color:var(--ink-3);margin-top:32px}
+.rows{display:flex;flex-direction:column;margin:8px -12px 0}
+.row{display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 12px;border-radius:14px;transition:background-color .12s}
+.row:hover,.row:active{background:var(--fill)}
+.row-t{flex:1;min-width:0}
+.row-t b{display:block;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-t small{display:block;font-size:14px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-r{flex:none;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.row-r.caf{color:var(--caf)} .row-r.alc{color:var(--alc)}
+.row-r small{display:block;font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.none{padding:20px 12px;color:var(--ink-3);font-size:15px}
+.ghost{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;padding:15px;border-radius:16px;font-size:15px;font-weight:600;color:var(--ink-2);background:var(--fill);cursor:pointer;width:100%}
+.ghost:active{background:var(--fill-2)}
+.search{position:relative;margin-top:24px}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+.search input{width:100%;height:50px;padding:0 16px 0 44px;border-radius:14px;border:0;background:var(--fill);font-size:16px;outline:none}
+.search input:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chips.center{justify-content:center;margin-top:28px}
+.chip{height:36px;padding:0 14px;border-radius:18px;background:var(--fill);font-size:14.5px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.photo{display:flex;align-items:center;gap:12px;margin-top:20px;padding:10px;border-radius:16px;background:var(--fill)}
+.photo img{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none}
+.photo p{flex:1;font-size:14px;color:var(--ink-2);line-height:1.45}
+.recipe{margin-top:28px;border-radius:20px;background:var(--fill);padding:6px 18px}
+.rc{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.rc:first-child{border-top:0}
+.rc span:first-child{flex:1}
+.rc .n{color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rc .g{width:56px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.rc.total{font-weight:700;color:var(--alc)}
+.qty{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:56px}
+.qbtn{width:56px;height:56px;border-radius:50%;background:var(--fill);font-size:28px;font-weight:500;display:grid;place-items:center;transition:transform .12s,opacity .2s}
+.qbtn:active{transform:scale(.92)}
+.qbtn:disabled{opacity:.3}
+.qval{min-width:110px;text-align:center}
+.qval b{display:inline-block;font-size:56px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.qval span{font-size:22px;font-weight:700;color:var(--ink-2);margin-left:4px}
+.qsum{text-align:center;margin-top:16px;font-size:16px;color:var(--ink-2);font-weight:600}
+.other{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:12px 16px 12px 20px;border-radius:16px;border:1.5px dashed var(--line)}
+.other span{flex:1;font-size:15px;font-weight:600;color:var(--ink-2)}
+.other input{height:36px;padding:0 10px;border-radius:10px;border:0;background:var(--fill);font-size:15px;font-weight:600}
+.vis{margin-top:28px;padding:20px;border-radius:20px;background:var(--fill)}
+.vis-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:14.5px;color:var(--ink-3)}
+.vis-row b{font-size:22px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.vis-row b.over{color:var(--danger)}
+.vis-foot{display:flex;justify-content:space-between;margin-top:8px;font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.gauge{position:relative;display:block;height:12px;border-radius:6px;background:var(--fill-2);margin-top:12px;overflow:hidden}
+.card .gauge{background:var(--fill);margin-top:18px}
+.gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.gauge i.prev{opacity:.3}
+.alist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.al{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:16px;font-size:15px;line-height:1.5;background:var(--warn-soft);color:var(--warn)}
+.al.danger{background:var(--danger-soft);color:var(--danger)}
+.al svg{flex:none;margin-top:1px}
+.tip{margin-top:12px;font-size:15px;color:var(--ink-2);text-align:center}
+
+/* home / tabs */
+.home{display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.htop{display:flex;justify-content:space-between;align-items:center;min-height:60px;padding-top:4px}
+.logo{font-size:23px;font-weight:800;letter-spacing:-.05em}
+.hdate{font-size:14px;font-weight:600;color:var(--ink-3)}
+.tab-h{font-size:26px;font-weight:800;letter-spacing:-.03em;padding-top:20px;padding-bottom:4px}
+.card{display:block;width:100%;background:var(--card);border-radius:24px;padding:22px 22px 20px;text-align:left}
+button.card{transition:transform .12s}
+button.card:active{transform:scale(.985)}
+.c-label{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:600;color:var(--ink-2)}
+.c-label > svg,.c-label .score{margin-left:auto}
+.c-label > svg{color:var(--ink-3)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.c-big{display:block;font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.32;margin-top:8px;font-variant-numeric:tabular-nums}
+.c-big.over{color:var(--danger)}
+.c-sub{display:block;font-size:15px;color:var(--ink-3);margin-top:2px}
+.c-foot{display:flex;justify-content:space-between;margin-top:10px;font-size:13.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.c-extra{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.c-extra b{font-weight:700;font-variant-numeric:tabular-nums}
+.prompt{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border-radius:24px;padding:18px 18px 18px 20px;text-align:left;transition:transform .12s}
+.prompt:active{transform:scale(.985)}
+.prompt .pi{width:44px;height:44px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.prompt .pt{flex:1;min-width:0}
+.prompt b{display:block;font-size:16px;font-weight:700}
+.prompt small{display:block;font-size:14px;color:var(--ink-3)}
+.prompt > svg{color:var(--ink-3);flex:none}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:16px 18px;border-radius:20px;background:var(--warn-soft);color:var(--warn);font-size:15px;line-height:1.5;font-weight:500}
+.banner.danger{background:var(--danger-soft);color:var(--danger)}
+.banner svg{flex:none;margin-top:1px}
+.banner small{display:block;font-size:13px;opacity:.85;margin-top:2px}
+.sec{display:flex;align-items:baseline;gap:8px;font-size:18px;font-weight:700;margin:14px 4px 0;letter-spacing:-.02em}
+.sec small{font-size:14px;font-weight:500;color:var(--ink-3)}
+.qrow{display:flex;gap:8px;overflow-x:auto;margin:0 -20px;padding:2px 20px 4px;scrollbar-width:none}
+.qrow::-webkit-scrollbar{display:none}
+.qchip{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px 16px;border-radius:18px;background:var(--card);max-width:200px;text-align:left;transition:transform .12s}
+.qchip:active{transform:scale(.96)}
+.qchip b{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:168px}
+.qchip small{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:168px}
+.plus{font-weight:700}
+.plus.caf{color:var(--caf)} .plus.alc{color:var(--alc)}
+.empty{background:var(--card);border-radius:24px;padding:28px 22px 22px;text-align:center}
+.empty p{color:var(--ink-2);font-size:15px;line-height:1.6}
+.empty .btn{margin-top:18px}
+.list{background:var(--card);border-radius:24px;padding:6px 8px}
+.li{display:flex;align-items:center;gap:12px;width:100%;padding:16px 12px;border-radius:14px;font-size:16px;font-weight:600}
+.li:active{background:var(--fill)}
+.li svg{margin-left:auto;color:var(--ink-3)}
+.li.danger{color:var(--danger)}
+.score{font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:10px}
+.disc{font-size:13px;color:var(--ink-3);line-height:1.65;margin-top:8px;padding:0 4px}
+.bars{position:relative;height:120px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;margin-top:24px}
+.bw{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
+.bw .v{font-size:11px;font-weight:600;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bw .b{width:100%;max-width:26px;border-radius:7px 7px 3px 3px}
+.bdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:8px}
+.bdays span{text-align:center;font-size:12.5px;color:var(--ink-3)}
+.bdays .on{color:var(--ink);font-weight:700}
+.lim{position:absolute;left:0;right:0;border-top:1.5px dashed var(--danger);pointer-events:none}
+.lim span{position:absolute;left:0;bottom:3px;font-size:11px;font-weight:600;color:var(--danger);background:var(--card);padding-right:4px}
+.fblog{margin-top:8px}
+.fbl{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:14.5px}
+.fbl:first-child{border-top:0}
+.fbl small{display:block;color:var(--ink-3);font-size:13px}
+.fbl .d{white-space:nowrap;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.chart{margin-top:24px;padding:16px 14px 12px;border-radius:20px;background:var(--fill)}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-size:11px;font-family:var(--f);font-weight:600}
+.chart-note{font-size:13px;color:var(--ink-3);margin-top:8px;line-height:1.55}
+.rlist{display:flex;flex-direction:column;margin-top:4px}
+.rrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rrow .rt{width:44px;flex:none;font-size:14px;font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.rrow img{width:36px;height:36px;border-radius:10px;object-fit:cover;flex:none}
+.tag{font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--fill);color:var(--ink-3);margin-left:6px;vertical-align:2px}
+
+.tabs{position:absolute;left:0;right:0;bottom:0;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg);border-top:1px solid var(--line);
+  padding:6px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0;font-size:11px;font-weight:600;color:var(--ink-3);text-align:center}
+.tab .ic{height:30px;display:grid;place-items:center}
+.tab[aria-current="page"]{color:var(--ink)}
+.tab.rec .ic{width:46px;border-radius:11px;background:var(--accent);color:var(--on-accent)}
+
+#toast{position:absolute;left:max(20px,env(safe-area-inset-left,0px));right:max(20px,env(safe-area-inset-right,0px));bottom:88px;z-index:50;pointer-events:none}
+#root.in-flow #toast{bottom:100px}
+.toast{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:15px;line-height:1.45;box-shadow:var(--shadow)}
+.toast button{flex:none;font-weight:700;color:var(--toast-link)}
+/* record: pick */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-top:24px;border-radius:14px;background:var(--fill)}
+.seg button{height:40px;border-radius:10px;font-size:15px;font-weight:700;color:var(--ink-3);text-align:center;transition:background-color .15s,color .15s,box-shadow .15s}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,20,50,.12)}
+.seg + .search{margin-top:12px}
+.hscroll{display:flex;gap:6px;overflow-x:auto;margin:12px -20px 0;padding:2px 20px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll > *{flex:none}
+.grp{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;color:var(--ink-3);margin-top:26px}
+.grp button{font-size:14px;font-weight:600;color:var(--accent);padding:4px 2px}
+.grp + .rows{margin-top:4px}
+.hscroll + .rows{margin-top:10px}
+.fs{color:#F5B400;margin-right:4px;font-weight:700}
+/* record: item */
+.ttl{display:flex;align-items:flex-start;gap:4px;margin-top:12px}
+.ttl-t{flex:1;min-width:0}
+.ttl .eyebrow{margin-top:6px}
+.ttl .h{margin-top:4px}
+.star{margin-right:-10px;color:var(--ink-3);flex:none}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;margin-top:24px}
+.vopt{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:16px;background:var(--fill);text-align:left;transition:background-color .15s,box-shadow .15s}
+.vopt b{font-size:16px;font-weight:700}
+.vopt small{font-size:13.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.vopt[aria-pressed="true"]{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)}
+.vopt[aria-pressed="true"] b,.vopt[aria-pressed="true"] small{color:var(--accent)}
+.gsel{margin-top:20px}
+.gchip{display:flex;align-items:center;gap:8px;height:54px;padding:0 14px 0 10px;border-radius:16px;background:var(--fill);color:var(--ink-2);text-align:left;transition:background-color .15s,box-shadow .15s,color .15s}
+.gchip span{font-size:14.5px;font-weight:700;line-height:1.25;white-space:nowrap}
+.gchip small{display:block;font-size:12px;font-weight:500;color:var(--ink-3)}
+.gchip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.gchip[aria-pressed="true"] small{color:var(--accent)}
+.gi{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.ghint{margin-top:18px;text-align:center;font-size:14px;color:var(--ink-3)}
+.gbox{position:relative;height:224px;margin-top:4px;touch-action:none;-webkit-user-select:none;user-select:none;cursor:ns-resize}
+.gbox svg{display:block;margin:0 auto;overflow:visible}
+.gl-out{fill:none;stroke:var(--ink-3);stroke-width:3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.gl-ln{stroke:var(--accent);stroke-width:2;stroke-dasharray:5 4}
+.gl-ln.b{stroke:var(--ink-2)}
+.gl-logo{fill:none;stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3}
+.gl-logo-t{font-size:10px;font-weight:800;letter-spacing:.14em;fill:var(--ink-3);font-family:var(--f)}
+.mkrow .mk-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--alc-soft);color:var(--alc);font-size:24px;font-weight:600}
+.mkrow > svg{color:var(--ink-3);flex:none}
+.layers{display:flex;flex-direction:column;margin-top:14px}
+.layers:empty{display:none}
+.lyr{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.lyr:first-child{border-top:0}
+.lyr > i{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.15)}
+.lyr-t{flex:1;min-width:0;font-size:15px;font-weight:600}
+.lyr-t small{display:block;font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.step.sm button{width:32px;height:32px;font-size:19px;background:var(--fill)}
+.step.sm b{min-width:58px;font-size:15px}
+.ing-g{font-size:13px;font-weight:700;color:var(--ink-3);margin-top:18px}
+.ingadd .hscroll{margin-top:8px}
+.ingc{display:inline-flex;align-items:center;gap:6px}
+.ingc i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.15)}
+.gl-mark{stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:2 3}
+.gl-mark-t{font-size:11px;font-weight:700;fill:var(--ink-3);font-family:var(--f)}
+.hdl{position:absolute;transform:translateY(-50%);display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px 0 9px;border-radius:15px;background:var(--card);box-shadow:0 2px 10px rgba(0,20,50,.16);font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;cursor:ns-resize;touch-action:none;font-variant-numeric:tabular-nums}
+.hdl i{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.18)}
+.pre{justify-content:center;margin-top:10px;gap:6px}
+.pre .chip{height:34px;padding:0 12px;font-size:14px}
+.ro{margin-top:12px;text-align:center;font-size:15px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.ro b{color:var(--ink);font-weight:700}
+.pack{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:28px;text-align:center}
+.pack p{font-size:15px;color:var(--ink-2);line-height:1.6}
+.panel{margin-top:24px;padding:0 16px;border-radius:20px;background:var(--fill)}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.prow > span:first-child{font-size:15px;font-weight:600;color:var(--ink-2)}
+.prow small{display:block;font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.prow.col{display:block;padding:14px 0}
+.prow.col .hscroll{margin:10px -16px 0;padding:2px 16px}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:38px;height:38px;border-radius:50%;background:var(--card);font-size:22px;line-height:1;display:grid;place-items:center;transition:transform .12s,opacity .2s}
+.step button:active{transform:scale(.9)}
+.step button:disabled{opacity:.35}
+.step b{min-width:62px;text-align:center;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.panel .chip{background:var(--card)}
+.panel .chip[aria-pressed="true"],.panel .chip.on{background:var(--ink);color:var(--bg)}
+.tchip{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.tchip input{width:84px;border:0;padding:0;background:none;font:inherit;color:inherit;outline:none}
+#pv .vis{margin-top:16px}
+.gauge.live i{transition:width .3s cubic-bezier(.22,.8,.24,1),background-color .3s}
+.alist:empty{display:none}
+.cta-sum{text-align:center;font-size:15px;font-weight:700;color:var(--ink-2);margin-bottom:10px;line-height:1.45}
+.cta-sum.over{color:var(--danger)} .cta-sum.warn{color:var(--warn)}
+.li-n{margin-left:auto;font-size:14px;font-weight:600;color:var(--ink-3)}
+.li-n + svg{margin-left:6px}
+.rp{margin-top:4px}
+.c-big.sm{font-size:22px;line-height:1.4}
+.bw{width:100%;padding:0;border-radius:6px}
+.dual .pair{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:2px;width:100%}
+.dual .pair .b{width:46%;max-width:11px;border-radius:5px 5px 2px 2px}
+.cb{position:absolute;top:-11px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:var(--warn-bar)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--ink-3)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:3px}
+.legend .cbi{border-radius:50%;background:var(--warn-bar)}
+.ins{margin-top:14px;border-top:1px solid var(--line)}
+.insr{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.insr:last-child{border-bottom:0}
+.insr small{display:block;font-size:12.5px;color:var(--ink-3);margin-top:1px}
+.insr b{flex:none;font-weight:700;font-variant-numeric:tabular-nums}
+.insr b.warn{color:var(--warn)} .insr b.caf{color:var(--caf)} .insr b.alc{color:var(--alc)}
+.hrow{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13px;font-weight:600;color:var(--ink-3)}
+.hrow > span{width:40px;flex:none}
+.hstrip{flex:1;display:grid;grid-template-columns:repeat(24,1fr);gap:2px}
+.hstrip i{height:22px;border-radius:4px}
+.hlab{display:flex;justify-content:space-between;margin:6px 0 0 50px;font-size:11px;color:var(--ink-3)}
+.bdays span{white-space:nowrap;overflow:visible}
+.hsm{font-size:15px;font-weight:600;color:var(--ink-3);margin-left:4px}
+.whyt{margin-top:18px}
+.whyt p{font-size:14px;font-weight:600;color:var(--ink-3)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tags span{font-size:13px;font-weight:600;color:var(--ink-2);background:var(--fill);padding:5px 10px;border-radius:10px}
+.card .tags span{background:var(--bg-2)}
+.logo i,.dotc{font-style:normal;color:var(--accent)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="root">
+  <div id="stage"></div>
+  <nav class="tabs" id="tabs" aria-label="메뉴" hidden>
+    <button class="tab" data-a="tab" data-t="home"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg></span>홈</button>
+    <button class="tab rec" data-a="tab-rec"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>기록</button>
+    <button class="tab" data-a="tab" data-t="report"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg></span>리포트</button>
+    <button class="tab" data-a="tab" data-t="me"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>내 기준</button>
+  </nav>
+  <div id="toast" aria-live="polite"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const H = 36e5, MIN = 6e4, DAY = 864e5, ETH = 0.789, BETA = 0.015, HALF = 5;
+const SOJU_ML = 40;               // 소주잔에 보통 따르는 양 (잔은 가득 50ml, 주류 표시는 1잔 45ml)
+const SOJU_G = SOJU_ML * 0.16 * ETH;   // 소주 한 잔(40ml, 16%) ≈ 5.0g
+const AME_MG = 150;               // 아메리카노 1잔(2샷)
+const KEY = 'jango.v1';
+
+/* ---------- 잔 ----------
+   r = 바닥→입구 반지름 비율(원뿔대), ar = 몸통 가로÷세로, cap = 입구까지 채웠을 때 ml
+   def = 기본 채움 높이(0~1) 또는 {ml}, logo = 맥주잔 로고 아래선 높이, pack = 병·캔(높이 대신 개수로) */
+const GL = {
+  soju:   {n:'소주잔', cap:50, r:[0.8, 1], ar:1, def:{ml:SOJU_ML}, marks:[{t:'보통', ml:SOJU_ML}]},
+  shot:   {n:'샷잔', cap:30, r:[0.74, 1], ar:0.74, def:1},
+  paper:  {n:'종이컵', cap:184, r:[0.7, 1], ar:0.92, def:0.6},
+  beer:   {n:'맥주잔', cap:225, r:[0.68, 1], ar:0.6, def:0.92, logo:0.36},
+  jug:    {n:'500cc 잔', cap:500, r:[0.92, 1], ar:0.7, def:0.9, handle:true},
+  hb:     {n:'하이볼잔', cap:350, r:[0.95, 1], ar:0.46, def:0.85},
+  rock:   {n:'온더락잔', cap:250, r:[0.94, 1], ar:1.05, def:{ml:45}},
+  wine:   {n:'와인잔', cap:450, shape:'wine', ar:0.8, def:{ml:150}},
+  sabal:  {n:'사발', cap:350, shape:'bowl', ar:1.9, def:0.75},
+  bot360: {n:'병', pack:'bottle', ml:360, u:'병'},
+  bot500: {n:'병', pack:'bottle', ml:500, u:'병'},
+  bot750: {n:'병', pack:'bottle', ml:750, u:'병'},
+  bot300: {n:'병', pack:'bottle', ml:300, u:'병'},
+  can350: {n:'캔', pack:'can', ml:350, u:'캔'},
+  can355: {n:'캔', pack:'can', ml:355, u:'캔'},
+  can500: {n:'큰 캔', pack:'can', ml:500, u:'캔'},
+};
+Object.entries(GL).forEach(([id, g]) => { g.id = id; });
+
+/* ---------- 음료 DB ----------
+   카페인: sizes = [옵션, ml, mg], shot = 샷 추가 1회 mg
+   술: abv + glasses(고를 수 있는 잔), mix = 말아 마시기 {a: 먼저 붓는 술, b: 위에 채우는 것}, recipe = [재료, ml, 도수%] */
+/* 혼합주 재료: abv %, caf = ml당 카페인 mg, def = 처음 넣을 때 양(ml) */
+const ING = {
+  soju:{n:'소주', abv:16, liq:'clear', def:SOJU_ML}, beer:{n:'맥주', abv:4.5, liq:'beer', def:160}, yeontae:{n:'연태고량주', s:'연태', abv:34, liq:'clear', def:20},
+  makgeolli:{n:'막걸리', abv:6, liq:'mak', def:120}, wine:{n:'와인', abv:12.5, liq:'wine', def:90}, sake:{n:'사케', abv:15, liq:'clear', def:40},
+  whisky:{n:'위스키', abv:40, liq:'whisky', def:45}, vodka:{n:'보드카', abv:40, liq:'clear', def:45}, gin:{n:'진', abv:40, liq:'clear', def:45},
+  rum:{n:'럼', abv:40, liq:'whisky', def:45}, tequila:{n:'데킬라', abv:40, liq:'clear', def:30}, jager:{n:'예거마이스터', s:'예거', abv:35, liq:'whisky', def:30},
+  baileys:{n:'베일리스', abv:17, liq:'cream', def:45}, kahlua:{n:'깔루아', abv:20, liq:'cola', def:45, caf:0.1}, midori:{n:'미도리', abv:20, liq:'green', def:45},
+  malibu:{n:'말리부', abv:21, liq:'clear', def:45}, peach:{n:'피치트리', abv:20, liq:'clear', def:45},
+  cider:{n:'사이다', abv:0, liq:'soda', def:120}, tonic:{n:'토닉워터', s:'토닉', abv:0, liq:'soda', def:120}, soda:{n:'탄산수', s:'탄산', abv:0, liq:'soda', def:150},
+  cola:{n:'콜라', abv:0, liq:'cola', def:120, caf:0.096}, energy:{n:'에너지드링크', s:'에너지', abv:0, liq:'energy', def:120, caf:0.24},
+  juice:{n:'주스', abv:0, liq:'energy', def:120}, milk:{n:'우유', abv:0, liq:'cream', def:120},
+};
+const DB = [
+  {id:'espresso',k:'caf',cat:'커피',name:'에스프레소',sizes:[['1샷',30,75],['2샷',60,150]]},
+  {id:'ame',k:'caf',cat:'커피',name:'아메리카노',sizes:[['Regular',355,150],['Large',473,225]],shot:75,q:'아아 americano 일반'},
+  {id:'latte',k:'caf',cat:'커피',name:'카페라떼',sizes:[['Regular',355,150],['Large',473,225]],shot:75,q:'라테 latte'},
+  {id:'vanilla',k:'caf',cat:'커피',name:'바닐라라떼',sizes:[['Regular',355,150],['Large',473,225]],shot:75,q:'바라'},
+  {id:'coldbrew',k:'caf',cat:'커피',name:'콜드브루',sizes:[['Regular',355,200]]},
+  {id:'decaf',k:'caf',cat:'커피',name:'디카페인 아메리카노',sizes:[['Regular',355,10]],q:'decaf'},
+  {id:'cancoffee',k:'caf',cat:'커피',name:'캔커피',sizes:[['1캔',200,100]],q:'편의점'},
+  {id:'cupcoffee',k:'caf',cat:'커피',name:'컵커피',sizes:[['1컵',250,130]],q:'편의점'},
+  {id:'monster',k:'caf',cat:'에너지·탄산·차',name:'몬스터 에너지',sizes:[['1캔',355,100]],q:'에너지드링크'},
+  {id:'redbull',k:'caf',cat:'에너지·탄산·차',name:'레드불',sizes:[['1캔',250,63]],q:'에너지드링크'},
+  {id:'hot6',k:'caf',cat:'에너지·탄산·차',name:'핫식스',sizes:[['1캔',250,60]],q:'에너지드링크'},
+  {id:'bacchus',k:'caf',cat:'에너지·탄산·차',name:'박카스D',sizes:[['1병',100,30]]},
+  {id:'coke',k:'caf',cat:'에너지·탄산·차',name:'콜라',sizes:[['1캔',355,34],['500ml',500,48]],q:'코카콜라 펩시'},
+  {id:'greentea',k:'caf',cat:'에너지·탄산·차',name:'녹차',sizes:[['티백 1개',200,25]]},
+  {id:'blacktea',k:'caf',cat:'에너지·탄산·차',name:'홍차',sizes:[['티백 1개',200,45]]},
+  {id:'milktea',k:'caf',cat:'에너지·탄산·차',name:'밀크티',sizes:[['Regular',355,70]]},
+  {id:'mixb',k:'alc',cat:'혼합주',name:'혼합주 직접 만들기',builder:true,glasses:['beer','jug','hb','rock','paper','soju','wine','sabal'],q:'섞기 섞어 혼합 폭탄주 소맥 연맥 쏘맥 소토닉 막사 하이볼 에너지밤 직접'},
+  // 예전 조합(목록에는 숨김, 예전 기록·즐겨찾기용)
+  {id:'somaek',k:'alc',cat:'말아 마시기',hidden:true,name:'소맥',mix:{a:{n:'소주',abv:16,liq:'clear'},b:{n:'맥주',abv:4.5,liq:'beer'}},glasses:['beer','jug','paper'],
+    presets:[{t:'소주잔 1잔',ml:SOJU_ML},{t:'소주잔 2잔',ml:SOJU_ML * 2},{t:'로고까지',logo:true},{t:'3 : 7',ratio:0.3}],def:{glass:'beer',base:{ml:SOJU_ML}},q:'소주 맥주 쏘맥'},
+  {id:'yeonmaek',k:'alc',cat:'말아 마시기',hidden:true,name:'연맥',mix:{a:{n:'연태고량주',s:'연태',abv:34,liq:'clear'},b:{n:'맥주',abv:4.5,liq:'beer'}},glasses:['beer','jug'],
+    presets:[{t:'소주잔 반 잔',ml:SOJU_ML / 2},{t:'소주잔 1잔',ml:SOJU_ML},{t:'로고까지',logo:true}],def:{glass:'beer',base:{ml:SOJU_ML / 2}},q:'연태 고량주 맥주'},
+  {id:'energybomb',k:'alc',cat:'말아 마시기',hidden:true,name:'에너지밤',mix:{a:{n:'소주',abv:16,liq:'clear'},b:{n:'에너지드링크',s:'에너지',abv:0,liq:'energy',caf:0.24}},glasses:['beer','paper'],
+    presets:[{t:'소주잔 1잔',ml:SOJU_ML},{t:'소주잔 2잔',ml:SOJU_ML * 2},{t:'로고까지',logo:true}],def:{glass:'beer',base:{ml:SOJU_ML}},q:'핫식스 레드불 몬스터 소주 밤 에너지드링크'},
+  {id:'sotonic',k:'alc',cat:'말아 마시기',hidden:true,name:'소토닉',mix:{a:{n:'소주',abv:16,liq:'clear'},b:{n:'토닉워터',s:'토닉',abv:0,liq:'soda'}},glasses:['hb','beer','paper'],
+    presets:[{t:'소주잔 1잔',ml:SOJU_ML},{t:'소주잔 2잔',ml:SOJU_ML * 2},{t:'3 : 7',ratio:0.3}],def:{glass:'hb',base:{ml:SOJU_ML}},q:'소주 토닉'},
+  {id:'maksa',k:'alc',cat:'말아 마시기',hidden:true,name:'막사',mix:{a:{n:'막걸리',abv:6,liq:'mak'},b:{n:'사이다',abv:0,liq:'soda'}},glasses:['sabal','beer','paper'],
+    presets:[{t:'반반',ratio:0.5},{t:'막걸리 2 : 1',ratio:0.67},{t:'막걸리 1 : 2',ratio:0.33}],def:{glass:'sabal',base:{ratio:0.5}},q:'막걸리 사이다'},
+  {id:'highball',k:'alc',cat:'말아 마시기',hidden:true,name:'하이볼',mix:{a:{n:'위스키',abv:40,liq:'whisky'},b:{n:'탄산수',s:'탄산',abv:0,liq:'soda'}},glasses:['hb','beer','rock'],
+    presets:[{t:'1샷 30ml',ml:30},{t:'1.5샷 45ml',ml:45},{t:'2샷 60ml',ml:60}],def:{glass:'hb',base:{ml:45}},q:'위스키 탄산'},
+  // 소주·맥주
+  {id:'soju',k:'alc',cat:'소주·맥주',name:'소주',abv:16,liq:'clear',glasses:['soju','paper','bot360'],q:'참이슬 처음처럼 진로 새로'},
+  {id:'beer',k:'alc',cat:'소주·맥주',name:'맥주',abv:4.5,liq:'beer',glasses:['beer','jug','can355','can500','bot500'],q:'생맥 카스 테라 켈리'},
+  {id:'fruitsoju',k:'alc',cat:'소주·맥주',name:'과일소주',abv:12,liq:'clear',glasses:['soju','paper','bot360'],q:'자몽 청포도 복숭아'},
+  {id:'makgeolli',k:'alc',cat:'와인·전통주',name:'막걸리',abv:6,liq:'mak',glasses:['sabal','paper','bot750']},
+  {id:'canhb',k:'alc',cat:'소주·맥주',name:'캔 하이볼',abv:7,liq:'soda',glasses:['can350'],q:'편의점 하이볼'},
+  {id:'darkbeer',k:'alc',cat:'소주·맥주',name:'흑맥주',abv:5,liq:'whisky',glasses:['beer','jug','can500','bot500'],q:'스타우트 기네스'},
+  {id:'ipa',k:'alc',cat:'소주·맥주',name:'수제맥주 IPA',abv:6.5,liq:'beer',glasses:['beer','jug','can500'],q:'에일 크래프트'},
+  {id:'lowsoju',k:'alc',cat:'소주·맥주',name:'이슬톡톡',abv:3,liq:'soda',glasses:['can350'],q:'저도주 과일'},
+  {id:'cider',k:'alc',cat:'소주·맥주',name:'사과 사이더',abv:4.5,liq:'beer',glasses:['can355','beer'],q:'애플 사이더'},
+  // 와인·전통주 / 양주·리큐르
+  {id:'wine',k:'alc',cat:'와인·전통주',name:'와인',abv:12.5,liq:'wine',glasses:['wine','paper','bot750']},
+  {id:'whisky',k:'alc',cat:'양주·리큐르',name:'위스키',abv:40,liq:'whisky',glasses:['shot','rock'],q:'양주'},
+  {id:'tequila',k:'alc',cat:'양주·리큐르',name:'데킬라',abv:40,liq:'clear',glasses:['shot'],q:'테킬라 샷'},
+  {id:'yeontae',k:'alc',cat:'양주·리큐르',name:'연태고량주',abv:34,liq:'clear',glasses:['soju','shot'],q:'고량주 중국술'},
+  {id:'sparkling',k:'alc',cat:'와인·전통주',name:'스파클링 와인',abv:11,liq:'soda',glasses:['wine','bot750'],q:'샴페인 프로세코 까바'},
+  {id:'sake',k:'alc',cat:'와인·전통주',name:'사케',abv:15,liq:'clear',glasses:['soju','paper','bot750'],q:'일본 청주 준마이'},
+  {id:'cheongju',k:'alc',cat:'와인·전통주',name:'청주',abv:13,liq:'clear',glasses:['soju','paper','bot300'],q:'청하 백화수복'},
+  {id:'bokbunja',k:'alc',cat:'와인·전통주',name:'복분자주',abv:15,liq:'wine',glasses:['soju','paper','bot360']},
+  {id:'maesil',k:'alc',cat:'와인·전통주',name:'매실주',abv:13,liq:'mak',glasses:['soju','paper','bot360'],q:'매화수 설중매'},
+  {id:'baekse',k:'alc',cat:'와인·전통주',name:'백세주',abv:13,liq:'mak',glasses:['soju','paper','bot360']},
+  {id:'dongdong',k:'alc',cat:'와인·전통주',name:'동동주',abv:7,liq:'mak',glasses:['sabal','paper']},
+  {id:'vodka',k:'alc',cat:'양주·리큐르',name:'보드카',abv:40,liq:'clear',glasses:['shot','rock'],q:'앱솔루트 스미노프'},
+  {id:'gin',k:'alc',cat:'양주·리큐르',name:'진',abv:40,liq:'clear',glasses:['shot','rock'],q:'봄베이 탱커레이 헨드릭스'},
+  {id:'rum',k:'alc',cat:'양주·리큐르',name:'럼',abv:40,liq:'whisky',glasses:['shot','rock'],q:'바카디'},
+  {id:'brandy',k:'alc',cat:'양주·리큐르',name:'브랜디·코냑',abv:40,liq:'whisky',glasses:['rock','shot'],q:'헤네시'},
+  {id:'baijiu',k:'alc',cat:'양주·리큐르',name:'이과두주',abv:56,liq:'clear',glasses:['soju','shot'],q:'고량주 중국술 빼갈'},
+  {id:'jager',k:'alc',cat:'양주·리큐르',name:'예거마이스터',abv:35,liq:'whisky',glasses:['shot','rock'],q:'예거 리큐르'},
+  {id:'baileys',k:'alc',cat:'양주·리큐르',name:'베일리스',abv:17,liq:'cream',glasses:['rock','shot'],q:'크림 리큐르'},
+  {id:'kahluaneat',k:'alc',cat:'양주·리큐르',name:'깔루아',abv:20,liq:'whisky',glasses:['rock','shot'],q:'커피 리큐르 칼루아'},
+  {id:'midori',k:'alc',cat:'양주·리큐르',name:'미도리',abv:20,liq:'green',glasses:['rock','shot'],q:'멜론 리큐르'},
+  {id:'malibu',k:'alc',cat:'양주·리큐르',name:'말리부',abv:21,liq:'clear',glasses:['rock','shot'],q:'코코넛 럼 리큐르'},
+  {id:'peachtree',k:'alc',cat:'양주·리큐르',name:'피치트리',abv:20,liq:'clear',glasses:['rock','shot'],q:'복숭아 리큐르 피치'},
+  {id:'amaretto',k:'alc',cat:'양주·리큐르',name:'아마레또',abv:28,liq:'whisky',glasses:['rock','shot'],q:'디사론노 아몬드 리큐르'},
+  {id:'campari',k:'alc',cat:'양주·리큐르',name:'캄파리',abv:25,liq:'wine',glasses:['rock','shot'],q:'비터 리큐르'},
+  {id:'aperol',k:'alc',cat:'양주·리큐르',name:'아페롤',abv:11,liq:'energy',glasses:['rock','wine'],q:'오렌지 리큐르'},
+  {id:'cointreau',k:'alc',cat:'양주·리큐르',name:'쿠앵트로·트리플 섹',abv:40,liq:'clear',glasses:['shot','rock'],q:'오렌지 리큐르 코앵트로'},
+  // 칵테일 (레시피 고정)
+  {id:'gintonic',k:'alc',cat:'칵테일',name:'진토닉',recipe:[['진',45,40],['토닉워터',120,0]]},
+  {id:'jackcoke',k:'alc',cat:'칵테일',name:'잭콕',recipe:[['위스키',45,40],['콜라',150,0]],caf:14,q:'위스키 콜라'},
+  {id:'mojito',k:'alc',cat:'칵테일',name:'모히또',recipe:[['화이트 럼',45,40],['라임·민트·탄산수',120,0]]},
+  {id:'kahlua',k:'alc',cat:'칵테일',name:'깔루아 밀크',recipe:[['깔루아',45,20],['우유',120,0]],caf:5},
+  {id:'jagerbomb',k:'alc',cat:'칵테일',name:'예거밤',recipe:[['예거마이스터',30,35],['레드불',125,0]],caf:31},
+  {id:'lit',k:'alc',cat:'칵테일',name:'롱아일랜드 아이스티',recipe:[['보드카',15,40],['진',15,40],['화이트 럼',15,40],['데킬라',15,40],['트리플 섹',15,30],['사워 믹스',30,0],['콜라',60,0]],caf:6,q:'롱티'},
+  {id:'margarita',k:'alc',cat:'칵테일',name:'마가리타',recipe:[['데킬라',45,40],['트리플 섹',15,30],['라임 주스',30,0]]},
+  {id:'sunrise',k:'alc',cat:'칵테일',name:'데킬라 선라이즈',recipe:[['데킬라',45,40],['오렌지 주스',120,0],['그레나딘',15,0]],q:'테킬라'},
+  {id:'espmartini',k:'alc',cat:'칵테일',name:'에스프레소 마티니',recipe:[['보드카',45,40],['커피 리큐르',20,20],['에스프레소',30,0]],caf:63},
+  {id:'midorisour',k:'alc',cat:'칵테일',name:'미도리 사워',recipe:[['미도리',45,20],['레몬 주스',30,0],['탄산수',60,0]],q:'멜론'},
+  {id:'baileysmilk',k:'alc',cat:'칵테일',name:'베일리스 밀크',recipe:[['베일리스',45,17],['우유',120,0]]},
+  {id:'fuzzynavel',k:'alc',cat:'칵테일',name:'퍼지 네이블',recipe:[['피치트리',45,20],['오렌지 주스',120,0]],q:'피치 오렌지'},
+  {id:'peachcrush',k:'alc',cat:'칵테일',name:'피치 크러쉬',recipe:[['피치트리',30,20],['크랜베리 주스',60,0],['사워 믹스',30,0]],q:'피치'},
+  {id:'screwdriver',k:'alc',cat:'칵테일',name:'스크루드라이버',recipe:[['보드카',45,40],['오렌지 주스',120,0]]},
+  {id:'sexbeach',k:'alc',cat:'칵테일',name:'섹스 온 더 비치',recipe:[['보드카',40,40],['피치트리',20,20],['오렌지 주스',40,0],['크랜베리 주스',40,0]]},
+  {id:'bluehawaiian',k:'alc',cat:'칵테일',name:'블루 하와이안',recipe:[['화이트 럼',30,40],['블루 큐라소',15,20],['파인애플 주스',90,0],['코코넛 크림',30,0]]},
+  {id:'pinacolada',k:'alc',cat:'칵테일',name:'피나콜라다',recipe:[['화이트 럼',50,40],['코코넛 크림',30,0],['파인애플 주스',90,0]]},
+  {id:'malibupine',k:'alc',cat:'칵테일',name:'말리부 파인',recipe:[['말리부',45,21],['파인애플 주스',120,0]]},
+  {id:'junebug',k:'alc',cat:'칵테일',name:'준벅',recipe:[['미도리',30,20],['말리부',15,21],['바나나 리큐르',15,20],['파인애플 주스',60,0],['사워 믹스',30,0]]},
+  {id:'cosmo',k:'alc',cat:'칵테일',name:'코스모폴리탄',recipe:[['보드카',40,40],['쿠앵트로',15,40],['크랜베리 주스',30,0],['라임 주스',15,0]]},
+  {id:'kamikaze',k:'alc',cat:'칵테일',name:'카미카제',recipe:[['보드카',30,40],['트리플 섹',30,40],['라임 주스',30,0]],q:'샷'},
+  {id:'b52',k:'alc',cat:'칵테일',name:'B-52',recipe:[['깔루아',20,20],['베일리스',20,17],['그랑 마니에',20,40]],caf:3,q:'비52 샷 불붙이는'},
+  {id:'blackrussian',k:'alc',cat:'칵테일',name:'블랙 러시안',recipe:[['보드카',50,40],['깔루아',20,20]],caf:3},
+  {id:'whiterussian',k:'alc',cat:'칵테일',name:'화이트 러시안',recipe:[['보드카',50,40],['깔루아',20,20],['크림',30,0]],caf:3},
+  {id:'moscowmule',k:'alc',cat:'칵테일',name:'모스코 뮬',recipe:[['보드카',45,40],['진저비어',120,0],['라임 주스',10,0]],q:'진저'},
+  {id:'cubalibre',k:'alc',cat:'칵테일',name:'쿠바 리브레',recipe:[['화이트 럼',50,40],['콜라',120,0],['라임 주스',10,0]],caf:11,q:'럼콕 럼콜라'},
+  {id:'daiquiri',k:'alc',cat:'칵테일',name:'다이키리',recipe:[['화이트 럼',60,40],['라임 주스',25,0],['설탕 시럽',15,0]]},
+  {id:'whiskysour',k:'alc',cat:'칵테일',name:'위스키 사워',recipe:[['위스키',45,40],['레몬 주스',30,0],['설탕 시럽',15,0]]},
+  {id:'amarettosour',k:'alc',cat:'칵테일',name:'아마레또 사워',recipe:[['아마레또',45,28],['레몬 주스',30,0],['설탕 시럽',15,0]]},
+  {id:'godfather',k:'alc',cat:'칵테일',name:'갓파더',recipe:[['위스키',35,40],['아마레또',35,28]]},
+  {id:'martini',k:'alc',cat:'칵테일',name:'마티니',recipe:[['진',60,40],['드라이 베르무트',10,18]]},
+  {id:'manhattan',k:'alc',cat:'칵테일',name:'맨해튼',recipe:[['위스키',50,40],['스위트 베르무트',20,16]]},
+  {id:'oldfashioned',k:'alc',cat:'칵테일',name:'올드 패션드',recipe:[['버번 위스키',45,40],['설탕·비터스',10,0]]},
+  {id:'negroni',k:'alc',cat:'칵테일',name:'네그로니',recipe:[['진',30,40],['캄파리',30,25],['스위트 베르무트',30,16]]},
+  {id:'aperolspritz',k:'alc',cat:'칵테일',name:'아페롤 스프리츠',recipe:[['아페롤',60,11],['프로세코',90,11],['탄산수',30,0]]},
+  {id:'ginfizz',k:'alc',cat:'칵테일',name:'진피즈',recipe:[['진',45,40],['레몬 주스',30,0],['설탕 시럽',10,0],['탄산수',60,0]]},
+  {id:'sangria',k:'alc',cat:'칵테일',name:'샹그리아',recipe:[['레드 와인',120,12.5],['브랜디',15,40],['과일·주스',60,0]]},
+];
+/* 브랜드 음료: 각 사 홈페이지 영양성분 공개값 (2026년 11월 수집, 스타벅스는 Tall 기준). [이름, [[옵션, ml, 카페인mg], …]] */
+const BRAND = {"스타벅스":[["골든 만다린 홉 피지오",[["Tall",355,16]]],["글레이즈드 폼 블랙 티",[["Tall",355,80]]],["나이트로 바닐라 크림",[["Tall",355,232]]],["나이트로 콜드 브루",[["Tall",355,245]]],["더블 에스프레소 칩 프라푸치노",[["Tall",355,130]]],["돌체 콜드 브루",[["Tall",355,130]]],["딸기 글레이즈드 크림 프라푸치노",[["Tall",355,5.0]]],["딸기 아사이 레모네이드 스타벅스 리프레셔",[["Tall",355,73]]],["딸기 콜드폼 초콜릿",[["Tall",355,5.0]]],["라벤더 카페 브레베",[["Tall",355,105]]],["리저브 나이트로",[["Tall",355,190]]],["리저브 콜드 브루",[["Tall",355,190]]],["막걸리향 크림 콜드 브루",[["Tall",355,53]]],["말차 글레이즈드 티 라떼",[["Tall",355,65]]],["말차 티라미수 라떼",[["Tall",355,75]]],["말차 폭포 유자 블렌디드",[["Tall",355,65]]],["망고 패션 프루트 블렌디드",[["Tall",355,10]]],["민트 콜드 브루",[["Tall",355,415]]],["밀크카라멜 라떼",[["Tall",355,75]]],["바닐라 라떼",[["Tall",355,75]]],["바닐라 빈 라떼",[["Tall",355,210]]],["바닐라 스타벅스 더블 샷",[["Tall",355,150]]],["바닐라 아인슈페너 콜드 브루",[["Tall",355,134]]],["바닐라 크림 콜드 브루",[["Tall",355,135]]],["번트 카라멜 라떼",[["Tall",355,210]]],["베르가못 제주 말차 크림 프라푸치노",[["Tall",355,30]]],["베르가못 콜드 브루",[["Tall",355,130]]],["복숭아 아이스 티",[["Tall",355,70]]],["복숭아 핫 티",[["Tall",355,70]]],["북한산 레몬 얼 그레이 블렌디드",[["Tall",355,8.0]]],["브루드 커피",[["Tall",355,260]]],["블랙 글레이즈드 라떼",[["Tall",355,75]]],["블랙 글레이즈드 셔벗 플레이트",[["Tall",355,159]]],["블랙&화이트 콜드 브루",[["Tall",355,190]]],["사케라또 비안코 오버 아이스",[["Tall",355,315]]],["사케라또 아포가토",[["Tall",355,210]]],["서울 막걸리향 콜드 브루",[["Tall",355,79]]],["스모크드 콜드 패션드",[["Tall",355,135]]],["스위트 밀크 커피",[["Tall",355,60]]],["스타벅스 1호점 카페 라떼",[["Tall",355,210]]],["스타벅스 1호점 카페 아메리카노",[["Tall",355,210]]],["스타벅스 1호점 크림 라떼",[["Tall",355,210]]],["스타벅스 꿀 호떡 라떼",[["Tall",355,75]]],["스타벅스 돌체 라떼",[["Tall",355,150]]],["스타벅스 에어로카노",[["Tall",355,150]]],["스타벅스 자몽 허니 에어로카노",[["Tall",355,150]]],["스타벅스 클래식 밀크 티",[["Tall",355,170]]],["스타벅스 클래식 밀크 티 보틀",[["Tall",355,155]]],["스타벅스 클래식 밀크티 블렌디드",[["Tall",355,60]]],["스파클링 시트러스 에스프레소",[["Tall",355,105]]],["시그니처 더 블랙 콜드 브루",[["Tall",355,680]]],["시그니처 핫 초콜릿",[["Tall",355,40]]],["아이스 라벤더 카페 브레베",[["Tall",355,105]]],["아이스 말차 글레이즈드 티 라떼",[["Tall",355,60]]],["아이스 말차 티라미수 라떼",[["Tall",355,75]]],["아이스 밀크카라멜 라떼",[["Tall",355,75]]],["아이스 바닐라 라떼",[["Tall",355,75]]],["아이스 바닐라 빈 라떼",[["Tall",355,210]]],["아이스 브루드 커피",[["Tall",355,140]]],["아이스 블랙 글레이즈드 라떼",[["Tall",355,75]]],["아이스 스타벅스 1호점 카페 라떼",[["Tall",355,210]]],["아이스 스타벅스 1호점 카페 아메리카노",[["Tall",355,210]]],["아이스 스타벅스 1호점 크림 라떼",[["Tall",355,210]]],["아이스 스타벅스 꿀 호떡 라떼",[["Tall",355,75]]],["아이스 스타벅스 돌체 라떼",[["Tall",355,150]]],["아이스 스타벅스 클래식 밀크 티",[["Tall",355,65]]],["아이스 시그니처 초콜릿",[["Tall",355,20]]],["아이스 얼 그레이 티",[["Tall",355,50]]],["아이스 우베 말차 라떼",[["Tall",355,40]]],["아이스 우베 코코넛 마키아또",[["Tall",355,105]]],["아이스 유스베리 티",[["Tall",355,20]]],["아이스 의암호의 보랏빛 라벤더 티 라떼",[["Tall",355,13]]],["아이스 인절미 크림 라떼",[["Tall",355,75]]],["아이스 잉글리쉬 브렉퍼스트 티",[["Tall",355,40]]],["아이스 자몽 허니 블랙 티",[["Tall",355,75]]],["아이스 제주 녹차",[["Tall",355,16]]],["아이스 제주 말차 라떼",[["Tall",355,80]]],["아이스 제주팔삭 & 자몽 허니 블랙 티",[["Tall",355,27]]],["아이스 카라멜 마키아또",[["Tall",355,75]]],["아이스 카페 라떼",[["Tall",355,75]]],["아이스 카페 모카",[["Tall",355,95]]],["아이스 카페 아메리카노",[["Tall",355,150]]],["아이스 카푸치노",[["Tall",355,75]]],["아이스 티라미수 초콜릿",[["Tall",355,10]]],["아이스 퓨어 말차",[["Tall",355,60]]],["아이스 퓨어 호지차",[["Tall",355,20]]],["아이스 프렌치 바닐라 말차 라떼",[["Tall",355,40]]],["아이스 플랫 화이트",[["Tall",355,130]]],["아이스 호지 글레이즈드 티 라떼",[["Tall",355,20]]],["아이스 화이트 초콜릿 모카",[["Tall",355,75]]],["얼 그레이 티",[["Tall",355,70]]],["에스프레소",[["Tall",355,75]]],["에스프레소 마키아또",[["Tall",355,75]]],["에스프레소 콘 파나",[["Tall",355,75]]],["에스프레소 프라푸치노",[["Tall",355,120]]],["여수 윤슬 헤이즐넛 콜드 브루",[["Tall",355,53]]],["오트 콜드 브루",[["Tall",355,65]]],["유스베리 티",[["Tall",355,20]]],["유자 말차 V 피지오",[["Tall",355,60]]],["의암호의 보랏빛 라벤더 티 라떼",[["Tall",355,70]]],["인절미 크림 라떼",[["Tall",355,75]]],["잉글리쉬 브렉퍼스트 티",[["Tall",355,70]]],["자몽 허니 블랙 티",[["Tall",355,70]]],["자바 칩 프라푸치노",[["Tall",355,100]]],["제주 녹차",[["Tall",355,16]]],["제주 말차 라떼",[["Tall",355,80]]],["제주 말차 크림 프라푸치노",[["Tall",355,80]]],["제주 비자림 리저브 에스프레소 라떼",[["Tall",355,210]]],["제주 비자림 리저브 콜드 브루",[["Tall",355,250]]],["제주팔삭 & 자몽 허니 블랙 티",[["Tall",355,70]]],["초콜릿 크림 칩 프라푸치노",[["Tall",355,10]]],["카라멜 마키아또",[["Tall",355,75]]],["카라멜 프라푸치노",[["Tall",355,85]]],["카페 라떼",[["Tall",355,75]]],["카페 모카",[["Tall",355,95]]],["카페 아메리카노",[["Tall",355,150]]],["카푸치노",[["Tall",355,75]]],["커피 스타벅스 더블 샷",[["Tall",355,150]]],["코르타도",[["Tall",355,225]]],["콜드 브루",[["Tall",355,360]]],["콜드 브루 몰트",[["Tall",355,190]]],["콜드 브루 플로트",[["Tall",355,190]]],["쿨 라임 피지오",[["Tall",355,100]]],["클래식 민트 모카",[["Tall",355,210]]],["클래식 아포가토",[["Tall",355,210]]],["티라미수 초콜릿",[["Tall",355,10]]],["퓨어 말차",[["Tall",355,75]]],["퓨어 호지차",[["Tall",355,25]]],["프렌치 바닐라 말차 라떼",[["Tall",355,40]]],["프렌치 바닐라 콜드 브루",[["Tall",355,65]]],["플랫 화이트",[["Tall",355,130]]],["피넛 크림 쿠키 아인슈페너",[["Tall",355,75]]],["피치 딸기 피지오",[["Tall",355,30]]],["핑크 피치 리프레셔",[["Tall",355,30]]],["헤이즐넛 스타벅스 더블 샷",[["Tall",355,150]]],["호지 글레이즈드 티 라떼",[["Tall",355,20]]],["화이트 초콜릿 모카",[["Tall",355,75]]]],"메가커피":[["꿀아메리카노",[["ICE",710,236],["HOT",591,236]]],["녹차",[["ICE",710,54],["HOT",591,31]]],["녹차라떼",[["ICE",591,94],["HOT",591,83]]],["녹차프라페",[["ICE",591,158]]],["디카페인 꿀아메리카노",[["ICE",710,7.8],["HOT",591,7.8]]],["디카페인 라이트 바닐라 아몬드라떼",[["1잔",591,7.8]]],["디카페인 메가리카노",[["ICE",946,12]]],["디카페인 바닐라 아메리카노",[["ICE",710,7.8],["HOT",591,7.8]]],["디카페인 바닐라라떼",[["ICE",591,7.8],["HOT",591,7.8]]],["디카페인 아메리카노",[["ICE",710,7.8],["HOT",591,7.8]]],["디카페인 에스프레소",[["HOT",59,3.9]]],["디카페인 연유라떼",[["ICE",591,7.8],["HOT",591,7.8]]],["디카페인 왕메가카페라떼",[["ICE",946,12]]],["디카페인 왕메가헛개리카노",[["ICE",946,12]]],["디카페인 카라멜마끼아또",[["ICE",591,7.8],["HOT",591,7.8]]],["디카페인 카페라떼",[["ICE",591,7.8],["HOT",591,7.8]]],["디카페인 카페모카",[["ICE",591,9.7],["HOT",591,9.7]]],["디카페인 카푸치노",[["ICE",591,7.8],["HOT",591,7.8]]],["디카페인 헛개리카노",[["ICE ICE",710,7.8],["HOT HOT",591,7.8]]],["디카페인 헤이즐넛 라떼",[["ICE",591,7.8],["HOT",591,7.8]]],["디카페인 헤이즐넛 아메리카노",[["ICE",710,7.8],["HOT",591,7.8]]],["딥 초코 체리 프라페",[["ICE",591,26]]],["라이트 바닐라 아몬드라떼",[["ICE",591,236]]],["로얄밀크티라떼",[["ICE",591,75],["HOT",591,75]]],["리얼초코프라페",[["ICE",591,3.5]]],["메가리카노",[["ICE",946,354]]],["바닐라라떼",[["ICE",591,236],["HOT",591,236]]],["바닐라아메리카노",[["ICE",710,236],["HOT",591,236]]],["복숭아아이스티",[["ICE",710,24]]],["아메리카노",[["ICE",710,236],["HOT",591,236]]],["얼그레이",[["ICE",710,67],["HOT",591,50]]],["에스프레소",[["HOT",59,118]]],["에스프레소 도피오",[["HOT",147,236]]],["연유라떼",[["ICE",591,236],["HOT",591,236]]],["왕메가아이스티",[["ICE",946,41]]],["왕메가초코",[["ICE",946,4.3]]],["왕메가카페라떼",[["ICE",946,354]]],["왕메가헛개리카노",[["ICE",946,354]]],["왕할메가커피",[["ICE",946,280]]],["음, 괜찮은 휴식이군 블레이드 초코크림커피",[["ICE",591,243]]],["저당 골든애플 블랙티",[["ICE",710,68]]],["제로 복숭아 아이스티",[["ICE",710,13]]],["쫀득 모찌 밀크티",[["ICE",591,14]]],["체리콜라",[["ICE",710,24]]],["초코젤라또 말차라떼",[["ICE",591,214]]],["카라멜마끼아또",[["ICE",591,236],["HOT",591,236]]],["카페라떼",[["ICE",591,236],["HOT",591,236]]],["카페모카",[["ICE",591,238],["HOT",591,238]]],["카푸치노",[["ICE",591,236],["HOT",591,236]]],["커피프라페",[["ICE",591,236]]],["코코넛 커피 스무디",[["ICE",591,236]]],["콜드브루디카페인",[["ICE",591,6.5],["HOT",591,8.7]]],["콜드브루디카페인라떼",[["ICE",591,6.5],["HOT",591,8.7]]],["콜드브루라떼",[["ICE",591,158],["HOT",591,210]]],["콜드브루오리지널",[["ICE",591,158],["HOT",591,210]]],["큐브라떼",[["ICE",591,393]]],["토피넛라떼",[["ICE",591,49],["HOT",591,49]]],["하우스밀크 라떼",[["ICE",591,118]]],["할메가미숫커피",[["ICE",591,176]]],["할메가커피",[["ICE",591,176]]],["핫초코",[["HOT",591,4.5]]],["허니자몽블랙티",[["ICE",710,37],["HOT",591,37]]],["헛개리카노",[["ICE ICE",710,236]]],["헤이즐넛라떼",[["ICE",591,236],["HOT",591,236]]],["헤이즐넛아메리카노",[["ICE",710,236],["HOT",591,236]]],["흑당밀크티라떼",[["ICE",591,8.1]]],["흑당버블밀크티라떼",[["ICE",591,14]]]],"컴포즈커피":[["그린티라떼",[["ICE",591,113],["HOT",591,113]]],["그린티프라페",[["1잔",591,196]]],["꿀아메리카노",[["ICE",591,186],["HOT",591,186]]],["너티크림라떼",[["ICE",414,124]]],["달고나라떼",[["ICE",591,186]]],["더블초코라떼",[["ICE",591,9.1],["HOT",591,11]]],["돌체라떼",[["ICE",591,248],["HOT",591,248]]],["디카페인 돌체라떼",[["ICE",591,12],["HOT",591,12]]],["디카페인 바닐라라떼",[["ICE",591,12],["HOT",591,12]]],["디카페인 아메리카노",[["ICE",591,9.2],["HOT",591,9.2]]],["디카페인 아이스티",[["ICE",591,0.1]]],["디카페인 제로슈가 제로칼로리 아이스티",[["ICE",591,0.1]]],["디카페인 카페라떼",[["ICE",591,12],["HOT",591,12]]],["디카페인 헤이즐넛라떼",[["ICE",591,12],["HOT",591,12]]],["디카페인콜드브루",[["ICE",591,8.5],["HOT",591,8.5]]],["디카페인콜드브루라떼",[["ICE",591,8.5],["HOT",591,8.5]]],["딥라떼",[["ICE",414,124],["HOT",591,186]]],["리얼초코자바칩프라페",[["1잔",591,14]]],["매샷추",[["ICE",591,124]]],["모카자바칩프라페",[["1잔",591,200]]],["밀크티",[["ICE",591,124],["HOT",591,124]]],["바닐라라떼",[["ICE",591,248],["HOT",591,248]]],["바닐라크림라떼",[["ICE",414,125]]],["블랙퍼스트",[["ICE",591,28],["HOT",591,28]]],["빅포즈 돌체라떼",[["ICE",946,495]]],["빅포즈 디카페인 아메리카노",[["ICE",946,18]]],["빅포즈 디카페인 아이스티",[["ICE",946,0.1]]],["빅포즈 디카페인 제로슈가 제로칼로리 아이스티",[["ICE",946,0.1]]],["빅포즈 디카페인라떼",[["ICE",946,24]]],["빅포즈 바닐라라떼",[["ICE",946,495]]],["빅포즈 아망추",[["ICE",946,23]]],["빅포즈 아메리카노",[["ICE",946,372]]],["빅포즈 아샷추",[["ICE",946,209]]],["빅포즈 아이스티",[["ICE",946,23]]],["빅포즈 제로슈가 제로칼로리 아이스티",[["ICE",946,9.8]]],["빅포즈 카페라떼",[["ICE",946,495]]],["빅포즈 헤이즐넛라떼",[["ICE",946,495]]],["생초콜릿라떼",[["ICE",591,16]]],["솔티드 카라멜 아이스크림 라떼",[["1잔",414,186]]],["슈 클라우드 라떼",[["ICE",414,124],["HOT",591,186]]],["아망추",[["ICE",591,16]]],["아메리카노",[["ICE",591,186],["HOT",591,186]]],["아샷추",[["ICE",591,201]]],["아이스크림 모카",[["1잔",414,188]]],["아이스크림 자바칩",[["1잔",414,9.5]]],["아이스크림 카페라떼",[["1잔",414,186]]],["아이스티",[["ICE",591,16],["HOT",591,16]]],["아포가토",[["1잔",296,124]]],["얼그레이",[["ICE",591,27],["HOT",591,27]]],["에스프레소",[["1잔",45,186]]],["에어리 아메리카노",[["1잔",591,186]]],["올데이 오트",[["ICE",591,9.2],["HOT",591,9.2]]],["자몽허니블랙티",[["ICE",591,28],["HOT",591,28]]],["제로슈가 제로칼로리 아이스티",[["ICE",591,6.5]]],["쫀득카노",[["1잔",591,186]]],["초코치케 소프트",[["1잔",296,3.1]]],["치즈 딥라떼",[["ICE",414,124],["HOT",591,124]]],["카페라떼",[["ICE",591,248],["HOT",591,248]]],["카페모카",[["ICE",591,254],["HOT",591,254]]],["카푸치노",[["HOT",591,248]]],["캬라멜마끼아또",[["ICE",591,248],["HOT",591,248]]],["커피 밀크쉐이크",[["1잔",591,186]]],["커피 클라우드 라떼",[["ICE",414,153],["HOT",591,230]]],["커피엔 역시 커피빵",[["1잔",591,186]]],["컴포즈믹스커피",[["ICE",591,216]]],["콜드브루",[["ICE",591,181],["HOT",591,181]]],["콜드브루라떼",[["ICE",591,181],["HOT",591,181]]],["헤이즐넛라떼",[["ICE",591,248],["HOT",591,248]]],["헨젤과 프레첼",[["1잔",591,16]]],["흑당 버블 카페라떼",[["ICE",591,124]]],["흑당 카페라떼",[["ICE",591,124]]]],"빽다방":[["달달연유라떼",[["ICE",660,164],["HOT",510,187]]],["더블에스프레소",[["1잔",60,269]]],["디카페인 꿀아메리카노",[["ICE",660,0.7],["HOT",510,0.7]]],["디카페인 더블에스프레소",[["1잔",60,1.9]]],["디카페인 빽사이즈 아이스티샷 망고추가",[["1잔",990,37]]],["디카페인 빽사이즈 아이스티샷추가",[["ICE",990,38]]],["디카페인 아이스티샷 망고추가(아샷망추)",[["1잔",660,26]]],["디카페인 아이스티샷추가(아샷추)",[["1잔",660,28]]],["디카페인 헤이즐넛 아메리카노",[["ICE",660,0.7],["HOT",510,0.8]]],["디카페인 헤이즐넛라떼",[["ICE",660,0.7],["HOT",510,0.8]]],["레몬얼그레이티",[["ICE",660,72],["HOT",510,72]]],["말차라떼",[["ICE",660,104],["HOT",510,130]]],["말차빽스치노(BASIC)",[["1잔",660,250]]],["말차빽스치노(SOFT)",[["1잔",660,260]]],["민트초코라떼",[["ICE",660,36],["HOT",510,45]]],["민트초코빽스치노(BASIC)",[["1잔",660,48]]],["민트초코빽스치노(SOFT)",[["1잔",660,48]]],["밀크티",[["ICE",660,157],["HOT",510,153]]],["바닐라라떼",[["ICE",660,156],["HOT",510,168]]],["복숭아 아이스티",[["1잔",660,20]]],["빽사이즈 달콤아이스티",[["ICE",990,32]]],["빽사이즈 아망추",[["1잔",990,26]]],["빽사이즈 아메리카노",[["ICE",990,293]]],["빽사이즈 아이스티샷 망고추가",[["ICE",990,177]]],["빽사이즈 아이스티샷추가",[["ICE",990,179]]],["빽사이즈 원조커피",[["ICE",990,456]]],["빽사이즈 초코라떼",[["ICE",990,23]]],["빽사이즈 카페라떼",[["ICE",990,286]]],["아망추 (아이스티 + 망고추가)",[["1잔",660,15]]],["아메리카노",[["ICE",660,166],["HOT",510,197]]],["아이스크림바닐라라떼",[["ICE",660,172]]],["아이스크림카페라떼",[["ICE",660,176]]],["아이스크림카페모카",[["ICE",660,309]]],["아이스티샷 망고추가(아샷망추)",[["1잔",660,106]]],["아이스티샷추가(아샷추)",[["1잔",660,100]]],["아임파인민트티",[["ICE",660,4.0],["HOT",510,4.0]]],["에어폼 아메리카노",[["ICE",660,293]]],["오렌지자몽블랙티",[["ICE",660,90],["HOT",510,90]]],["우롱티",[["ICE",660,67],["HOT",510,92]]],["원조커피",[["ICE",660,346],["HOT",510,345]]],["초코라떼",[["ICE",660,16],["HOT",510,16]]],["초코바나나빽스치노(SOFT)",[["1잔",660,24]]],["카라멜마키아또",[["ICE",660,171],["HOT",510,165]]],["카페라떼",[["ICE",660,163],["HOT",510,152]]],["카페모카",[["ICE",660,270],["HOT",510,299]]],["콜드브루",[["ICE",660,178]]],["콜드브루 연유라떼",[["ICE",660,188]]],["콜드브루 흑당라떼",[["ICE",660,195]]],["콜드브루라떼",[["ICE",660,171]]],["토피넛라떼",[["ICE",660,54],["HOT",510,45]]],["퐁당치노(원조커피)",[["1잔",660,189]]],["피치우롱스위티",[["ICE",660,71],["HOT",510,65]]],["흑당버블 밀크티",[["ICE",660,77]]],["흑당버블 카페라떼",[["ICE",660,76]]]],"이디야":[["가나 시그니처 초콜릿",[["ICE L",520,6.0],["ICE EX",670,9.0],["HOT L",520,6.0],["HOT EX",650,9.0]]],["가나 초코 크림 오트",[["ICE L",520,12],["ICE EX",670,15],["HOT L",520,12],["HOT EX",650,15]]],["구아바 자스민 에이드",[["ICE L",520,8.0],["ICE EX",670,15]]],["꿀화이트 아메리카노",[["ICE L",520,202],["ICE EX",670,303]]],["넛츠 크림 라떼",[["ICE L",520,207],["ICE EX",670,310]]],["달달커피",[["ICE L",520,108],["ICE EX",670,162],["HOT L",520,108],["HOT EX",650,162]]],["더블초코 아이스크림 파르페",[["1잔",520,28]]],["딸기 초코 라떼",[["ICE L",520,22],["ICE EX",670,43]]],["레몬 아이스티",[["L",520,31],["EX",670,41]]],["로열 밀크티",[["ICE L",520,119],["ICE EX",670,178],["HOT L",520,119],["HOT EX",650,178]]],["말차 초코 쉐이크",[["L",520,79],["EX",670,117]]],["말차라떼",[["ICE L",520,77],["ICE EX",670,115],["HOT L",520,77],["HOT EX",650,115]]],["말차초코라떼",[["ICE L",520,98],["ICE EX",670,158]]],["말차폼 자스민티",[["ICE L",520,52],["ICE EX",670,59]]],["민트 모카",[["ICE L",520,207],["ICE EX",670,311],["HOT L",520,207],["HOT EX",650,311]]],["민트 초콜릿",[["ICE L",520,5.0],["ICE EX",670,8.0],["HOT L",520,5.0],["HOT EX",650,8.0]]],["민트 초콜릿칩 플랫치노",[["L",520,22],["EX",670,27]]],["바닐라 라떼",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["복숭아 아이스티",[["L",520,23],["EX",670,30]]],["시그니처 라떼",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["아망추 복숭아",[["L",520,23],["EX",670,30]]],["아샷추 복숭아",[["L",520,124],["EX",670,109]]],["아이스크림 가나 초코라떼",[["L",520,7.0]]],["아이스크림 카페라떼",[["L",520,202]]],["얼그레이",[["ICE L",520,33],["ICE EX",670,67],["HOT L",520,33],["HOT EX",650,67]]],["에스프레소 쉐이크",[["L",520,202],["EX",670,303]]],["연유 카페 라떼",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["연유 콜드브루",[["L",520,181],["EX",670,272]]],["오트 커피",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["오트 콜드브루",[["ICE L",520,181],["ICE EX",670,272]]],["제로슈가 달달커피",[["ICE L",520,47],["ICE EX",670,70],["HOT L",520,47],["HOT EX",650,70]]],["제로슈가 아샷추 복숭아",[["ICE L",520,129],["ICE EX",670,143]]],["제로슈가 아이스티 복숭아",[["ICE L",520,28],["ICE EX",670,42]]],["초콜릿",[["ICE L",520,44],["ICE EX",670,66],["HOT L",520,44],["HOT EX",650,66]]],["초콜릿 칩 플랫치노",[["L",520,99],["EX",670,143]]],["카라멜 마끼아또",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["카페 라떼",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["카페 모카",[["ICE L",520,245],["ICE EX",670,368],["HOT L",520,245],["HOT EX",650,368]]],["카페 아메리카노",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["카푸치노",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["컵 두초빙",[["1잔",520,22]]],["콜드브루",[["L",520,181],["EX",670,272]]],["콜드브루 라떼",[["L",520,181],["EX",670,272]]],["토피넛 라떼",[["ICE L",520,30],["ICE EX",670,44],["HOT L",520,30],["HOT EX",650,44]]],["토피넛 플랫치노",[["L",520,59],["EX",670,89]]],["헤이즐넛 아메리카노",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["화이트 초콜릿 모카",[["ICE L",520,202],["ICE EX",670,303],["HOT L",520,202],["HOT EX",650,303]]],["흑당 콜드브루",[["L",520,181],["EX",670,272]]]]};
+const BRANDS = Object.keys(BRAND), BSHORT = {'스타벅스':'sb', '메가커피':'mega', '컴포즈커피':'cps', '빽다방':'paik', '이디야':'ediya'};
+const SHOTABLE = /아메리카노|라떼|라테|카푸치노|마끼아또|마키아또|모카|콜드 ?브루|에스프레소|플랫 ?화이트|아인슈페너|커피/;
+BRANDS.forEach(b => BRAND[b].forEach(([name, sizes]) => DB.push({id:(BSHORT[b] || b) + ':' + name, k:'caf', cat:b, brand:b, name, sizes,
+  shot:SHOTABLE.test(name) && !/디카페인/.test(name) ? 75 : 0, q:b === '스타벅스' ? '스벅' : ''})));
+const BYID = Object.fromEntries(DB.map(d => [d.id, d]));
+const FB = {
+  caf: [['ok','괜찮았어요'],['jitter','두근거리거나 불안했어요'],['sleep','잠을 설쳤어요'],['stomach','속이 쓰렸어요']],
+  alc: [['ok','멀쩡했어요'],['mild','숙취가 조금 있었어요'],['bad','숙취가 심했어요'],['blackout','기억이 끊긴 부분이 있어요']],
+};
+const CONDS = {insomnia:'불면이 잦음', heart:'두근거림이 잦음', stomach:'위염·역류성 식도염', anxiety:'불안 증상'};
+const COND_Q = {insomnia:'잠들기 어려운 날이 많아요', heart:'심장이 자주 두근거려요', stomach:'위염이나 역류성 식도염이 있어요', anxiety:'불안하거나 긴장을 자주 느껴요'};
+
+/* ---------- 저장 ---------- */
+let storageOK = true;
+function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { storageOK = false; return null; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { storageOK = false; } }
+const fresh = () => ({profile:null, records:[], feedback:[], favs:[], kc:1, ka:1});
+const S = Object.assign(fresh(), load() || {});
+
+/* ---------- 유틸 ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const hm = t => { const d = new Date(t); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const dayKey = t => { const d = new Date(t - 5 * H); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const dayStart = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d, 5).getTime(); };
+const fmt1 = n => String(Math.round(n * 10) / 10);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+const sum = (arr, k) => arr.reduce((a, r) => a + (r[k] || 0), 0);
+const recsOn = (k, recs = S.records) => recs.filter(r => dayKey(r.t) === k);
+const halfFloor = x => Math.floor(x * 2) / 2;
+const PARSE = v => v === 'true' ? true : v === 'false' ? false : /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : v;
+const WD = ['일','월','화','수','목','금','토'];
+const SEV = {danger:2, warn:1};
+const bySev = (a, b) => SEV[b.lv] - SEV[a.lv];
+function dayLabel(k) {
+  const diff = Math.round((dayStart(dayKey(Date.now())) - dayStart(k)) / DAY);
+  if (diff === 0) return '오늘'; if (diff === 1) return '어제'; if (diff === 2) return '그제';
+  const d = new Date(dayStart(k)); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+}
+function timeLabel(t) {
+  const d = new Date(t), h = d.getHours(), m = d.getMinutes();
+  const p = h === 0 ? '밤' : h < 6 ? '새벽' : h < 12 ? '오전' : h < 18 ? '오후' : h < 21 ? '저녁' : '밤';
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  const tmr = t > Date.now() && d.toDateString() !== new Date().toDateString() && h >= 6;
+  return `${tmr ? '내일 ' : ''}${p} ${hh}시${m ? ` ${m}분` : ''}`;
+}
+const sv = (d, s = 24, w = 2) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const I = {
+  back: sv('<path d="M15 5l-7 7 7 7"/>', 26, 2.2),
+  x: sv('<path d="M6 6l12 12M18 6 6 18"/>', 24, 2.2),
+  xs: sv('<path d="M7 7l10 10M17 7 7 17"/>', 18, 2.2),
+  chev: sv('<path d="M9 6l6 6-6 6"/>', 18, 2.2),
+  cup: sv('<path d="M5 8h12v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M9 3.5v2M13 3.5v2"/>', 28, 1.9),
+  glass: sv('<path d="M6 4h12l-1.7 15.1a1 1 0 0 1-1 .9H8.7a1 1 0 0 1-1-.9z"/><path d="M6.7 10h10.6"/>', 28, 1.9),
+  check: sv('<path d="M6 12.5l4 4L18 8.5"/>', 16, 3),
+  done: sv('<path class="draw" d="M5 12.5l4.5 4.5L19 7.5"/>', 38, 2.6),
+  camera: sv('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>', 20),
+  search: sv('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', 20),
+  alert: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3v.2"/>', 20, 2.2),
+  chat: sv('<path d="M5 5h14v10H10l-5 4z"/><path d="M9 9.5h6M9 12h3.5"/>', 24),
+  leaf: sv('<path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14z"/><path d="M5 19l7-7"/>', 36, 2.2),
+  star: sv('<path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/>', 24, 1.9),
+  starOn: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z" fill="#F5B400" stroke="#F5B400" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+  clock: sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', 16, 2),
+};
+
+/* ---------- 내 기준 계산 (내부 모델 · 화면에는 식을 보여 주지 않음) ----------
+   근거 요약 (자세한 건 계산모델 문서):
+   - 카페인 상한: 식약처(성인 400mg, 임신 300mg, 청소년 2.5mg/kg), EFSA 2015(1회 200mg≈3mg/kg)
+   - 반감기: 흡연 시 짧아지고(Parsons 1978), 경구피임약·임신 시 길어짐(Grzegorzewski 2022 리뷰)
+   - 잠들기 전: 커피 107mg은 취침 8.8시간 전까지(Gardiner 2023 메타분석) → 잘 때 남는 양 기준 약 35mg
+   - 혈중알코올: Watson 1980 체수분(키·몸무게·나이·성별) + 1차 흡수, 안주가 있으면 흡수 느리고 최고치 낮음(Jones 1997),
+     분해 0.015%/h(Jones 2010 평균)
+   - 홍조 설문 '가끔 이상' → ALDH2 비활성 가능성 높음(Yokoyama, 민감도 96%)
+   - 피드백: (마신 양 ÷ 기준, 다음 날 몸 상태)로 로지스틱 위험 곡선의 문턱값을 사후 최빈값으로 추정 */
+const THIS_YEAR = new Date().getFullYear();
+const ageOf = p => THIS_YEAR - (p.birth || THIS_YEAR - 22);
+function normProfile(d) {
+  const sex = d.sex || 'x', weight = Number(d.weight) || 62;
+  const height = Number(d.height) || (sex === 'm' ? 174 : sex === 'f' ? 161 : 167);
+  const birth = Number(d.birth) || (THIS_YEAR - (d.adult === false ? 17 : 22)), adult = THIS_YEAR - birth >= 19;
+  return {weight, height, birth, sex, adult, pregnant:sex !== 'm' && d.pregnant === true, cafSens:d.cafSens || 'mid', bed:d.bed || '01:00',
+    conds:[...(d.conds || [])], smoke:d.smoke || 'none', meds:[...(d.meds || [])], flush:adult ? (d.flush || 'none') : 'none'};
+}
+const SENS_K = {low:1, mid:0.92, high:0.72}, COND_K = {insomnia:0.88, heart:0.85, anxiety:0.85, stomach:0.92};
+const SEV_Y = {caf:{ok:0, jitter:1, sleep:0.8, stomach:0.6}, alc:{ok:0, mild:0.5, bad:1, blackout:1}};
+const LCACHE = {};
+function learn(fb, kind, base) {
+  const obs = (fb || []).filter(f => f.kind === kind && f.amt > 0 && SEV_Y[kind][f.ans] != null);
+  if (!obs.length) return {f:1, n:0};
+  const key = kind + base.toFixed(2) + obs.map(o => o.ans + o.amt).join(); if (LCACHE[key]) return LCACHE[key];
+  const K = 5, n = obs.length; let best = 1.25, bv = -Infinity;
+  for (let th = 0.3; th <= 2.2; th += 0.005) {
+    let v = -Math.pow(th - 1.25, 2) / 0.08;
+    obs.forEach((o, i) => {
+      const w = Math.pow(0.85, n - 1 - i) * (o.ans === 'blackout' ? 2 : 1), y = SEV_Y[kind][o.ans], z = K * (o.amt / base - th);
+      v += w * (y * -Math.log1p(Math.exp(-z)) + (1 - y) * -Math.log1p(Math.exp(z)));
+    });
+    if (v > bv) { bv = v; best = th; }
+  }
+  return (LCACHE[key] = {f:clamp(best - Math.log(4) / K, 0.5, 1), n});
+}
+function cafHalf(p) {
+  let h = 5; if (p.smoke === 'daily') h *= 0.6; else if (p.smoke === 'some') h *= 0.8;
+  if (p.meds.includes('oc')) h *= 1.6; if (p.pregnant) h *= 1.8;
+  return clamp(h, 2.5, 12);
+}
+function cafInfo(p = S.profile, fb = S.feedback) {
+  const pub = !p.adult ? 2.5 * p.weight : p.pregnant ? 300 : Math.min(400, 5.7 * p.weight);
+  let k = SENS_K[p.cafSens] || 0.92; p.conds.forEach(c => { k *= COND_K[c] || 0.9; }); if (p.meds.includes('adhd')) k *= 0.8; k = Math.max(k, 0.45);
+  const L = learn(fb, 'caf', pub * k), limit = Math.max(5, Math.round(pub * k * L.f / 5) * 5);
+  const tags = ['몸무게', ...(p.adult ? [] : ['청소년 기준']), ...(p.pregnant ? ['임신·수유'] : []), '카페인 민감도', ...p.conds.map(c => CONDS[c]),
+    ...(p.smoke !== 'none' ? ['흡연'] : []), ...(p.meds.length ? ['복용 중인 약'] : []), '잠드는 시간', ...(L.n ? [`피드백 ${L.n}번`] : [])];
+  return {limit, pub, score:Math.round(limit / pub * 100), tags, half:cafHalf(p), bedR:35 * ({low:1.4, mid:1, high:0.7}[p.cafSens] || 1), single:Math.min(200, 3 * p.weight) * k, n:L.n};
+}
+const tbw = p => p.sex === 'm' ? 2.447 - 0.09516 * ageOf(p) + 0.1074 * p.height + 0.3362 * p.weight : -2.097 + 0.1069 * p.height + 0.2466 * p.weight;
+function alcInfo(p = S.profile, fb = S.feedback) {
+  if (!p.adult) return {limit:0, disabled:true, tags:[], score:0};
+  const male = p.sex === 'm', pub = male ? 40 : 20, body = clamp(tbw(p) / (male ? 42 : 29), 0.6, 1);
+  const fl = {often:0.5, some:0.75, none:1}[p.flush] ?? 1, md = p.meds.includes('psy') ? 0.6 : p.meds.includes('adhd') ? 0.85 : 1;
+  const k = body * fl * md, L = learn(fb, 'alc', pub * k), limit = Math.max(1, Math.round(pub * k * L.f * 2) / 2);
+  const tags = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적 기준'] : []), ...(fl < 1 ? ['얼굴 빨개짐'] : []), ...(md < 1 ? ['복용 중인 약'] : []), ...(L.n ? [`피드백 ${L.n}번`] : [])];
+  return {limit, pub, score:Math.round(limit / pub * 100), tags, binge:male ? 47 : 33, n:L.n};
+}
+
+/* ---------- 체내 카페인 / 혈중알코올 ---------- */
+const KA_CAF = 4;   // 흡수 속도(/h): 30~60분에 최고치
+function cafBody(T, recs = S.records) {
+  const ke = Math.LN2 / cafHalf(S.profile);
+  return recs.reduce((a, r) => {
+    if (!(r.caf > 0) || r.t > T || T - r.t > 48 * H) return a;
+    const tau = (T - r.t) / H; return a + r.caf * KA_CAF / (KA_CAF - ke) * (Math.exp(-ke * tau) - Math.exp(-KA_CAF * tau));
+  }, 0);
+}
+function nextBed(now) {
+  const [h, m] = (S.profile.bed || '01:00').split(':').map(Number);
+  const d = new Date(now); d.setHours(h, m, 0, 0);
+  let t = d.getTime(); if (t <= now) t += DAY; return t;
+}
+function cafCutoff(now) {   // 아메리카노 한 잔을 마셔도 잘 때 기준 아래로 남는 마지막 시각
+  const ci = cafInfo(), bed = nextBed(now), room = ci.bedR - cafBody(bed);
+  if (room <= 0) return null;
+  return bed - ci.half * Math.log2(Math.max(1, AME_MG / room)) * H;
+}
+function bacState(now, recs = S.records) {
+  const W = tbw(S.profile), list = recs.filter(x => x.alc > 0 && x.t <= now + MIN && now - x.t < 24 * H).sort((a, b) => a.t - b.t);
+  if (!list.length) return {now:0, ahead:0, soberAt:null, any:false, series:[]};
+  const STEP = 5 * MIN, last = list[list.length - 1].t;
+  const ab = (x, tt) => { const tau = Math.max(0, (tt - x.t) / H), food = x.food !== false; return x.alc * (food ? 0.8 : 1) * (1 - Math.exp(-(food ? 1.5 : 4) * tau)); };
+  let t = list[0].t, bac = 0, cur = 0, ahead = 0, sober = null; const series = [[t, 0]];
+  while (t < now + 24 * H) {
+    const t2 = t + STEP; let add = 0;
+    for (const x of list) add += ab(x, t2) - ab(x, t);
+    bac = Math.max(0, bac + 0.08 * add / W - BETA * STEP / H);
+    series.push([t2, bac]);
+    if (t2 <= now) cur = bac; else { ahead = Math.max(ahead, bac); if (t2 > last + 2 * H && bac <= 0) { sober = t2; break; } }
+    t = t2;
+  }
+  ahead = Math.max(ahead, cur);
+  return {now:cur, ahead, soberAt:(ahead > 0 ? sober : null), any:true, series};
+}
+
+/* ---------- 오늘 상태 + 경고 ---------- */
+function status(recs = S.records, now = Date.now()) {
+  const key = dayKey(now), today = recs.filter(r => dayKey(r.t) === key).sort((a, b) => b.t - a.t);
+  const p = S.profile, ci = cafInfo(), ai = alcInfo();
+  const caf = sum(today, 'caf'), alc = sum(today, 'alc');
+  const bed = nextBed(now), body = cafBody(now, recs), atBed = cafBody(bed, recs);
+  const bac = ai.disabled ? {now:0, ahead:0, soberAt:null, any:false, series:[]} : bacState(now, recs);
+  const win = (r, w) => r.t <= now + MIN && now - r.t < w;
+  const recentCaf = recs.filter(r => r.caf > 0 && win(r, 3 * H)).reduce((a, r) => a + r.caf, 0);
+  const recentAlc = recs.filter(r => r.alc > 0 && win(r, 3 * H)).reduce((a, r) => a + r.alc, 0);
+  const hourCaf = recs.filter(r => r.caf > 0 && win(r, H)).reduce((a, r) => a + r.caf, 0);
+  const A = [];
+  if (caf > ci.limit) A.push({id:'caf-over', lv:'danger', text:`오늘 카페인 권장량을 넘었어요 (${Math.round(caf)} / ${ci.limit}mg)`});
+  else if (caf >= ci.limit * 0.8) A.push({id:'caf-80', lv:'warn', text:`카페인 권장량의 ${Math.round(caf / ci.limit * 100)}%를 마셨어요`});
+  if (hourCaf > ci.single) A.push({id:'caf-single', lv:'warn', text:`한 시간 안에 카페인 ${Math.round(hourCaf)}mg이에요. 한 번에 마시기엔 많아서 두근거릴 수 있어요`});
+  if (atBed >= ci.bedR) A.push({id:'bed', lv:'warn', text:`${timeLabel(bed)}에 잘 때 카페인이 ${Math.round(atBed)}mg 남아서 잠이 얕아질 수 있어요`});
+  if (!ai.disabled) {
+    if (alc >= ai.binge) A.push({id:'binge', lv:'danger', text:`오늘 마신 양이 폭음 기준(한 번에 소주 약 ${Math.round(ai.binge / SOJU_G)}잔)을 넘었어요`});
+    else if (alc > ai.limit) A.push({id:'alc-over', lv:'danger', text:`오늘 알코올 권장량을 넘었어요 (${fmt1(alc)} / ${ai.limit}g)`});
+    else if (alc >= ai.limit * 0.8) A.push({id:'alc-80', lv:'warn', text:`알코올 권장량의 ${Math.round(alc / ai.limit * 100)}%를 마셨어요`});
+    if (bac.ahead >= 0.08) A.push({id:'bac-08', lv:'danger', text:`혈중알코올이 ${bac.ahead.toFixed(3)}%까지 올라가요. 면허취소 기준(0.08%)을 넘는 양이에요`});
+    else if (bac.ahead >= 0.03) A.push({id:'bac-03', lv:'warn', text:`혈중알코올이 ${bac.ahead.toFixed(3)}%까지 올라가요. 면허정지 기준(0.03%) 이상이라 운전하면 안 돼요`});
+    if (recentCaf >= 40 && recentAlc > 0) A.push({id:'combo', lv:'warn', text:'카페인과 술을 3시간 안에 같이 마셨어요. 카페인은 취기를 덜 느끼게 해서 더 마시기 쉬워요'});
+    if (p.meds.includes('psy') && recentAlc > 0) A.push({id:'meds', lv:'danger', text:'먹고 있는 약과 술이 만나면 위험할 수 있어요. 약사나 의사에게 꼭 확인해 주세요'});
+  }
+  return {key, today, ci, ai, caf, alc, bed, body, atBed, bac, alerts:A};
+}
+
+/* ---------- 잔 계산: 잔 모양(높이별 반지름)으로 채운 높이 → ml ---------- */
+function gR(g, t) {
+  if (g.shape === 'wine') return t <= 0.6 ? 0.22 + 0.78 * Math.sin(t / 0.6 * Math.PI / 2) : 1 - 0.14 * Math.pow((t - 0.6) / 0.4, 2);
+  if (g.shape === 'bowl') return 0.5 + 0.5 * Math.pow(t, 0.6);
+  return g.r[0] + (g.r[1] - g.r[0]) * t;
+}
+function gTable(g) {
+  if (g._t) return g._t;
+  const N = 100, a = [0]; let s = 0;
+  for (let i = 1; i <= N; i++) { const r = gR(g, (i - 0.5) / N); s += r * r; a.push(s); }
+  return (g._t = a.map(v => v / s));
+}
+const gml = (g, y) => { const T = gTable(g), x = clamp(y, 0, 1) * 100, i = Math.min(99, Math.floor(x)); return g.cap * (T[i] + (T[i + 1] - T[i]) * (x - i)); };
+const gy = (g, ml) => { const T = gTable(g), f = clamp(ml / g.cap, 0, 1); let i = 0; while (i < 99 && T[i + 1] < f) i++; return clamp((i + (f - T[i]) / ((T[i + 1] - T[i]) || 1)) / 100, 0, 1); };
+const fillY = (g, def) => typeof def === 'number' ? def : gy(g, def.ml);
+const gOf = (it, o) => GL[o && o.glass && it.glasses.includes(o.glass) ? o.glass : (it.def && it.def.glass) || it.glasses[0]];
+function baseY(it, g, top, p) {
+  if (p.logo && g.logo) return g.logo;
+  if (p.ratio != null) return gy(g, gml(g, top) * p.ratio);
+  return gy(g, p.ml || 50);
+}
+function glassOpts(it, gid, prev) {
+  if (it.builder) { const pg = prev && prev.glass && GL[prev.glass], vols = pg && prev.tops ? mixVols(pg, prev) : []; return {size:0, shots:0, glass:gid, ings:prev && prev.ings ? [...prev.ings] : [], tops:mixTops(GL[gid], vols), name:(prev && prev.name) || ''}; }
+  const g = GL[gid], o = {size:0, shots:0, glass:gid};
+  if (g.pack) return o;
+  o.top = fillY(g, g.def);
+  if (it.mix) {
+    const pg = prev && prev.glass && GL[prev.glass], pml = pg && !pg.pack && prev.split != null ? gml(pg, prev.split) : null;
+    o.split = pml != null && pml < gml(g, o.top) * 0.8 ? gy(g, pml) : baseY(it, g, o.top, it.def.base);
+    o.split = Math.min(o.split, o.top - 0.02);
+  }
+  return o;
+}
+/* 혼합주: tops = 재료마다 채운 높이(아래부터 누적) */
+const mixVols = (g, o) => (o.tops || []).map((t, i) => Math.max(0, gml(g, t) - (i ? gml(g, o.tops[i - 1]) : 0)));
+function mixTops(g, vols) { let acc = 0; return vols.map(v => { acc += v; return clamp(gy(g, acc), 0.01, 1); }); }
+const ingKey = name => Object.keys(ING).find(k => ING[k].n === name) || 'soju';
+const mixAuto = o => (o.ings || []).map(k => ING[k] ? ING[k].n : '').filter(Boolean).join('+') || '혼합주';
+const mixOpts = (gid, pairs, name) => ({size:0, shots:0, glass:gid, ings:pairs.map(p => p[0]), tops:mixTops(GL[gid], pairs.map(p => p[1])), name:name || ''});
+const defOpts = it => it.glasses ? glassOpts(it, (it.def && it.def.glass) || it.glasses[0]) : {size:0, shots:0};
+function cleanOpts(it, o) {
+  if (it.builder) {
+    if (!o || !o.glass || !it.glasses.includes(o.glass)) return defOpts(it);
+    const ings = (o.ings || []).filter(k => ING[k]); return {size:0, shots:0, glass:o.glass, ings, tops:(o.tops || []).slice(0, ings.length).map(t => clamp(t, 0.01, 1)), name:o.name || ''};
+  }
+  if (it.k === 'caf') return {size:o && o.size < it.sizes.length ? o.size : 0, shots:it.shot && o ? o.shots || 0 : 0};
+  if (!it.glasses) return {size:0, shots:0};
+  if (!o || !o.glass || !it.glasses.includes(o.glass)) return defOpts(it);
+  const r = glassOpts(it, o.glass);
+  if (!GL[o.glass].pack) {
+    if (o.top != null) r.top = clamp(o.top, 0.05, 1);
+    if (it.mix) r.split = clamp(o.split != null ? o.split : r.split, 0.01, r.top - 0.02);
+  }
+  return r;
+}
+function pour(it, o) {
+  const g = gOf(it, o);
+  if (g.pack) return {ml:g.ml, a:0, b:0};
+  const top = o.top != null ? o.top : fillY(g, g.def), ml = gml(g, top);
+  if (!it.mix) return {ml};
+  const a = gml(g, Math.min(o.split != null ? o.split : baseY(it, g, top, it.def.base), top));
+  return {ml, a, b:Math.max(0, ml - a)};
+}
+
+/* ---------- 기록 ---------- */
+function calc(it, o) {
+  o = o || {}; const q = o.qty || 1; let caf = 0, alc = 0, ml = 0, label;
+  if (it.k === 'caf') { const s = it.sizes[o.size || 0] || it.sizes[0]; caf = (s[2] + (o.shots || 0) * (it.shot || 0)) * q; ml = s[1] * q; label = s[0] === '1잔' ? s[1] + 'ml' : s[0]; }
+  else if (it.recipe) { for (const [, v, a] of it.recipe) { alc += v * a / 100 * ETH * q; ml += v * q; } caf = (it.caf || 0) * q; label = '1잔'; }
+  else if (it.builder) {
+    const g = gOf(it, o), vols = mixVols(g, o), ks = o.ings || [];
+    ks.forEach((k, i) => { const x = ING[k]; alc += vols[i] * x.abv / 100 * ETH * q; caf += vols[i] * (x.caf || 0) * q; ml += vols[i] * q; });
+    label = ks.length > 3 ? ks.slice(0, 2).map((k, i) => `${ING[k].s || ING[k].n} ${Math.round(vols[i])}`).join(' + ') + ` 외 ${ks.length - 2}가지` : ks.map((k, i) => `${ING[k].s || ING[k].n} ${Math.round(vols[i])}`).join(' + ') + 'ml';
+  }
+  else if (it.mix) { const p = pour(it, o), A = it.mix.a, B = it.mix.b; alc = (p.a * A.abv + p.b * B.abv) / 100 * ETH * q; caf = p.b * (B.caf || 0) * q; ml = p.ml * q; label = `${A.n} ${Math.round(p.a)} + ${B.n} ${Math.round(p.b)}ml`; }
+  else { const g = gOf(it, o), p = pour(it, o); alc = p.ml * it.abv / 100 * ETH * q; ml = p.ml * q; label = g.pack ? `${g.ml}ml ${g.u}` : `${g.n} ${Math.round(p.ml)}ml`; }
+  return {caf, alc, ml, label};
+}
+function makeRec(it, o, t) {
+  o = Object.assign(cleanOpts(it, o), {qty:(o && o.qty) || 1});
+  const c = calc(it, o), q = o.qty, g = it.glasses && gOf(it, o), u = g && g.pack ? g.u : '잔', qs = fmtQty(q, u);
+  let sub = it.recipe ? qs : c.label;
+  if (o.shots) sub += ` · 샷 +${o.shots}`;
+  if (!it.recipe && q !== 1) sub += ` · ${qs}`;
+  return {id:uid(), t, itemId:it.id, opts:o, name:it.builder ? (o.name || mixAuto(o)) : (it.brand ? it.brand + ' ' : '') + it.name, sub, caf:Math.round(c.caf * 10) / 10, alc:Math.round(c.alc * 10) / 10, ml:Math.round(c.ml)};
+}
+function customRec(c, q, t) {
+  const name = (c.name || '').trim(), qs = q !== 1 ? ' · ' + fmtQty(q) : '';
+  if (c.k === 'caf') { const mg = Number(c.mg); return {id:uid(), t, name:name || '직접 입력한 음료', sub:'직접 입력' + qs, caf:Math.round(mg * q * 10) / 10, alc:0, ml:0, custom:true, mg, qty:q}; }
+  const ml = Number(c.ml), abv = Number(c.abv);
+  return {id:uid(), t, name:name || '직접 입력한 술', sub:`${ml}ml · ${abv}%` + qs, caf:0, alc:Math.round(ml * abv / 100 * ETH * q * 10) / 10, ml:ml * q, unitMl:ml, abv, custom:true, qty:q};
+}
+const customOf = r => ({k:r.alc > 0 ? 'alc' : 'caf', name:r.name, mg:r.mg != null ? r.mg : r.caf, ml:r.unitMl != null ? r.unitMl : r.ml, abv:r.abv});
+function oneOf(r) {   // 같은 걸 한 잔만 다시 마셨을 때
+  const it = r.itemId && BYID[r.itemId];
+  if (it) return makeRec(it, Object.assign({}, r.opts, {qty:1}), r.t);
+  if (r.custom) return customRec(customOf(r), 1, r.t);
+  return r;
+}
+const amtText = r => [r.alc > 0 ? fmt1(r.alc) + 'g' : '', r.caf > 0 ? (r.alc > 0 ? '카페인 ' : '') + Math.round(r.caf) + 'mg' : ''].filter(Boolean).join(' · ');
+function addRecord(rec) {
+  const before = status();
+  S.records.push(rec); save();
+  const after = status();
+  const top = after.alerts.filter(a => !before.alerts.some(b => b.id === a.id)).sort(bySev)[0];
+  toast(top ? top.text : `${rec.name} 기록했어요`, () => { S.records = S.records.filter(r => r.id !== rec.id); save(); swapCur(); toast('기록을 취소했어요'); });
+}
+const optKey = o => o ? [o.size || 0, o.shots || 0, o.glass || '', o.top != null ? o.top.toFixed(2) : '', o.split != null ? o.split.toFixed(2) : '', (o.ings || []).join('+'), (o.tops || []).map(t => t.toFixed(2)).join('/'), o.name || ''].join(',') : '';
+function recentList(n) {
+  const seen = new Set(), out = [], now = Date.now(), off = alcInfo().disabled;
+  for (const r of [...S.records].filter(r => now - r.t < 14 * DAY && !(off && r.alc > 0)).sort((a, b) => b.t - a.t)) {
+    const key = r.itemId ? r.itemId + '|' + optKey(r.opts) : `c|${r.name}|${r.mg != null ? r.mg : r.caf}|${r.unitMl != null ? r.unitMl : r.ml}`;
+    if (seen.has(key)) continue; seen.add(key); out.push(r);
+    if (out.length >= n) break;
+  }
+  return out;
+}
+
+/* ---------- 피드백 ---------- */
+function pending() {
+  const now = Date.now(), today = dayKey(now), oldest = dayKey(now - 3 * DAY);
+  const days = [...new Set(S.records.map(r => dayKey(r.t)))].filter(d => d < today && d >= oldest).sort().reverse();
+  const out = [];
+  for (const d of days) for (const kind of ['caf', 'alc']) {
+    const amt = sum(recsOn(d), kind);
+    if (amt > 0 && !S.feedback.some(f => f.day === d && f.kind === kind)) out.push({day:d, kind, amt});
+  }
+  return out.slice(0, 2);
+}
+function applyFb(day, kind, ans) {
+  const amt = sum(recsOn(day), kind), get = () => kind === 'caf' ? cafInfo() : alcInfo(), before = get().limit;
+  const f = {day, kind, ans, amt, before, t:Date.now(), demo:recsOn(day).some(r => r.demo)};
+  S.feedback.push(f); const a = get(); f.after = a.limit; save();
+  return {kind, ans, before, after:a.limit, capped:ans === 'ok' && a.limit >= a.pub};
+}
+
+/* ---------- 예시 데이터 ---------- */
+function seed() {
+  unseed(false);
+  const now = Date.now(), st = dayStart(dayKey(now)), adult = !alcInfo().disabled;
+  const at = (off, h, m = 0) => st - off * DAY + (h - 5) * H + m * MIN;
+  const add = (id, o, t) => { const it = BYID[id] || BYID.ame; if (t < now) S.records.push(Object.assign(makeRec(it, Object.assign(defOpts(it), o), t), {demo:true})); };
+  const AME = ['mega:아메리카노', 'sb:카페 아메리카노', 'cps:아메리카노', 'ame'].filter(id => BYID[id]);
+  const DRINK = [12, 8, 5, 1], EXAM = [10, 9, 8, 7];   // 술 마신 날, 시험 기간(며칠 전)
+  for (let off = 13; off >= 1; off--) {
+    const dow = new Date(st - off * DAY + 7 * H).getDay(), wk = dow === 0 || dow === 6, after = DRINK.includes(off + 1);
+    if (!wk || after) add(AME[off % AME.length], {}, at(off, 9, 10 + (off * 7) % 40));
+    if (after) add('ame', {shots:1}, at(off, 12, 20));                       // 술 마신 다음 날 해장 커피
+    if (!wk && off % 3 !== 0) add(off % 2 ? 'latte' : 'coldbrew', {}, at(off, 15, (off * 11) % 50));
+    if (EXAM.includes(off)) add(off % 2 ? 'hot6' : 'monster', {}, at(off, 22, 10));
+    if (adult && DRINK.includes(off)) {
+      const mx = (pairs, gid, t) => add('mixb', mixOpts(gid, pairs), t);
+      [[19, 40], [20, 20], [21, 0], [21, 40]].slice(0, off === 5 ? 3 : 4).forEach(([hh, mm]) => mx([['soju', SOJU_ML], ['beer', 160]], 'beer', at(off, hh, mm)));
+      if (off === 12) add('jagerbomb', {}, at(off, 22, 40));
+      else mx(off === 8 ? [['soju', SOJU_ML], ['energy', 150]] : [['whisky', 45], ['soda', 200]], off === 8 ? 'beer' : 'hb', at(off, 22, 40));
+    }
+  }
+  add(AME[0], {}, Math.max(st + 20 * MIN, now - 150 * MIN));
+  if (adult) applyFb(dayKey(at(12, 12)), 'alc', 'mild');
+  applyFb(dayKey(at(9, 12)), 'caf', 'sleep');
+  save();
+}
+function unseed(doSave = true) { S.records = S.records.filter(r => !r.demo); S.feedback = S.feedback.filter(f => !f.demo); if (doSave) save(); }
+
+function readPhoto(file) {
+  return new Promise(res => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, 200 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = () => res(null); img.src = fr.result;
+    };
+    fr.onerror = () => res(null); fr.readAsDataURL(file);
+  });
+}
+
+/* =========================================================
+   화면 전환 엔진
+   ========================================================= */
+const stage = $('#stage'), tabsEl = $('#tabs'), rootEl = $('#root');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EASE = 'cubic-bezier(.22,.8,.24,1)', DUR = 360;
+let cur = null;
+const ui = {tab:'home', flow:null, lastProg:null, lastPct:{caf:0, alc:0}, rp:7};
+
+function anim(el, kf, o = {}) {
+  if (reduce || !el || !el.animate) return null;
+  try {
+    const a = el.animate(kf, Object.assign({duration:DUR, easing:EASE}, o));
+    // 백그라운드 탭 등에서 애니메이션이 멈춰도 최종 상태로 가도록
+    setTimeout(() => { try { if (a.playState !== 'finished') a.finish(); } catch (e) {} }, (o.duration || DUR) + (o.delay || 0) + 300);
+    return a;
+  } catch (e) { return null; }
+}
+function stagger(el, dir) {
+  const base = dir === 'fwd' || dir === 'up' ? 120 : 40; let i = 0;
+  el.querySelectorAll('[data-in]').forEach(n => {
+    anim(n, [{opacity:0, transform:'translateY(14px)'}, {opacity:1, transform:'none'}], {duration:440, delay:base + Math.min(i, 9) * 50, fill:'backwards'});
+    i++;
+  });
+}
+function grow(root) {
+  root.querySelectorAll('[data-grow]').forEach(el => {
+    const to = el.style.width, from = el.dataset.grow + '%';
+    if (parseFloat(from) === parseFloat(to)) return;
+    anim(el, [{width:from}, {width:to}], {duration:900, delay:Number(el.dataset.delay || 200), fill:'backwards'});
+  });
+  root.querySelectorAll('[data-fill]').forEach((el, i) => {
+    anim(el, [{height:'0%'}, {height:el.style.height}], {duration:700, delay:Number(el.dataset.fill) + i * 90, fill:'backwards'});
+  });
+}
+function countUps(root) {
+  root.querySelectorAll('[data-count]').forEach(el => {
+    const to = Number(el.dataset.count), from = Number(el.dataset.from || 0), F = v => el.dataset.dec ? fmt1(v) : String(Math.round(v));
+    if (reduce || from === to) { el.textContent = F(to); return; }
+    el.textContent = F(from);
+    const D = 900, delay = 380; let t0 = null;
+    const step = ts => { if (t0 == null) t0 = ts; const p = Math.min(1, (ts - t0) / D), e = 1 - Math.pow(1 - p, 3); el.textContent = F(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); };
+    setTimeout(() => requestAnimationFrame(step), delay);
+    setTimeout(() => { el.textContent = F(to); }, delay + D + 600);
+  });
+}
+function pops(root) {
+  root.querySelectorAll('.res-ic').forEach(el => {
+    anim(el, [{transform:'scale(.4)', opacity:0}, {transform:'scale(1)', opacity:1}], {duration:520, easing:'cubic-bezier(.3,1.45,.5,1)', fill:'backwards', delay:80});
+    const p = el.querySelector('.draw'); if (p) anim(p, [{strokeDashoffset:20}, {strokeDashoffset:0}], {duration:420, delay:380, fill:'backwards'});
+  });
+}
+function show(v, o) {
+  const el = document.createElement('section');
+  el.className = 'screen ' + (o.flow ? 'flow' : 'tabscr');
+  el.innerHTML = v.html;
+  [...stage.children].forEach(c => { if (c !== cur) c.remove(); });
+  const old = cur; cur = el;
+  const dir = old ? (o.dir || 'fade') : 'none';
+  if (old && (dir === 'back' || dir === 'down')) { stage.insertBefore(el, old); old.style.zIndex = 20; } else stage.appendChild(el);
+  rootEl.classList.toggle('in-flow', !!o.flow);
+  if (!o.flow) tabsEl.hidden = false;
+  if (old) {
+    old.style.pointerEvents = 'none'; old.setAttribute('aria-hidden', 'true');
+    const ex = {fill:'forwards'};
+    if (dir === 'fwd') { anim(el, [{transform:'translateX(100%)'}, {transform:'none'}]); anim(old, [{transform:'none', opacity:1}, {transform:'translateX(-22%)', opacity:.4}], ex); }
+    else if (dir === 'back') { anim(el, [{transform:'translateX(-22%)', opacity:.4}, {transform:'none', opacity:1}]); anim(old, [{transform:'none'}, {transform:'translateX(100%)'}], ex); }
+    else if (dir === 'up') anim(el, [{transform:'translateY(100%)'}, {transform:'none'}], {duration:440});
+    else if (dir === 'down') anim(old, [{transform:'none'}, {transform:'translateY(100%)'}], {duration:400, fill:'forwards'});
+    else anim(el, [{opacity:0}, {opacity:1}], {duration:200});
+    const wait = dir === 'up' ? 440 : dir === 'down' ? 400 : dir === 'fade' ? 200 : DUR;
+    setTimeout(() => { old.remove(); if (o.flow && cur === el) tabsEl.hidden = true; }, wait + 50);
+  } else if (o.flow) tabsEl.hidden = true;
+  if (dir !== 'back' && dir !== 'down') stagger(el, dir);
+  if (v.mount) v.mount(el);
+  grow(el); countUps(el); pops(el); fitInputs(el);
+}
+function fitInputs(root) { root.querySelectorAll('.big-in input').forEach(fitInput); }
+function fitInput(i) { i.style.width = (Math.max(1, (i.value || i.placeholder || '').length) + 0.4) + 'ch'; }
+function swap(v) { const st = cur.scrollTop; cur.innerHTML = v.html; cur.scrollTop = st; if (v.mount) v.mount(cur, true); grow(cur); fitInputs(cur); }
+function swapCur() { if (ui.flow) swap(STEPS[ui.flow.kind][ui.flow.cur](ui.flow.d)); else swap(TABS[ui.tab]()); }
+function paintTab(dir = 'fade') {
+  show(TABS[ui.tab](), {dir, flow:false});
+  tabsEl.querySelectorAll('[data-t]').forEach(b => { if (b.dataset.t === ui.tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+}
+function paintFlow(dir) { const f = ui.flow; show(STEPS[f.kind][f.cur](f.d), {dir, flow:true}); }
+function startFlow(kind, first, d, dir = 'fwd') { ui.lastProg = null; ui.flow = {kind, cur:first, hist:[], d, enter:dir}; paintFlow(dir); }
+function go(id) { const f = ui.flow; if (document.activeElement) document.activeElement.blur(); f.hist.push(f.cur); f.cur = id; paintFlow('fwd'); }
+function closeFlow(dir) { const f = ui.flow; ui.flow = null; paintTab(dir || (f && f.enter === 'up' ? 'down' : 'back')); }
+function goBack() { const f = ui.flow; if (!f) return; if (f.hist.length) { f.cur = f.hist.pop(); paintFlow('back'); } else closeFlow(); }
+
+/* ---------- 화면 조각 ---------- */
+function bar({back = true, close = false, prog = null} = {}) {
+  let p = '<span class="sp"></span>';
+  if (prog != null) {
+    const from = ui.lastProg == null ? prog : ui.lastProg; ui.lastProg = prog;
+    p = `<span class="prog" role="progressbar" aria-label="진행" aria-valuenow="${Math.round(prog * 100)}" aria-valuemin="0" aria-valuemax="100"><i data-grow="${(from * 100).toFixed(1)}" data-delay="60" style="width:${(prog * 100).toFixed(1)}%"></i></span>`;
+  }
+  return `<header class="bar">${back ? `<button class="icon-btn" data-a="back" aria-label="뒤로">${I.back}</button>` : '<span class="icon-sp"></span>'}${p}${close ? `<button class="icon-btn" data-a="close" aria-label="닫기">${I.x}</button>` : '<span class="icon-sp"></span>'}</header>`;
+}
+const head = (h, sub, eyebrow, ecls = '') => `${eyebrow ? `<p class="eyebrow ${ecls}" data-in>${eyebrow}</p>` : ''}<h1 class="h" data-in>${h}</h1>${sub ? `<p class="sub" data-in>${sub}</p>` : ''}`;
+const opts = (k, cur, list) => `<div class="opts">${list.map(o => `<button class="opt" data-a="opt" data-k="${k}" data-v="${o.v}" aria-pressed="${cur !== undefined && cur !== null && String(cur) === String(o.v)}" data-in><span class="opt-t">${o.t}${o.s ? `<small>${o.s}</small>` : ''}</span>${o.r ? `<span class="r">${o.r}</span>` : ''}</button>`).join('')}</div>`;
+const cta = inner => `<div class="cta">${inner}</div>`;
+const btn = (label, a, extra = '') => `<button class="btn" data-a="${a}" ${extra}>${label}</button>`;
+const barColor = (ratio, k) => ratio > 1 ? 'var(--danger)' : ratio >= 0.8 ? 'var(--warn-bar)' : `var(--${k})`;
+const alertRow = a => `<div class="al ${a.lv === 'danger' ? 'danger' : ''}">${I.alert}<span>${esc(a.text)}</span></div>`;
+function cupRow(n, k) {
+  const full = Math.floor(n), part = n - full, cnt = Math.min(8, Math.ceil(n - 0.001));
+  let h = `<div class="cups" data-in aria-hidden="true">`;
+  for (let i = 0; i < cnt; i++) { const pct = i < full ? 100 : Math.max(12, part * 100); h += `<span class="mini ${k}"><i data-fill="450" style="height:${pct.toFixed(0)}%"></i></span>`; }
+  return h + '</div>';
+}
+const why = info => `<div class="whyt" data-in><p>이런 정보를 반영했어요</p><div class="tags">${info.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div></div>`;
+const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return w + (c >= 0 && c < 11172 && c % 28 ? a : b); };
+function photoBanner(d) {
+  return d.photo ? `<div class="photo" data-in><img src="${d.photo}" alt="첨부한 사진"><p><b>사진을 붙였어요.</b> 어떤 음료인지 골라 주세요. 자동 인식은 다음 버전에서 연결해요.</p><button class="icon-btn sm" data-a="photo-clear" aria-label="사진 빼기">${I.xs}</button></div>` : '';
+}
+
+/* =========================================================
+   단계별 화면
+   ========================================================= */
+const OB_Q = ['body', 'birth', 'sex', 'preg', 'sens', 'conds', 'smoke', 'meds', 'bed', 'flush'];
+const validB = b => { const n = Number(b); return n >= 1930 && n <= THIS_YEAR - 8; };
+const adultOf = d => validB(d.birth) ? THIS_YEAR - Number(d.birth) >= 19 : d.adult !== false;
+const obList = d => OB_Q.filter(s => !(s === 'preg' && d.sex === 'm') && !(s === 'flush' && !adultOf(d)));
+const obNext = (d, s) => { const L = obList(d), i = L.indexOf(s); return i >= 0 && i < L.length - 1 ? L[i + 1] : 'calc'; };
+const obProg = (d, s) => { const L = obList(d); return (L.indexOf(s) + 1) / L.length; };
+const validW = w => { const n = Number(w); return n >= 30 && n <= 200; };
+const validH = h => { const n = Number(h); return n >= 120 && n <= 220; };
+const validBody = d => validW(d.weight) && validH(d.height);
+const MEDS_Q = {oc:'먹는 피임약', adhd:'ADHD 약이나 각성제', psy:'항우울제·수면제·신경안정제'};
+const NEXT = {ob: (d, s) => obNext(d, s)};
+function finishCta(d) {
+  return cta(btn(d.edit ? '저장하기' : '시작하기', 'ob-finish') + (d.edit ? '' : '<button class="txt-btn" data-a="ob-finish" data-seed="1">예시 기록 넣고 둘러보기</button>'));
+}
+function whenTime(d) {
+  const now = Date.now(); if (d.ago != null) return now - d.ago * MIN;
+  const [h, m] = (d.time || '').split(':').map(Number); if (isNaN(h)) return now;
+  const x = new Date(now); x.setHours(h, m || 0, 0, 0); let t = x.getTime(); if (t > now + 5 * MIN) t -= DAY; return t;
+}
+const customValid = d => d.k === 'caf' ? (Number(d.mg) > 0 && Number(d.mg) <= 2000) : (Number(d.ml) > 0 && Number(d.ml) <= 5000 && Number(d.abv) > 0 && Number(d.abv) <= 100);
+const fmtQty = (q, u = '잔') => q === 0.5 ? `반 ${u}` : `${q}${u}`;
+const fmtMg = v => (v >= 10 ? Math.round(v) : fmt1(v)) + 'mg';
+function itemRec(d) {
+  const t = whenTime(d), q = d.qty || 1; let r;
+  if (d.custom) { if (!customValid(d)) return null; r = customRec(d, q, t); }
+  else { const it = BYID[d.id]; if (!it) return null; r = makeRec(it, Object.assign({}, d.o, {qty:q}), t); }
+  if (d.photo) r.photo = d.photo;
+  return r;
+}
+
+/* ---------- 즐겨찾기 ---------- */
+const favKey = d => d.custom ? `c:${d.k}:${(d.name || '').trim()}` : d.id === 'mixb' ? 'x:' + ((d.o && d.o.name) || mixAuto(d.o || {})) : 'i:' + d.id;
+const recKey = r => r.itemId === 'mixb' ? 'x:' + r.name : r.itemId && BYID[r.itemId] ? 'i:' + r.itemId : `c:${r.alc > 0 ? 'alc' : 'caf'}:${r.name}`;
+const isFav = d => S.favs.some(f => f.key === favKey(d));
+const favFromD = d => d.custom ? {key:favKey(d), custom:{k:d.k, name:(d.name || '').trim(), mg:d.mg, ml:d.ml, abv:d.abv}} : {key:favKey(d), itemId:d.id, opts:Object.assign({}, d.o)};
+function favRec(f, t) {
+  if (f.itemId) { const it = BYID[f.itemId]; return it ? makeRec(it, Object.assign({}, f.opts, {qty:1}), t) : null; }
+  return f.custom && customValid(f.custom) ? customRec(f.custom, 1, t) : null;
+}
+function openItem(it, o) {
+  if (it.mix) { const c = cleanOpts(it, o), p = pour(it, c); return openItem(BYID.mixb, mixOpts(gOf(it, c).id, [[ingKey(it.mix.a.n), p.a], [ingKey(it.mix.b.n), p.b]])); }   // 예전 조합은 혼합주로 열기
+  const d = ui.flow.d; Object.assign(d, {id:it.id, k:it.k, custom:false, o:cleanOpts(it, o), qty:1, ago:0, time:null}); go('item'); }
+function openCustom(c) { const d = ui.flow.d; Object.assign(d, {custom:true, id:null, k:c.k || 'caf', name:c.name || '', mg:c.mg != null ? c.mg : '', ml:c.ml != null ? c.ml : '', abv:c.abv != null ? c.abv : '', o:{}, qty:1, ago:0, time:null}); go('item'); }
+function defaultKind() {
+  if (alcInfo().disabled) return 'caf';
+  const now = Date.now(), last = S.records.filter(r => r.t <= now && now - r.t < 3 * H).sort((a, b) => b.t - a.t)[0];
+  if (last) return last.alc > 0 ? 'alc' : 'caf';
+  const h = new Date(now).getHours(); return h >= 18 || h < 5 ? 'alc' : 'caf';
+}
+
+/* ---------- 고르기 목록 ---------- */
+const CATN = {'에너지·탄산·차':'에너지·차', '컴포즈커피':'컴포즈'};
+const norm = s => String(s || '').toLowerCase().replace(/[\s·()]/g, '');
+const SYN = [['아아', '아메리카노'], ['아메', '아메리카노'], ['라테', '라떼'], ['콜브', '콜드브루'], ['쏘맥', '소맥'], ['스벅', '스타벅스']];
+const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+const choOf = s => [...s].map(c => { const k = c.charCodeAt(0) - 0xAC00; return k >= 0 && k < 11172 ? CHO[Math.floor(k / 588)] : c; }).join('');
+const hasCho = s => /[ㄱ-ㅎ]/.test(s);
+function searchDB(q, off) {
+  // 띄어쓴 낱말마다 맞아야 함. 초성(ㅅㅁ)이 섞이면 초성끼리 비교
+  const toks = String(q).toLowerCase().split(/\s+/).filter(Boolean).map(t => { const v = [norm(t)]; SYN.forEach(([a, b]) => { if (t.includes(a)) v.push(norm(t.replace(a, b))); }); return v; });
+  const match = (src, t) => hasCho(t) ? choOf(src).includes(choOf(t)) : src.includes(t);
+  const score = (src, t) => { const a = hasCho(t) ? choOf(src) : src, b = hasCho(t) ? choOf(t) : t; return a === b ? 4 : a.startsWith(b) ? 2 : a.includes(b) ? 1 : 0; };
+  const res = [];
+  for (const x of DB) {
+    if (x.hidden || (off && x.k === 'alc')) continue;
+    const hay = norm((x.brand || '') + x.name + (x.q || '') + x.cat), nm = norm(x.name);
+    if (!toks.every(v => v.some(t => match(hay, t)))) continue;
+    const sc = toks.reduce((a, v) => a + Math.max(...v.map(t => score(nm, t))), 0);
+    res.push([sc - nm.length * 0.02 - (x.brand ? 0.3 : 0) - (/디카페인/.test(x.name) && !/디카/.test(q) ? 1 : 0), x]);
+  }
+  return res.sort((a, b) => b[0] - a[0]).slice(0, 60).map(r => r[1]);
+}
+function variantSum(it) {
+  const tk = new Set(); it.sizes.forEach(s => s[0].split(' ').forEach(x => tk.add(x)));
+  const temp = ['ICE', 'HOT'].filter(x => tk.has(x)).join('·'), size = [...tk].filter(x => !['ICE', 'HOT', '1잔'].includes(x)).join('·');
+  return [temp, size].filter(Boolean).join(' · ') || it.sizes[0][1] + 'ml';
+}
+function itemRowHTML(it, wb) {
+  if (it.builder) return `<button class="row mkrow" data-a="ritem" data-id="mixb"><span class="mk-ic" aria-hidden="true">+</span><span class="row-t"><b>${esc(it.name)}</b><small>술과 음료를 원하는 만큼 섞어서 기록해요</small></span>${I.chev}</button>`;
+  let sub, r, rs;
+  if (it.k === 'caf') {
+    sub = it.brand ? (wb ? it.brand + ' · ' : '') + variantSum(it) : it.cat; r = fmtMg(it.sizes[0][2]);
+    rs = it.sizes.length > 1 ? it.sizes[0][0] : it.sizes[0][0] === '1잔' ? it.sizes[0][1] + 'ml' : it.sizes[0][0];
+  } else {
+    const o = defOpts(it), c = calc(it, o), g = it.glasses && gOf(it, o);
+    sub = it.mix ? `${it.mix.a.n} + ${it.mix.b.n}` : it.recipe ? it.recipe.filter(x => x[2] > 0).map(x => x[0]).join(' + ') : `도수 ${it.abv}%`;
+    if (c.caf > 0) sub += ' · 카페인';
+    r = fmt1(c.alc) + 'g'; rs = it.recipe ? '한 잔' : g.pack ? fmtQty(1, g.u) : g.n + ' 기준';
+  }
+  return `<button class="row" data-a="ritem" data-id="${esc(it.id)}"><span class="row-t"><b>${esc(it.name)}</b><small>${esc(sub)}</small></span><span class="row-r ${it.k}">${r}<small>${esc(rs)}</small></span></button>`;
+}
+function tplRow(kind, key, r, star) {
+  const k = r.alc > 0 ? 'alc' : 'caf';
+  return `<button class="row" data-a="rtpl" data-${kind}="${esc(key)}"><span class="row-t"><b>${star ? '<span class="fs">★</span>' : ''}${esc(r.name)}</b><small>${esc(r.sub)}</small></span><span class="row-r ${k}">${k === 'alc' ? fmt1(r.alc) + 'g' : fmtMg(r.caf)}</span></button>`;
+}
+function pickBody(d) {
+  const off = alcInfo().disabled, q = (d.q || '').trim();
+  if (q) {
+    const res = searchDB(q, off);
+    return res.length ? `<div class="rows">${res.map(it => itemRowHTML(it, true)).join('')}</div>` : `<p class="none">'${esc(q)}' 검색 결과가 없어요. 아래에서 직접 입력할 수 있어요.</p>`;
+  }
+  let h = '';
+  const now = Date.now(), kindOf = r => r.alc > 0 ? 'alc' : 'caf';
+  const favs = S.favs.map(f => ({f, r:favRec(f, now)})).filter(x => x.r && kindOf(x.r) === d.k);
+  if (favs.length) h += `<h2 class="grp">즐겨찾기<button data-a="favs">편집</button></h2><div class="rows">${favs.map(({f, r}) => tplRow('fav', f.key, r, true)).join('')}</div>`;
+  const fk = new Set(S.favs.map(f => f.key));
+  const rec = recentList(12).filter(r => kindOf(r) === d.k && !fk.has(recKey(r))).slice(0, 3);
+  if (rec.length) h += `<h2 class="grp">최근</h2><div class="rows">${rec.map(r => tplRow('rid', r.id, oneOf(r), false)).join('')}</div>`;
+  if (d.k === 'caf') {
+    const cats = ['커피', '에너지·탄산·차', ...BRANDS];
+    h += `<h2 class="grp">메뉴</h2><div class="hscroll">${cats.map(c => `<button class="chip" data-a="cat" data-v="${esc(c)}" aria-pressed="${d.cat === c}">${esc(CATN[c] || c)}</button>`).join('')}</div>
+      <div class="rows">${DB.filter(x => x.k === 'caf' && x.cat === d.cat).map(it => itemRowHTML(it, false)).join('')}</div>`;
+  } else {
+    [...new Set(DB.filter(x => x.k === 'alc' && !x.hidden).map(x => x.cat))].forEach(c => { h += `<h2 class="grp">${esc(c)}</h2><div class="rows">${DB.filter(x => x.k === 'alc' && !x.hidden && x.cat === c).map(it => itemRowHTML(it, false)).join('')}</div>`; });
+  }
+  return h;
+}
+
+/* ---------- 잔 그림 (실제 잔과 눈으로 비교하며 선을 맞춤) ---------- */
+const GV = {W:300, H:224, cx:98, top:14, bot:210, maxHW:84}, GI = {W:24, H:24, cx:12, top:3, bot:21, maxHW:8};
+const liqC = n => `var(--liq-${n || 'clear'})`;
+function gGeom(g, V = GV) {
+  const avail = V.bot - V.top, wine = g.shape === 'wine';
+  let bh = wine ? avail * 0.58 : avail, hw = bh * g.ar / 2;
+  if (hw > V.maxHW) { hw = V.maxHW; if (!wine) bh = hw * 2 / g.ar; }
+  return {bh, hw, y0:wine ? V.top + bh : V.bot, V};
+}
+function gPath(g, G, t0, t1, n) {
+  const L = [], R = [];
+  for (let i = 0; i <= n; i++) { const t = t0 + (t1 - t0) * i / n, y = G.y0 - t * G.bh, x = G.hw * gR(g, t); L.push([G.V.cx - x, y]); R.push([G.V.cx + x, y]); }
+  return [L, R];
+}
+const pp = (a, m = 'M') => a.map((p, i) => (i ? 'L' : m) + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('');
+function gLiq(g, G, t0, t1, fill) {
+  if (t1 - t0 < 0.003) return '';
+  const [L, R] = gPath(g, G, t0, t1, 12);
+  return `<path d="${pp(L)}${pp(R.reverse(), 'L')}Z" style="fill:${fill}"/>`;
+}
+function gShape(g, G, cls) {
+  const V = G.V, [L, R] = gPath(g, G, 0, 1, 24);
+  let s = `<path d="${pp(L.reverse())}${pp(R, 'L')}" class="${cls}"/>`;
+  if (g.shape === 'wine') s += `<path d="M${V.cx} ${G.y0.toFixed(1)}V${V.bot}M${(V.cx - G.hw * 0.75).toFixed(1)} ${V.bot}H${(V.cx + G.hw * 0.75).toFixed(1)}" class="${cls}"/>`;
+  if (g.handle) {
+    const ya = G.y0 - 0.8 * G.bh, yb = G.y0 - 0.25 * G.bh, xa = V.cx + G.hw * gR(g, 0.8), xb = V.cx + G.hw * gR(g, 0.25), o = G.hw * 0.55;
+    s += `<path d="M${xa.toFixed(1)} ${ya.toFixed(1)}C${(xa + o).toFixed(1)} ${ya.toFixed(1)} ${(xb + o).toFixed(1)} ${yb.toFixed(1)} ${xb.toFixed(1)} ${yb.toFixed(1)}" class="${cls}"/>`;
+  }
+  return s;
+}
+const PACK_D = {bottle:'M10 2.5h4v4.2c0 1 2.6 2 2.6 4.6V20a1.5 1.5 0 0 1-1.5 1.5H8.9A1.5 1.5 0 0 1 7.4 20v-8.7c0-2.6 2.6-3.6 2.6-4.6z', can:'M8 3h8a1.6 1.6 0 0 1 1.6 1.6v14.8A1.6 1.6 0 0 1 16 21H8a1.6 1.6 0 0 1-1.6-1.6V4.6A1.6 1.6 0 0 1 8 3zM6.4 6.2h11.2M6.4 17.8h11.2'};
+const gIcon = g => `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">${g.pack ? `<path d="${PACK_D[g.pack]}" class="gi"/>` : gShape(g, gGeom(g, GI), 'gi')}</svg>`;
+/* ---------- 혼합주: 여러 술·음료를 잔에 차례로 부은 높이로 기록 ---------- */
+function gDecor(g, G) {   // 맥주잔 로고, 소주잔 보통 선
+  const V = G.V, Y = t => G.y0 - t * G.bh, X = t => G.hw * gR(g, t); let s = '';
+  if (g.logo) {
+    const y0 = Y(g.logo), y1 = Y(g.logo + 0.12), w = X(g.logo + 0.06) * 1.1;
+    s += `<rect x="${(V.cx - w / 2).toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${(y0 - y1).toFixed(1)}" rx="4" class="gl-logo"/><text x="${V.cx}" y="${((y0 + y1) / 2 + 3.5).toFixed(1)}" text-anchor="middle" class="gl-logo-t">LOGO</text>`;
+  }
+  (g.marks || []).forEach(m => {
+    const t = gy(g, m.ml), y = Y(t).toFixed(1), x = X(t);
+    s += `<line x1="${(V.cx - x + 4).toFixed(1)}" x2="${(V.cx + x - 4).toFixed(1)}" y1="${y}" y2="${y}" class="gl-mark"/><text x="${(V.cx - x - 8).toFixed(1)}" y="${(Y(t) + 4).toFixed(1)}" text-anchor="end" class="gl-mark-t">${m.t}</text>`;
+  });
+  return s;
+}
+function gArtMix(d, it) {
+  const g = gOf(it, d.o), G = gGeom(g), V = GV, o = d.o, T = o.tops, vols = mixVols(g, o), last = T.length - 1;
+  const Y = t => G.y0 - t * G.bh, X = t => G.hw * gR(g, t);
+  let s = `<svg id="gsvg" width="${V.W}" height="${V.H}" viewBox="0 0 ${V.W} ${V.H}" aria-hidden="true">`;
+  T.forEach((t, i) => { s += gLiq(g, G, i ? T[i - 1] : 0, t, liqC(ING[o.ings[i]].liq)); });
+  if (last >= 0 && o.ings[last] === 'beer') s += gLiq(g, G, Math.max(last ? T[last - 1] : 0, T[last] - 0.05), T[last], 'var(--liq-foam)');
+  s += gDecor(g, G) + gShape(g, G, 'gl-out');
+  T.forEach((t, i) => { s += `<line x1="${(V.cx - X(t) - 6).toFixed(1)}" x2="${(V.cx + X(t) + 6).toFixed(1)}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" class="gl-ln${i < last ? ' b' : ''}"/>`; });
+  s += '</svg>';
+  const off = g.handle ? G.hw * 0.55 + 12 : 12; let prevY = Infinity;
+  T.forEach((t, i) => {   // 아래 재료부터, 라벨이 겹치지 않게 위로 밀기
+    const x = ING[o.ings[i]], txt = `${x.s || x.n} ${Math.round(vols[i])}ml`; let y = Y(t); if (y > prevY - 32) y = prevY - 32; prevY = y;
+    s += `<button class="hdl" data-h="b${i}" role="slider" aria-label="${esc(x.n)} 높이" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(t * 100)}" aria-valuetext="${esc(txt)}" style="top:${y.toFixed(1)}px;left:calc(50% - ${V.W / 2}px + ${(V.cx + X(t) + off).toFixed(1)}px)"><i style="background:${liqC(x.liq)}"></i>${esc(txt)}</button>`;
+  });
+  return s;
+}
+function mixRows(d, it) {
+  const g = gOf(it, d.o), o = d.o, vols = mixVols(g, o);
+  return o.ings.map((k, i) => { const x = ING[k]; return `<div class="lyr"><i style="background:${liqC(x.liq)}"></i><span class="lyr-t">${i + 1}. ${esc(x.n)}<small>${x.abv ? '도수 ' + x.abv + '%' : x.caf ? '카페인 있음' : '음료'}</small></span><span class="step sm"><button data-a="ing-step" data-i="${i}" data-d="-1" aria-label="${esc(x.n)} 줄이기">−</button><b>${Math.round(vols[i])}ml</b><button data-a="ing-step" data-i="${i}" data-d="1" aria-label="${esc(x.n)} 늘리기">+</button></span><button class="icon-btn sm" data-a="ing-del" data-i="${i}" aria-label="${esc(x.n)} 빼기">${I.xs}</button></div>`; }).join('');
+}
+function mixRo(d, it) {
+  const g = gOf(it, d.o), vols = mixVols(g, d.o), tot = vols.reduce((a, b) => a + b, 0);
+  if (!tot) return '아래에서 재료를 부은 순서대로 넣어 주세요';
+  const pure = d.o.ings.reduce((a, k, i) => a + vols[i] * ING[k].abv / 100, 0);
+  return `전체 <b>${Math.round(tot)}ml</b> · 도수 약 <b>${fmt1(pure / tot * 100)}%</b>`;
+}
+function builderHTML(d, it) {
+  const g = gOf(it, d.o), o = d.o;
+  const grp = (t, keys) => `<p class="ing-g">${t}</p><div class="hscroll">${keys.map(k => `<button class="chip ingc" data-a="ing-add" data-v="${k}"><i style="background:${liqC(ING[k].liq)}"></i>${esc(ING[k].n)}</button>`).join('')}</div>`;
+  const ks = Object.keys(ING);
+  return `<div class="hscroll gsel" data-in>${it.glasses.map(id => { const x = GL[id]; return `<button class="gchip" data-a="gsel" data-v="${id}" aria-pressed="${id === g.id}">${gIcon(x)}<span>${x.n}<small>${x.cap}ml</small></span></button>`; }).join('')}</div>
+    <p class="ghint" data-in>${o.ings.length ? '선을 끌어 실제 잔과 높이를 맞춰 보세요' : '먼저 부은 재료부터 차례로 넣어 주세요'}</p>
+    <div class="gbox" id="gbox" role="group" aria-label="잔에 채운 높이" data-in>${gArtMix(d, it)}</div>
+    <p class="ro" id="ro" data-in>${mixRo(d, it)}</p>
+    <div class="layers" id="layers" data-in>${mixRows(d, it)}</div>
+    <div class="ingadd" data-in>${grp('술 넣기', ks.filter(k => ING[k].abv > 0))}${grp('섞는 음료 넣기', ks.filter(k => !ING[k].abv))}</div>
+    <label class="field" data-in><span>이름 (선택)</span><input class="text-in" id="mx-name" value="${esc(o.name)}" placeholder="${esc(o.ings.length ? mixAuto(o) : '예: 우리 과 폭탄주')}" autocomplete="off"></label>`;
+}
+function mixAdd(d, it, k) {
+  const g = gOf(it, d.o), o = d.o, x = ING[k];
+  if (o.ings.length >= 5) { toast('재료는 다섯 가지까지 넣을 수 있어요'); return false; }
+  const vols = mixVols(g, o), used = vols.reduce((a, b) => a + b, 0), room = g.cap - used;
+  if (room < 5) { toast('잔이 가득 찼어요. 다른 재료를 줄이거나 큰 잔을 골라 주세요'); return false; }
+  const v = x.abv >= 10 ? Math.min(x.def, room) : Math.max(Math.min(10, room), Math.min(room, gml(g, 0.92) - used));   // 도수 낮은 건 잔을 채우는 쪽으로
+  o.ings.push(k); o.tops = mixTops(g, [...vols, v]); return true;
+}
+function mixStep(d, it, i, dir) {
+  const g = gOf(it, d.o), o = d.o, vols = mixVols(g, o), x = ING[o.ings[i]];
+  vols[i] = Math.max(5, vols[i] + dir * (x.abv >= 15 ? 5 : 10));
+  const over = vols.reduce((a, b) => a + b, 0) - g.cap; if (over > 0) vols[i] = Math.max(5, vols[i] - over);
+  o.tops = mixTops(g, vols);
+}
+
+function gArt(d, it) {
+  if (it.builder) return gArtMix(d, it);
+  const g = gOf(it, d.o), G = gGeom(g), V = GV, top = d.o.top, mx = it.mix, sp = mx ? d.o.split : 0, p = pour(it, d.o);
+  const Y = t => G.y0 - t * G.bh, X = t => G.hw * gR(g, t);
+  const foam = l => l === 'beer' ? gLiq(g, G, Math.max(sp, top - 0.05), top, 'var(--liq-foam)') : '';
+  let s = `<svg id="gsvg" width="${V.W}" height="${V.H}" viewBox="0 0 ${V.W} ${V.H}" aria-hidden="true">`;
+  s += mx ? gLiq(g, G, 0, sp, liqC(mx.a.liq)) + gLiq(g, G, sp, top, liqC(mx.b.liq)) + foam(mx.b.liq) : gLiq(g, G, 0, top, liqC(it.liq)) + foam(it.liq);
+  if (g.logo) {
+    const y0 = Y(g.logo), y1 = Y(g.logo + 0.12), w = X(g.logo + 0.06) * 1.1;
+    s += `<rect x="${(V.cx - w / 2).toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${(y0 - y1).toFixed(1)}" rx="4" class="gl-logo"/><text x="${V.cx}" y="${((y0 + y1) / 2 + 3.5).toFixed(1)}" text-anchor="middle" class="gl-logo-t">LOGO</text>`;
+  }
+  (g.marks || []).forEach(m => {   // 흔히 따르는 선
+    const t = gy(g, m.ml), y = Y(t).toFixed(1), x = X(t);
+    s += `<line x1="${(V.cx - x + 4).toFixed(1)}" x2="${(V.cx + x - 4).toFixed(1)}" y1="${y}" y2="${y}" class="gl-mark"/><text x="${(V.cx - x - 8).toFixed(1)}" y="${(Y(t) + 4).toFixed(1)}" text-anchor="end" class="gl-mark-t">${m.t}</text>`;
+  });
+  s += gShape(g, G, 'gl-out');
+  const ln = (t, cls) => `<line x1="${(V.cx - X(t) - 6).toFixed(1)}" x2="${(V.cx + X(t) + 6).toFixed(1)}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" class="${cls}"/>`;
+  s += ln(top, 'gl-ln') + (mx ? ln(sp, 'gl-ln b') : '') + '</svg>';
+  const off = g.handle ? G.hw * 0.55 + 12 : 12;   // 손잡이 있는 잔은 손잡이 바깥에 라벨
+  const pill = (h, t, txt, color, dy) => {
+    const pos = `left:calc(50% - ${V.W / 2}px + ${(V.cx + X(t) + off).toFixed(1)}px)`;
+    return `<button class="hdl" data-h="${h}" role="slider" aria-label="${h === 'top' ? '채운 높이' : '먼저 부은 술 높이'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(t * 100)}" aria-valuetext="${esc(txt)}" style="top:${(Y(t) + dy).toFixed(1)}px;${pos}"><i style="background:${color}"></i>${esc(txt)}</button>`;
+  };
+  if (mx) {
+    const gap = Y(sp) - Y(top), push = gap < 36 ? (36 - gap) / 2 : 0;
+    s += pill('top', top, `${mx.b.s || mx.b.n} ${Math.round(p.b)}ml`, liqC(mx.b.liq), -push) + pill('split', sp, `${mx.a.s || mx.a.n} ${Math.round(p.a)}ml`, liqC(mx.a.liq), push);
+  } else s += pill('top', top, `${Math.round(p.ml)}ml`, liqC(it.liq), 0);
+  return s;
+}
+function presetList(it, g) {
+  if (it.mix) return it.presets.filter(p => !p.logo || g.logo);
+  const L = [{t:`가득 ${g.cap}ml`, y:1}, {t:'반쯤', y:0.5}];
+  if (typeof g.def === 'object') L.unshift({t:`보통 ${g.def.ml}ml`, ml:g.def.ml});
+  return L;
+}
+const preOn = (d, it, g, p) => !!p && Math.abs((it.mix ? d.o.split : d.o.top) - (it.mix ? baseY(it, g, d.o.top, p) : (p.y != null ? p.y : gy(g, p.ml)))) < 0.006;
+function applyPreset(d, it, g, p) {
+  if (it.mix) { const y = baseY(it, g, d.o.top, p); if (y > d.o.top - 0.05) d.o.top = Math.min(1, Math.max(d.o.top, y + 0.3)); d.o.split = clamp(y, 0.01, d.o.top - 0.02); }
+  else d.o.top = clamp(p.y != null ? p.y : gy(g, p.ml), 0.05, 1);
+}
+function gSet(d, it, h, t) {
+  if (h[0] === 'b') { const T = d.o.tops, i = Number(h.slice(1)), lo = i ? T[i - 1] + 0.012 : 0.012, hi = i < T.length - 1 ? T[i + 1] - 0.012 : 1; T[i] = clamp(i === T.length - 1 && t > 0.985 ? 1 : t, lo, hi); return; }
+  const g = gOf(it, d.o);
+  if (h === 'top') { t = clamp(t, 0.05, 1); if (t > 0.985) t = 1; d.o.top = t; if (it.mix && d.o.split > t - 0.02) d.o.split = Math.max(0.01, t - 0.02); }
+  else { t = clamp(t, 0.01, d.o.top - 0.02); if (g.logo && Math.abs(t - g.logo) < 0.02) t = g.logo; d.o.split = t; }
+}
+const eqTxt = (n, ml) => /소주|고량주/.test(n) ? ` (소주잔 ${fmt1(ml / SOJU_ML)}잔)` : /위스키|데킬라/.test(n) ? ` (${fmt1(ml / 30)}샷)` : '';
+function roText(d, it) {
+  const p = pour(it, d.o);
+  if (it.mix) return `${esc(it.mix.a.n)} <b>${Math.round(p.a)}ml</b>${eqTxt(it.mix.a.n, p.a)} + ${esc(it.mix.b.n)} <b>${Math.round(p.b)}ml</b>`;
+  return `<b>${Math.round(p.ml)}ml</b>${eqTxt(it.name, p.ml)}`;
+}
+
+/* ---------- 기록 화면 조각 ---------- */
+function cafPick(d, it) {
+  const vs = it.sizes, si = d.o.size || 0;
+  if (vs.length > 1) return `<div class="vgrid" data-in>${vs.map((s, i) => `<button class="vopt" data-a="vsel" data-v="${i}" aria-pressed="${si === i}"><b>${esc(s[0])}</b><small>${s[1]}ml · ${fmtMg(s[2])}</small></button>`).join('')}</div>`;
+  const s = vs[0]; return `<p class="sub" data-in>${s[0] === '1잔' ? '' : esc(s[0]) + ' · '}${s[1]}ml · 카페인 ${fmtMg(s[2])}</p>`;
+}
+function recipeBody(it) {
+  const c = calc(it, {qty:1});
+  return `<p class="sub" data-in>한 잔에 알코올 ${fmt1(c.alc)}g, 소주 ${fmt1(c.alc / SOJU_G)}잔만큼이에요.${it.caf ? ` 카페인도 ${it.caf}mg 들어 있어요.` : ''}</p>
+    <div class="recipe" data-in>${it.recipe.map(([n, v, a]) => `<div class="rc"><span>${esc(n)}</span><span class="n">${v}ml${a ? ` · ${a}%` : ''}</span></div>`).join('')}</div>
+    <p class="disc" data-in style="margin-top:10px">일반적인 레시피 기준이에요. 가게마다 조금씩 달라요.</p>`;
+}
+function customHTML(d) {
+  const caf = d.k === 'caf', adult = !alcInfo().disabled;
+  return (adult ? `<div class="seg" data-in>${[['caf', '카페인 음료'], ['alc', '술']].map(([v, t]) => `<button data-a="ck" data-v="${v}" aria-pressed="${d.k === v}">${t}</button>`).join('')}</div>` : '') +
+    (caf ? `<label class="big-in sm" data-in><input id="cu-mg" type="number" inputmode="decimal" placeholder="0" value="${esc(d.mg)}" aria-label="카페인 mg"><span>mg</span></label>
+            <p class="disc" data-in style="margin-top:8px">컵이나 캔에 적힌 카페인을 넣어 주세요. 모르면 뒤로 가서 비슷한 메뉴를 고르는 게 더 정확해요.</p>`
+         : `<div class="grid2" data-in><label class="big-in sm"><input id="cu-ml" type="number" inputmode="decimal" placeholder="0" value="${esc(d.ml)}" aria-label="양 ml"><span>ml</span></label><label class="big-in sm"><input id="cu-abv" type="number" inputmode="decimal" placeholder="0" value="${esc(d.abv)}" aria-label="도수 %"><span>%</span></label></div>
+            <p class="disc" data-in style="margin-top:8px">병이나 캔에 적힌 양과 도수를 넣어 주세요.</p>`) +
+    `<label class="field" data-in><span>이름 (선택)</span><input class="text-in" id="cu-name" value="${esc(d.name)}" placeholder="${caf ? '예: 학식 자판기 커피' : '예: 동아리방 담금주'}" autocomplete="off"></label>`;
+}
+function glassHTML(d, it) {
+  if (it.builder) return builderHTML(d, it);
+  const g = gOf(it, d.o);
+  let h = it.glasses.length > 1 ? `<div class="hscroll gsel" data-in>${it.glasses.map(id => { const x = GL[id]; return `<button class="gchip" data-a="gsel" data-v="${id}" aria-pressed="${id === g.id}">${gIcon(x)}<span>${x.n}<small>${x.pack ? x.ml : x.cap}ml</small></span></button>`; }).join('')}</div>` : '';
+  if (g.pack) return h + `<div class="pack" data-in><svg viewBox="0 0 24 24" width="96" height="96" aria-hidden="true"><path d="${PACK_D[g.pack]}" class="gl-out"/></svg><p>${g.ml}ml ${g.u === '병' ? '한 병' : '한 캔'} 기준이에요.<br>반 ${g.u}이면 아래에서 줄여 주세요.</p></div>`;
+  h += `<p class="ghint" data-in>${it.mix ? '내 잔과 비교하면서 두 선을 끌어 맞춰 보세요' : '내 잔과 비교하면서 선을 끌어 맞춰 보세요'}</p>
+    <div class="gbox" id="gbox" role="group" aria-label="잔에 채운 높이" data-in>${gArt(d, it)}</div>
+    <div class="chips pre" data-in>${presetList(it, g).map((p, i) => `<button class="chip" data-a="pre" data-v="${i}" aria-pressed="${preOn(d, it, g, p)}">${esc(p.t)}</button>`).join('')}</div>
+    <p class="ro" id="ro" data-in>${roText(d, it)}</p>`;
+  return h;
+}
+const WHEN = [[0, '방금'], [30, '30분 전'], [60, '1시간 전'], [120, '2시간 전'], [180, '3시간 전']];
+function panelHTML(d, it) {
+  const g = it && it.glasses ? gOf(it, d.o) : null, u = g && g.pack ? g.u : '잔', q = d.qty || 1, sh = (d.o && d.o.shots) || 0;
+  let h = `<div class="panel" id="panel" data-in>`;
+  if (it && it.k === 'caf' && it.shot) h += `<div class="prow"><span>샷 추가<small>1샷에 ${it.shot}mg</small></span><span class="step"><button data-a="sh" data-d="-1" aria-label="샷 하나 빼기" ${sh ? '' : 'disabled'}>−</button><b id="sv">${sh ? '+' + sh + '샷' : '없음'}</b><button data-a="sh" data-d="1" aria-label="샷 하나 추가" ${sh >= 4 ? 'disabled' : ''}>+</button></span></div>`;
+  h += `<div class="prow"><span>몇 ${u}</span><span class="step"><button data-a="qty" data-d="-1" aria-label="반 ${u} 줄이기" ${q <= 0.5 ? 'disabled' : ''}>−</button><b id="qv">${fmtQty(q, u)}</b><button data-a="qty" data-d="1" aria-label="반 ${u} 늘리기" ${q >= 10 ? 'disabled' : ''}>+</button></span></div>`;
+  h += `<div class="prow col"><span>언제</span><div class="hscroll">${WHEN.map(([v, t]) => `<button class="chip" data-a="when" data-v="${v}" aria-pressed="${d.ago === v}">${t}</button>`).join('')}<label class="chip tchip ${d.ago == null ? 'on' : ''}">${I.clock}<input type="time" id="rtime" value="${esc(d.time || hm(Date.now()))}" aria-label="다른 시각 고르기"></label></div></div>`;
+  return h + '</div>';
+}
+function pvData(d) {
+  const rec = itemRec(d); if (!rec || (d.id === 'mixb' && !(rec.alc > 0))) return null;
+  const before = status(), after = status([...S.records, rec]);
+  const isAlc = rec.alc > 0 && !after.ai.disabled, k = isAlc ? 'alc' : 'caf';
+  const v0 = isAlc ? before.alc : before.caf, v1 = isAlc ? after.alc : after.caf, lim = isAlc ? after.ai.limit : after.ci.limit;
+  const unit = isAlc ? 'g' : 'mg', f = v => isAlc ? fmt1(v) : Math.round(v), pct1 = Math.round(v1 / lim * 100);
+  const news = after.alerts.filter(a => !before.alerts.some(b => b.id === a.id) && !/-(over|80)$/.test(a.id)).sort(bySev);
+  const now = d.ago === 0; let h, tone = '';
+  if (v1 > lim && v0 <= lim) { h = now ? '잠깐만요, 이 잔이면 권장량을 넘어요' : '이 기록으로 오늘 권장량을 넘어요'; tone = 'over'; }
+  else if (v1 > lim) { h = `권장량보다 ${f(v1 - lim)}${unit} 더 마시게 돼요`; tone = 'over'; }
+  else if (pct1 >= 80) { h = `기록하면 오늘 권장량의 ${pct1}%예요`; tone = 'warn'; }
+  else h = `기록해도 아직 ${f(lim - v1)}${unit} 남아요`;
+  const amt = isAlc ? `알코올 +${fmt1(rec.alc)}g · 소주 ${fmt1(rec.alc / SOJU_G)}잔만큼${rec.caf > 0 ? ` · 카페인 ${Math.round(rec.caf)}mg` : ''}` : `카페인 +${fmtMg(rec.caf)}`;
+  return {k, h, tone, amt, v0, v1, lim, unit, f, p0:Math.min(100, v0 / lim * 100), p1:Math.min(100, v1 / lim * 100), color:barColor(v1 / lim, k), news,
+    ask:now && (tone === 'over' || news.some(a => a.lv === 'danger'))};
+}
+function pvHTML(x) {
+  if (!x) return '';
+  return `<div class="vis pv" data-k="${x.k}"><div class="vis-row"><span id="pva">${esc(x.amt)}</span><span><b id="pvv" class="${x.v1 > x.lim ? 'over' : ''}">${x.f(x.v1)}</b> / ${x.lim}${x.unit}</span></div>
+    <span class="gauge live"><i class="prev" id="pg0" style="width:${x.p0.toFixed(1)}%;background:${x.color}"></i><i id="pg1" style="width:${x.p1.toFixed(1)}%;background:${x.color}"></i></span>
+    <div class="vis-foot"><span>지금 ${x.f(x.v0)}${x.unit}</span><span>권장 ${x.lim}${x.unit}</span></div>
+    <div class="alist" id="pval">${x.news.slice(0, 2).map(alertRow).join('')}</div></div>`;
+}
+const emptyMsg = () => ui.flow && ui.flow.d && ui.flow.d.id === 'mixb' ? '술을 하나 이상 넣어 주세요' : '양을 넣으면 오늘 남은 양을 미리 보여 드려요';
+const ctaState = x => x ? (x.ask ? 'ask' : 'ok') : 'no';
+const ctaBtns = x => x && x.ask ? `<div class="btn-row"><button class="btn sec" data-a="rec-skip">안 마실래요</button><button class="btn" data-a="rec-commit">그래도 마실래요</button></div>` : `<button class="btn" data-a="rec-commit" ${x ? '' : 'disabled'}>기록하기</button>`;
+const ctaHTML = x => `<div class="cta" id="ctaw"><p class="cta-sum ${x ? x.tone : ''}" id="ctas">${x ? x.h : emptyMsg()}</p><div id="ctab" data-s="${ctaState(x)}">${ctaBtns(x)}</div></div>`;
+function favList() {
+  const now = Date.now(), rows = S.favs.map(f => {
+    const r = favRec(f, now); if (!r) return ''; const k = r.alc > 0 ? 'alc' : 'caf';
+    return `<div class="rrow"><span class="fs">★</span><span class="row-t"><b>${esc(r.name)}</b><small>${esc(r.sub)}</small></span><span class="row-r ${k}">${k === 'alc' ? fmt1(r.alc) + 'g' : fmtMg(r.caf)}</span><button class="icon-btn sm" data-a="fav-del" data-key="${esc(f.key)}" aria-label="${esc(r.name)} 즐겨찾기에서 빼기">${I.xs}</button></div>`;
+  }).join('');
+  return {html: bar({}) + head('즐겨찾기', rows ? '홈의 ‘한 잔 더’에 먼저 나와요. 누르면 바로 기록돼요.' : '기록 화면 오른쪽 위의 ☆를 누르면 여기에 모여요.') +
+    (rows ? `<div class="rlist" data-in style="margin-top:20px">${rows}</div><p class="disc" data-in style="margin-top:14px">즐겨찾기한 음료를 다른 잔이나 비율로 기록하면, 마지막에 기록한 방식으로 바뀌어요.</p>` : '')};
+}
+
+const STEPS = {
+  /* ----- 처음 설정 ----- */
+  ob: {
+    welcome: () => ({html:`<div class="welcome">
+        <div class="hero" aria-hidden="true" data-in><span class="hb"><i class="hl caf" data-fill="350" style="height:62%"></i></span><span class="hb sm"><i class="hl alc" data-fill="350" style="height:40%"></i></span></div>
+        ${head('마시기 전에,<br>오늘 얼마나 남았는지<br>알려드릴게요', '커피 한 잔, 술 한 잔이 내 몸에 얼마나 쌓였는지 보여 주고, 멈출 때를 먼저 알려 드려요.', '기록')}</div>
+        ${cta(btn('시작하기', 'ob-start') + '<p class="cta-note">질문 몇 개면 끝나요</p>')}`}),
+    body: d => ({html: bar({prog:obProg(d, 'body')}) + head('키와 몸무게를<br>알려주세요', '권장량과 혈중알코올을 계산하는 데만 써요.') +
+        `<div class="grid2" data-in><label class="big-in sm"><input id="ob-h" type="number" inputmode="decimal" placeholder="0" value="${esc(d.height || '')}" aria-label="키"><span>cm</span></label><label class="big-in sm"><input id="ob-w" type="number" inputmode="decimal" placeholder="0" value="${esc(d.weight || '')}" aria-label="몸무게"><span>kg</span></label></div><p class="err" id="ob-w-err" hidden>키는 120~220cm, 몸무게는 30~200kg 사이로 넣어 주세요</p>` +
+        cta(btn('다음', 'ob-w-next', validBody(d) ? '' : 'disabled')),
+      mount:(el, re) => { if (re) return; const i = el.querySelector(validH(d.height) ? '#ob-w' : '#ob-h'); setTimeout(() => { if (cur === el) try { i.focus({preventScroll:true}); } catch (e) {} }, DUR + 80); }}),
+    birth: d => ({html: bar({prog:obProg(d, 'birth')}) + head('태어난 해가<br>언제예요?', '성인인지 확인하고, 나이에 따른 몸의 수분량을 계산할 때 써요.') +
+        `<label class="big-in" data-in><input id="ob-b" type="number" inputmode="numeric" placeholder="${THIS_YEAR - 21}" value="${esc(d.birth || '')}" aria-label="태어난 해"><span>년</span></label><p class="err" id="ob-b-err" hidden>태어난 해를 네 자리로 넣어 주세요</p>` +
+        cta(btn('다음', 'ob-b-next', validB(d.birth) ? '' : 'disabled')),
+      mount:(el, re) => { if (re) return; const i = el.querySelector('#ob-b'); setTimeout(() => { if (cur === el) try { i.focus({preventScroll:true}); } catch (e) {} }, DUR + 80); }}),
+    sex: d => ({html: bar({prog:obProg(d, 'sex')}) + head('성별을 알려주세요', '혈중알코올을 계산할 때 몸의 수분 비율이 달라서 필요해요.') +
+        opts('sex', d.sex, [{v:'m', t:'남성'}, {v:'f', t:'여성'}, {v:'x', t:'밝히고 싶지 않아요', s:'더 보수적인 기준으로 계산해요'}])}),
+    preg: d => ({html: bar({prog:obProg(d, 'preg')}) + head('지금 임신 중이거나<br>수유 중이신가요?', '해당되면 카페인 기준을 더 낮게 잡아요.') +
+        opts('pregnant', d.pregnant, [{v:false, t:'아니요'}, {v:true, t:'네'}])}),
+    sens: d => ({html: bar({prog:obProg(d, 'sens')}) + head('커피를 마시면<br>몸이 어떤 편이에요?') +
+        opts('cafSens', d.cafSens, [{v:'low', t:'별 느낌 없어요', s:'마셔도 금방 잠들어요'}, {v:'mid', t:'가끔 두근거려요', s:'많이 마신 날만 그래요'}, {v:'high', t:'한 잔에도 예민해요', s:'두근거리거나 잠을 못 자요'}])}),
+    conds: d => ({html: bar({prog:obProg(d, 'conds')}) + head('혹시 이런 게 있으신가요?', '해당하는 걸 모두 골라 주세요. 권장량에 반영해요.') +
+        `<div class="opts">${Object.entries(COND_Q).map(([k, l]) => `<button class="opt" data-a="cond" data-v="${k}" aria-pressed="${d.conds.includes(k)}" data-in><span class="opt-t">${l}</span><span class="ck">${I.check}</span></button>`).join('')}</div>` +
+        cta(`<button class="btn" data-a="ob-conds-next" id="conds-btn">${d.conds.length ? '다음' : '없어요, 다음'}</button>`)}),
+    smoke: d => ({html: bar({prog:obProg(d, 'smoke')}) + head('담배를 피우세요?', '담배는 카페인이 몸에서 빠지는 속도를 바꿔요.') +
+        opts('smoke', d.smoke, [{v:'none', t:'안 피워요'}, {v:'some', t:'가끔 피워요'}, {v:'daily', t:'매일 피워요', s:'전자담배 포함'}])}),
+    meds: d => ({html: bar({prog:obProg(d, 'meds')}) + head('평소 먹는 약이 있나요?', '카페인이나 술과 같이 조심해야 하는 약이에요. 해당하는 걸 모두 골라 주세요.') +
+        `<div class="opts">${Object.entries(MEDS_Q).map(([k, l]) => `<button class="opt" data-a="med" data-v="${k}" aria-pressed="${d.meds.includes(k)}" data-in><span class="opt-t">${l}</span><span class="ck">${I.check}</span></button>`).join('')}</div>` +
+        cta(`<button class="btn" data-a="ob-meds-next" id="meds-btn">${d.meds.length ? '다음' : '없어요, 다음'}</button>`)}),
+    bed: d => ({html: bar({prog:obProg(d, 'bed')}) + head('보통 몇 시쯤 주무세요?', '잘 때 몸에 카페인이 얼마나 남는지 알려 드릴게요.') +
+        opts('bed', d.bed, [{v:'23:00', t:'밤 11시'}, {v:'00:00', t:'밤 12시'}, {v:'01:00', t:'새벽 1시'}, {v:'02:00', t:'새벽 2시'}, {v:'03:00', t:'새벽 3시 이후'}])}),
+    flush: d => ({html: bar({prog:obProg(d, 'flush')}) + head('술 마시면 얼굴이<br>빨개지는 편인가요?', '금방 빨개진다면 알코올을 분해하는 효소(ALDH2)가 약할 수 있어요. 같은 양도 몸에 더 부담이 돼요.') +
+        opts('flush', d.flush, [{v:'often', t:'한두 잔에도 빨개져요'}, {v:'some', t:'많이 마시면 빨개져요'}, {v:'none', t:'거의 안 빨개져요'}])}),
+    calc: () => ({html:`<div class="center"><div class="spinner" aria-hidden="true" data-in></div><h1 class="h" data-in>권장량을 계산하고 있어요</h1><p class="sub" data-in>공개 기준에 답변을 반영하는 중이에요</p></div>`,
+      mount:(el, re) => { if (re) return; const f = ui.flow; setTimeout(() => { if (ui.flow === f && f.cur === 'calc') { f.cur = 'resCaf'; paintFlow('fwd'); } }, 1500); }}),
+    resCaf: d => {
+      const p = normProfile(d), ci = cafInfo(p), hrs = Math.round(ci.half * Math.log2(AME_MG / ci.bedR));
+      const parts = ['몸무게', ...(p.adult ? [] : ['청소년 기준']), ...(p.pregnant ? ['임신·수유'] : []), '카페인 민감도', ...(p.conds.length ? ['평소 증상'] : []), ...(p.smoke !== 'none' ? ['흡연'] : []), ...(p.meds.length ? ['먹는 약'] : [])];
+      const reason = `${josa(parts.join(', '), '을', '를')} 반영했어요. 아메리카노 한 잔은 잠들기 ${hrs}시간 전까지 마시는 게 좋아요.`;
+      return {html: bar({}) + head(`하루 카페인은<br><span class="num caf" data-count="${ci.limit}">${ci.limit}</span>mg까지 괜찮아요`, `아메리카노로 치면 ${fmt1(ci.limit / AME_MG)}잔 정도예요.`, '카페인', 'caf') +
+        cupRow(ci.limit / AME_MG, 'caf') + `<p class="reason" data-in>${esc(reason)}</p>` + why(ci) +
+        (p.adult ? cta(btn('다음', 'ob-to-alc')) : finishCta(d))};
+    },
+    resAlc: d => {
+      const p = normProfile(d), ai = alcInfo(p), g03 = 0.03 * tbw(p) / 0.08 / 0.8;
+      const parts = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적인 기준'] : []), ...(p.flush !== 'none' ? ['얼굴이 빨개지는 정도'] : []), ...(p.meds.length ? ['먹는 약'] : [])];
+      const reason = `${josa(parts.join(', '), '을', '를')} 반영했어요. 빨리 마시면 소주 ${fmt1(g03 / SOJU_G)}잔쯤에 운전 금지 기준(0.03%)에 닿아요.`;
+      return {html: bar({}) + head(`술은 하루<br><span class="num alc" data-count="${ai.limit}" data-dec="1">${ai.limit}</span>g까지가 좋아요`, `소주로 치면 ${fmt1(ai.limit / SOJU_G)}잔 정도예요.`, '알코올', 'alc') +
+        cupRow(ai.limit / SOJU_G, 'alc') + `<p class="reason" data-in>${esc(reason)}</p>` + why(ai) + finishCta(d)};
+    },
+  },
+
+  /* ----- 기록하기: 고르기 → 한 화면에서 양·시간 정하고 바로 기록 ----- */
+  rec: {
+    pick: d => {
+      const adult = !alcInfo().disabled;
+      return {html: bar({back:false, close:true}) + head('무엇을 마셨나요?') + photoBanner(d) +
+        (adult ? `<div class="seg" data-in>${[['caf', '카페인'], ['alc', '술']].map(([v, t]) => `<button data-a="rk" data-v="${v}" aria-pressed="${d.k === v}">${t}</button>`).join('')}</div>` : '') +
+        `<div class="search" data-in>${I.search}<input id="q" type="search" placeholder="메뉴·브랜드 검색 (메가 아아, ㅅㅁ…)" value="${esc(d.q || '')}" autocomplete="off" aria-label="메뉴 검색"></div>
+         <div id="plist" data-in>${pickBody(d)}</div>
+         <button class="ghost" data-a="rcustom" data-in>찾는 게 없어요 · 직접 입력</button>
+         ${d.photo ? '' : `<label class="ghost" for="photo" data-in style="margin-top:8px">${I.camera}사진 붙이기</label><input id="photo" type="file" accept="image/*" capture="environment" hidden>`}
+         <p class="disc" data-in style="margin-top:16px">브랜드 음료 카페인은 스타벅스·메가커피·컴포즈커피·빽다방·이디야 홈페이지에 공개된 값이에요(2026년 11월 기준, 스타벅스는 Tall). 기본 음료·술 도수·칵테일 레시피는 일반적인 값이에요.</p>`};
+    },
+    item: d => {
+      const it = d.custom ? null : BYID[d.id], k = d.custom ? d.k : it.k, fav = isFav(d);
+      const eb = d.custom ? '직접 입력' : it.brand || it.cat, title = d.custom ? (k === 'caf' ? '카페인 음료' : '술') : it.name;
+      const body = d.custom ? customHTML(d) : it.k === 'caf' ? cafPick(d, it) : it.recipe ? recipeBody(it) : `<div id="gsec">${glassHTML(d, it)}</div>`;
+      const x = pvData(d);
+      return {html: bar({close:true}) +
+        `<div class="ttl" data-in><div class="ttl-t"><p class="eyebrow ${k}">${esc(eb)}</p><h1 class="h">${esc(title)}</h1></div><button class="icon-btn star" data-a="fav" aria-pressed="${fav}" aria-label="즐겨찾기">${fav ? I.starOn : I.star}</button></div>` +
+        photoBanner(d) + body + panelHTML(d, it) + `<div id="pv" data-in>${pvHTML(x)}</div>` + ctaHTML(x),
+        mount:(el, re) => { if (re || !d.custom) return; const i = el.querySelector('#cu-mg, #cu-ml'); if (i && !i.value) setTimeout(() => { if (cur === el) try { i.focus({preventScroll:true}); } catch (e) {} }, DUR + 80); }};
+    },
+    favs: () => favList(),
+  },
+  fav: {list: () => favList()},
+  day: {view: d => vDay(d)},
+
+  /* ----- 다음 날 피드백 ----- */
+  fb: {
+    ask: d => {
+      const p = d.queue[d.i], caf = p.kind === 'caf', lbl = dayLabel(p.day), info = caf ? cafInfo() : alcInfo();
+      const h = caf ? `${lbl} 아메리카노 ${fmt1(p.amt / AME_MG)}잔만큼<br>카페인을 드셨어요` : `${lbl} 소주 ${fmt1(p.amt / SOJU_G)}잔만큼<br>술을 드셨어요`;
+      const sub = `${caf ? Math.round(p.amt) + 'mg' : fmt1(p.amt) + 'g'}, 권장량의 ${Math.round(p.amt / info.limit * 100)}%였어요. ${caf ? '몸은 어떠셨어요?' : '다음 날 몸은 어떠셨어요?'}`;
+      return {html: bar({back:false, close:true, prog:d.queue.length > 1 ? (d.i + 1) / d.queue.length : null}) + head(h, sub, caf ? '카페인' : '알코올', caf ? 'caf' : 'alc') +
+        `<div class="opts">${FB[p.kind].map(o => `<button class="opt" data-a="fbans" data-v="${o[0]}" aria-pressed="false" data-in><span class="opt-t">${o[1]}</span></button>`).join('')}</div>
+         <button class="txt-btn" data-a="fbans" data-v="skip" data-in>잘 모르겠어요</button>`};
+    },
+    res: d => {
+      const r = d.res, caf = r.kind === 'caf', unit = caf ? 'mg' : 'g', diff = caf ? Math.round(r.before - r.after) : fmt1(r.before - r.after);
+      let h, sub, ic = I.done;
+      if (r.ans === 'skip') { h = '괜찮아요,<br>다음에 알려 주세요'; sub = '기준은 그대로 둘게요.'; }
+      else if (r.after < r.before) {
+        h = `다음부터 하루<br><span class="num" data-count="${r.after}" data-from="${r.before}" ${caf ? '' : 'data-dec="1"'}>${r.after}</span>${unit}까지로 맞출게요`;
+        sub = r.ans === 'blackout' ? '기억이 끊길 정도면 몸이 감당하기 어려운 양이었어요. 기준을 많이 낮췄어요.' : `전보다 ${diff}${unit} 낮췄어요. 답해 주실수록 내 몸에 맞게 조정돼요.`;
+      } else if (r.after > r.before) { h = `괜찮으셨군요.<br>기준을 ${r.after}${unit}으로 조금 올릴게요`; sub = '그래도 공개 기준보다 높아지지는 않아요.'; }
+      else { h = '지금 기준이<br>잘 맞는 것 같아요'; sub = r.capped ? '이미 공개 기준 최대치라 그대로 둘게요.' : '이번엔 기준을 바꾸지 않을게요.'; }
+      const more = d.i + 1 < d.queue.length;
+      return {html: bar({back:false, close:true}) + `<div class="center"><div class="res-ic">${ic}</div>` + head(h, sub) + '</div>' + cta(btn(more ? '다음' : '확인', more ? 'fb-next' : 'fb-close'))};
+    },
+  },
+
+  /* ----- 자세히 보기 ----- */
+  det: {
+    caf: () => {
+      const now = Date.now(), st = status();
+      const recs = S.records.filter(r => r.caf > 0 && now - r.t < 24 * H).sort((a, b) => b.t - a.t);
+      const first = recs.length ? recs[recs.length - 1].t : now - 2 * H;
+      const x0 = Math.max(now - 10 * H, Math.min(first, now - 2 * H)), x1 = Math.max(now + 2 * H, Math.min(st.bed + H, now + 14 * H));
+      const pts = []; for (let i = 0; i <= 90; i++) { const t = x0 + (x1 - x0) * i / 90; pts.push([t, cafBody(t)]); }
+      const yMax = Math.max(st.ci.bedR * 2, ...pts.map(p => p[1])) * 1.15;
+      const ch = lineChart({pts, x0, x1, yMax, stroke:'var(--caf)', fill:'var(--caf-soft)', hlines:[{v:st.ci.bedR, label:'잠에 영향', color:'var(--warn)'}],
+        vmarks:[{t:now, label:'지금'}, {t:st.bed, label:'취침'}], dot:[now, st.body], label:'체내 카페인 추정 그래프'});
+      return {html: bar({}) + head(st.body >= 5 ? `지금 몸에 카페인이<br>${Math.round(st.body)}mg 남아 있어요` : '지금 몸에 남은<br>카페인이 거의 없어요',
+          `${timeLabel(st.bed)}에 잘 때쯤 ${Math.round(st.atBed)}mg 남아요.${st.atBed >= 100 ? ' 잠들기 어려울 수 있어요.' : ''}`, '카페인', 'caf') +
+        `<div class="chart" data-in>${ch}<p class="chart-note">내 몸이 카페인을 분해하는 속도로 계산한 추정치예요. 잘 때 점선보다 높게 남으면 잠이 얕아질 수 있어요.</p></div>
+         <h2 class="sec2" data-in>최근 24시간 기록</h2><div class="rlist" data-in>${recs.map(recRow).join('') || '<p class="none">아직 기록이 없어요</p>'}</div>`};
+    },
+    alc: () => {
+      const now = Date.now(), st = status(), b = st.bac;
+      const recs = S.records.filter(r => r.alc > 0 && now - r.t < 24 * H).sort((a, b2) => b2.t - a.t);
+      let ch = '';
+      if (b.any && b.series.length > 1) {
+        // 지금 이어지는 술자리만: 지금 이전에서 마지막으로 0%였던 시점부터
+        let i = b.series.findIndex(p => p[0] > now); if (i < 0) i = b.series.length; i--;
+        while (i > 0 && b.series[i][1] > 0) i--;
+        const x0 = Math.min(b.series[Math.max(0, i)][0], now - 30 * MIN), x1 = Math.max(now + H, (b.soberAt || now) + 20 * MIN);
+        const pts = b.series.filter(p => p[0] >= x0 && p[0] <= x1); if (!pts.length || pts[0][0] > x0) pts.unshift([x0, 0]); if (pts[pts.length - 1][0] < x1) pts.push([x1, 0]);
+        const yMax = Math.max(0.04, Math.max(...pts.map(p => p[1])) * 1.25);
+        ch = `<div class="chart" data-in>${lineChart({pts, x0, x1, yMax, stroke:'var(--alc)', fill:'var(--alc-soft)',
+          hlines:[{v:0.03, label:'0.03% 면허정지', color:'var(--warn)'}, {v:0.08, label:'0.08% 면허취소', color:'var(--danger)'}],
+          vmarks:[{t:now, label:'지금'}].concat(b.soberAt ? [{t:b.soberAt, label:'0%'}] : []), dot:[now, b.now], label:'혈중알코올 추정 그래프'})}
+          <p class="chart-note">내 체수분과 마신 시간, 안주 여부로 계산한 추정치예요. 실제와 다를 수 있으니 운전 판단에 쓰지 마세요.</p></div>`;
+      }
+      const h = b.now >= 0.0005 ? `지금 혈중알코올은<br>${b.now.toFixed(3)}%예요` : b.ahead > 0 ? '곧 술기운이<br>올라올 거예요' : '지금은 술기운이<br>없어요';
+      const sub = b.soberAt ? `${timeLabel(b.soberAt)}쯤 0%가 돼요.${b.ahead >= 0.03 ? ' 그 전엔 운전하면 안 돼요.' : ''}` : '최근 24시간 동안 남아 있는 술기운이 없어요.';
+      return {html: bar({}) + head(h, sub, '알코올', 'alc') + ch +
+        `<h2 class="sec2" data-in>최근 24시간 기록</h2><div class="rlist" data-in>${recs.map(recRow).join('') || '<p class="none">아직 기록이 없어요</p>'}</div>`};
+    },
+  },
+
+  /* ----- 데이터 지우기 ----- */
+  reset: {
+    confirm: () => ({html: bar({back:false, close:true}) + head('모든 기록과 설정을<br>지울까요?', '지운 기록은 되돌릴 수 없어요. 처음 설정부터 다시 시작해요.') +
+      cta('<div class="btn-row"><button class="btn sec" data-a="close">취소</button><button class="btn warn" data-a="reset-do">모두 지우기</button></div>')}),
+  },
+};
+
+function recRow(r) {
+  return `<div class="rrow"><span class="rt">${hm(r.t)}</span>${r.photo ? `<img src="${r.photo}" alt="">` : ''}<span class="row-t"><b>${esc(r.name)}${r.demo ? '<span class="tag">예시</span>' : ''}</b><small>${esc(r.sub)}</small></span><span class="row-r ${r.alc > 0 ? 'alc' : 'caf'}">${r.alc > 0 ? fmt1(r.alc) + 'g' : Math.round(r.caf) + 'mg'}</span><button class="icon-btn sm" data-a="del" data-id="${r.id}" aria-label="${esc(r.name)} 기록 삭제">${I.xs}</button></div>`;
+}
+function lineChart({pts, x0, x1, yMax, stroke, fill, hlines = [], vmarks = [], dot, label}) {
+  const W = 320, HH = 160, L = 4, R = 4, T = 26, B = 22;
+  const X = t => L + (t - x0) / (x1 - x0) * (W - L - R), Y = v => T + (1 - v / yMax) * (HH - T - B);
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ');
+  const area = `${line} L${X(pts[pts.length - 1][0]).toFixed(1)} ${Y(0).toFixed(1)} L${X(pts[0][0]).toFixed(1)} ${Y(0).toFixed(1)} Z`;
+  let s = `<svg viewBox="0 0 ${W} ${HH}" role="img" aria-label="${label}">`;
+  hlines.forEach(h => { if (h.v <= yMax) { const y = Y(h.v).toFixed(1); s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" style="stroke:${h.color}" stroke-width="1" stroke-dasharray="4 4"/><text x="${L + 2}" y="${(Y(h.v) - 5).toFixed(1)}" style="fill:${h.color}">${h.label}</text>`; } });
+  s += `<path d="${area}" style="fill:${fill}"/><path d="${line}" fill="none" style="stroke:${stroke}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" style="stroke:var(--fill-2)" stroke-width="1"/>`;
+  // 첫 표시는 아래, 나머지는 위에 라벨 (겹침 방지)
+  vmarks.forEach((m, i) => { if (m.t >= x0 && m.t <= x1) { const x = X(m.t); s += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${T - 6}" y2="${Y(0).toFixed(1)}" style="stroke:var(--ink-3)" stroke-width="1" stroke-dasharray="2 3"/><text x="${clamp(x, 34, W - 34).toFixed(1)}" y="${i ? 12 : HH - 5}" text-anchor="middle" style="fill:var(--ink-3)">${m.label} ${hm(m.t)}</text>`; } });
+  if (dot) s += `<circle cx="${X(dot[0]).toFixed(1)}" cy="${Y(dot[1]).toFixed(1)}" r="5" style="fill:${stroke};stroke:var(--fill)" stroke-width="3"/>`;
+  return s + '</svg>';
+}
+
+/* =========================================================
+   탭 화면
+   ========================================================= */
+function gaugeCard(k, st) {
+  const caf = k === 'caf', val = caf ? st.caf : st.alc, lim = caf ? st.ci.limit : st.ai.limit, unit = caf ? 'mg' : 'g';
+  const f = v => caf ? Math.round(v) : fmt1(v), left = lim - val, over = left < 0;
+  const big = over ? `권장량을 ${f(-left)}${unit} 넘었어요` : `${f(left)}${unit} 남았어요`;
+  const more = left / (caf ? AME_MG : SOJU_G);
+  const sub = over ? (caf ? '오늘 카페인은 여기까지만 해요' : '오늘은 그만 마시고 물 한 잔 어때요?')
+    : `${caf ? '아메리카노' : '소주'} ${more >= 0.5 ? halfFloor(more) + '잔 정도 더 괜찮아요' : '반 잔도 안 남았어요'}`;
+  const pct = Math.min(100, val / lim * 100), from = ui.lastPct[k]; ui.lastPct[k] = pct;
+  let extra = '';
+  if (!caf && st.bac.any && st.bac.ahead > 0) extra = `<span class="c-extra"><span>혈중알코올 <b>${st.bac.now >= 0.0005 ? st.bac.now.toFixed(3) + '%' : '오르는 중'}</b></span><span>${st.bac.soberAt ? timeLabel(st.bac.soberAt) + '쯤 0%' : ''}</span></span>`;
+  if (caf) {
+    const now = Date.now(), cut = cafCutoff(now);
+    if (st.atBed >= st.ci.bedR) extra = `<span class="c-extra"><span>${timeLabel(st.bed)}에 잘 때</span><span><b>${Math.round(st.atBed)}mg</b> 남아요</span></span>`;
+    else if (cut && cut > now) extra = `<span class="c-extra"><span>아메리카노 한 잔은</span><span><b>${timeLabel(cut)}</b>까지 괜찮아요</span></span>`;
+    else extra = `<span class="c-extra"><span>지금 커피를 마시면</span><span>잠에 영향을 줄 수 있어요</span></span>`;
+  }
+  return `<button class="card" data-a="det" data-k="${k}" data-in>
+    <span class="c-label"><i class="dot" style="background:var(--${k})"></i>${caf ? '카페인' : '알코올'}${I.chev}</span>
+    <span class="c-big ${over ? 'over' : ''}">${big}</span><span class="c-sub">${sub}</span>
+    <span class="gauge"><i data-grow="${from.toFixed(1)}" style="width:${pct.toFixed(1)}%;background:${barColor(val / lim, k)}"></i></span>
+    <span class="c-foot"><span>오늘 ${f(val)}${unit}</span><span>권장 ${lim}${unit}</span></span>${extra}</button>`;
+}
+function vHome() {
+  const st = status(), pend = pending(), d = new Date(dayStart(dayKey(Date.now())));
+  let h = `<header class="htop" data-in><span class="logo">기록</span><span class="hdate">${d.getMonth() + 1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일</span></header><div class="home">`;
+  if (pend.length) {
+    const p = pend[0];
+    h += `<button class="prompt" data-a="fb-start" data-in><span class="pi">${I.chat}</span><span class="pt"><b>${dayLabel(p.day)} 마신 것, 몸은 괜찮으셨어요?</b><small>답해 주시면 내 기준이 더 정확해져요</small></span>${I.chev}</button>`;
+  }
+  h += gaugeCard('caf', st);
+  if (!st.ai.disabled) h += gaugeCard('alc', st);
+  if (st.alerts.length) {
+    const a = [...st.alerts].sort(bySev)[0];
+    h += `<div class="banner ${a.lv === 'danger' ? 'danger' : ''}" data-in>${I.alert}<span>${esc(a.text)}${st.alerts.length > 1 ? `<small>알림 ${st.alerts.length - 1}개가 더 있어요 · 카드를 눌러 자세히 보기</small>` : ''}</span></div>`;
+  }
+  const now = Date.now(), off = st.ai.disabled;
+  const favs = S.favs.map(f => ({f, r:favRec(f, now)})).filter(x => x.r && !(off && x.r.alc > 0));
+  const fk = new Set(favs.map(x => x.f.key));
+  const qs = [...favs, ...recentList(8).filter(r => !fk.has(recKey(r))).map(r => ({r, one:oneOf(r)}))].slice(0, 8);
+  if (qs.length) {
+    h += `<h2 class="sec" data-in>한 잔 더<small>누르면 바로 기록돼요</small></h2><div class="qrow" data-in>${qs.map(x => {
+      const o = x.f ? x.r : x.one, k = o.alc > 0 ? 'alc' : 'caf';
+      return `<button class="qchip" data-a="${x.f ? 'again-fav' : 'again'}" ${x.f ? `data-key="${esc(x.f.key)}"` : `data-id="${x.r.id}"`}><b>${x.f ? '<span class="fs">★</span>' : ''}${esc(o.name)}</b><small>${esc(o.sub)} <span class="plus ${k}">+${k === 'alc' ? fmt1(o.alc) + 'g' : fmtMg(o.caf)}</span></small></button>`;
+    }).join('')}</div>`;
+  }
+  if (!S.records.length) {
+    h += `<div class="empty" data-in><p>마신 걸 기록하면 오늘 남은 양이 줄어들어요.<br>아래 <b>+ 기록</b>을 눌러 첫 잔을 남겨 보세요.</p><button class="btn sec" data-a="seed">예시 기록으로 둘러보기</button></div>`;
+  }
+  return {html: h + '</div>'};
+}
+/* ---------- 리포트 ---------- */
+const mdLabel = k => { const d = new Date(dayStart(k)); return (d.getMonth() + 1) + '/' + d.getDate(); };
+const hourTxt = h => `${h < 6 ? '새벽' : h < 12 ? '오전' : h < 18 ? '오후' : h < 21 ? '저녁' : '밤'} ${h % 12 || 12}시`;
+function dayLabels(days, today) {
+  const N = days.length;
+  return `<div class="bdays" style="grid-template-columns:repeat(${N},minmax(0,1fr));gap:${N > 7 ? 2 : 8}px">${days.map((d, i) => `<span class="${d === today ? 'on' : ''}">${N <= 7 ? (d === today ? '오늘' : WD[new Date(dayStart(d)).getDay()]) : ((N - 1 - i) % 7 === 0 ? (d === today ? '오늘' : mdLabel(d)) : '')}</span>`).join('')}</div>`;
+}
+function bars(vals, limit, unit, k, days, today) {
+  const N = vals.length, PH = 96, scale = Math.max(limit * 1.25, ...vals) || 1, F = x => unit === 'mg' ? Math.round(x) : fmt1(x);
+  return `<div class="bars" style="grid-template-columns:repeat(${N},minmax(0,1fr));gap:${N > 7 ? 2 : 8}px">${vals.map((x, i) => `<button class="bw" data-a="day" data-d="${days[i]}" aria-label="${dayLabel(days[i])} ${F(x)}${unit}">${N <= 7 ? `<span class="v">${x > 0 ? F(x) : ''}</span>` : ''}<i class="b" style="height:${x > 0 ? Math.max(4, Math.round(x / scale * PH)) : 4}px;background:${x > limit ? 'var(--danger)' : x > 0 ? `var(--${k})` : 'var(--fill)'};opacity:${days[i] === today || x > limit ? 1 : x > 0 ? 0.55 : 1}"></i></button>`).join('')}
+    <div class="lim" style="bottom:${Math.round(limit / scale * PH)}px"><span>권장 ${limit}${unit}</span></div></div>` + dayLabels(days, today);
+}
+function dual(days, cv, av, ci, ai, combo, today) {
+  const N = days.length, PH = 96, CAP = 1.6, Hh = x => Math.round(Math.min(CAP, x) / CAP * PH);
+  const bar1 = (x, lim, k) => `<i class="b" style="height:${x > 0 ? Math.max(4, Hh(x / lim)) : 4}px;background:${x > 0 ? `var(--${k})` : 'var(--fill)'};opacity:${x > lim || !x ? 1 : 0.55}"></i>`;
+  return `<div class="bars dual" style="grid-template-columns:repeat(${N},minmax(0,1fr));gap:${N > 7 ? 2 : 8}px">${days.map((d, i) => `<button class="bw" data-a="day" data-d="${d}" aria-label="${dayLabel(d)} 카페인 ${Math.round(cv[i])}mg, 알코올 ${fmt1(av[i])}g"><span class="pair">${combo[i] ? '<em class="cb"></em>' : ''}${bar1(cv[i], ci.limit, 'caf')}${bar1(av[i], ai.limit, 'alc')}</span></button>`).join('')}
+    <div class="lim" style="bottom:${Hh(1)}px"><span>내 권장량</span></div></div>` + dayLabels(days, today) +
+    `<div class="legend"><span><i style="background:var(--caf)"></i>카페인</span><span><i style="background:var(--alc)"></i>술</span><span><i class="cbi"></i>같이 마신 날</span></div>`;
+}
+function bedAt(k) {   // 그날 밤 잠드는 시각
+  const [h, m] = (S.profile.bed || '01:00').split(':').map(Number);
+  return dayStart(k) + ((h < 5 ? h + 24 : h) - 5) * H + m * MIN;
+}
+function insights(days, today) {
+  const ci = cafInfo(), ai = alcInfo(), past = days.filter(d => d !== today);
+  const combo = days.map(d => { const rs = recsOn(d); return rs.some(r => r.caf > 0 && r.alc > 0) || rs.some(a => a.alc > 0 && rs.some(c => c.caf > 0 && !(c.alc > 0) && Math.abs(c.t - a.t) <= 3 * H)); });
+  const drank = d => sum(recsOn(d), 'alc') > 0;
+  const prevKey = d => dayKey(dayStart(d) - DAY + H);
+  const after = past.filter(d => drank(prevKey(d))), other = past.filter(d => !drank(prevKey(d)) && sum(recsOn(d), 'caf') > 0);
+  const avg = L => L.length ? L.reduce((a, d) => a + sum(recsOn(d), 'caf'), 0) / L.length : 0;
+  const aAfter = avg(after), aOther = avg(other), lift = aOther > 0 && after.length ? Math.round((aAfter / aOther - 1) * 100) : null;
+  const bedDays = past.filter(d => cafBody(bedAt(d)) >= ci.bedR).length;
+  return {combo, comboN:combo.filter(Boolean).length, afterN:after.length, lift, bedDays,
+    cOver:days.filter(d => sum(recsOn(d), 'caf') > ci.limit).length, aOver:ai.disabled ? 0 : days.filter(d => sum(recsOn(d), 'alc') > ai.limit).length};
+}
+function hourStrip(recs, k) {
+  const cnt = Array(24).fill(0);
+  recs.forEach(r => { if (k === 'alc' ? r.alc > 0 : r.caf > 0 && !(r.alc > 0)) cnt[new Date(r.t).getHours()]++; });
+  const mx = Math.max(...cnt), order = [...Array(24)].map((_, i) => (i + 5) % 24);
+  return {peak:mx ? cnt.indexOf(mx) : null, html:`<div class="hstrip" aria-hidden="true">${order.map(h => `<i style="background:var(--${k});opacity:${cnt[h] ? (0.22 + 0.78 * cnt[h] / mx).toFixed(2) : 0.07}"></i>`).join('')}</div>`};
+}
+function vReport() {
+  const now = Date.now(), today = dayKey(now), st0 = dayStart(today), N = ui.rp || 7;
+  const days = [...Array(N)].map((_, i) => dayKey(st0 - (N - 1 - i) * DAY + H));
+  const ci = cafInfo(), ai = alcInfo(), off = ai.disabled, per = N === 7 ? '이번 주' : '최근 4주';
+  const cv = days.map(d => sum(recsOn(d), 'caf')), av = days.map(d => sum(recsOn(d), 'alc'));
+  let h = `<div class="home"><h1 class="tab-h" data-in>리포트</h1><div class="seg rp" data-in>${[[7, '최근 1주'], [28, '최근 4주']].map(([v, t]) => `<button data-a="rp" data-v="${v}" aria-pressed="${N === v}">${t}</button>`).join('')}</div>`;
+  if (!S.records.length) return {html: h + `<div class="empty" data-in><p>기록이 쌓이면 흐름을 보여 드려요.</p><button class="btn sec" data-a="seed">예시 기록으로 둘러보기</button></div></div>`};
+  const X = insights(days, today), recs = S.records.filter(r => days.includes(dayKey(r.t)));
+  // 1) 카페인과 술 같이 보기
+  if (!off) {
+    let big;
+    if (X.lift != null && X.lift >= 15 && X.afterN >= 1) big = `술 마신 다음 날엔<br>카페인을 ${X.lift}% 더 마셨어요`;
+    else if (X.comboN) big = `카페인과 술을 같이 마신 날이<br>${X.comboN}일 있었어요`;
+    else if (X.bedDays) big = `잘 때 카페인이 남은 날이<br>${X.bedDays}일 있었어요`;
+    else big = `${per}는 카페인과 술 모두<br>무난했어요`;
+    const rows = [
+      ['같이 마신 날', X.comboN ? `${X.comboN}일` : '없음', '카페인을 마시고 3시간 안에 술을 마신 날이에요', X.comboN ? 'warn' : ''],
+      ['술 마신 다음 날 카페인', X.lift == null ? '기록 부족' : X.lift > 0 ? `평소보다 +${X.lift}%` : X.lift < 0 ? `평소보다 ${X.lift}%` : '평소와 비슷', '숙취 때문에 커피를 더 찾게 되는지 봐요', X.lift >= 15 ? 'warn' : ''],
+      ['잘 때 카페인이 남은 날', X.bedDays ? `${X.bedDays}일` : '없음', '잠이 얕아질 만큼 남았던 날이에요', X.bedDays ? 'warn' : ''],
+    ];
+    h += `<section class="card" data-in><span class="c-label">카페인과 술, 같이 보기</span><span class="c-big sm">${big}</span>
+      ${dual(days, cv, av, ci, ai, X.combo, today)}
+      <div class="ins">${rows.map(r => `<div class="insr"><span>${r[0]}<small>${r[2]}</small></span><b class="${r[3]}">${r[1]}</b></div>`).join('')}</div></section>`;
+  }
+  // 2) 시간대
+  const hc = hourStrip(recs, 'caf'), ha = off ? {peak:null} : hourStrip(recs, 'alc');
+  if (hc.peak != null || ha.peak != null) {
+    const s = [hc.peak != null ? `카페인은 ${hourTxt(hc.peak)}` : '', ha.peak != null ? `술은 ${hourTxt(ha.peak)}` : ''].filter(Boolean).join(', ');
+    h += `<section class="card" data-in><span class="c-label">마시는 시간대</span><span class="c-big sm">${s}에<br>가장 많이 마셨어요</span>
+      <div class="hrow"><span>카페인</span>${hc.html}</div>${off ? '' : `<div class="hrow"><span>술</span>${ha.html}</div>`}
+      <div class="hlab"><span>아침 5시</span><span>오전 11시</span><span>오후 5시</span><span>밤 11시</span><span>새벽 5시</span></div></section>`;
+  }
+  // 3) 카페인 / 알코올
+  const cDays = cv.filter(x => x > 0).length, avg = cDays ? Math.round(cv.reduce((a, b) => a + b, 0) / cDays) : 0;
+  h += `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--caf)"></i>카페인 · ${per}</span><span class="c-big sm">${X.cOver ? `권장량을 ${X.cOver}번 넘었어요` : '모두 권장량 안이었어요'}</span><span class="c-sub">마신 날 평균 ${avg}mg</span>${bars(cv, ci.limit, 'mg', 'caf', days, today)}</section>`;
+  if (!off) {
+    const dd = av.filter(x => x > 0).length, tot = av.reduce((a, b) => a + b, 0);
+    h += `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--alc)"></i>알코올 · ${per}</span><span class="c-big sm">${dd === 0 ? '술을 안 마셨어요' : X.aOver ? `${dd}일 마셨고, ${X.aOver}번 넘었어요` : `${dd}일 마셨고, 모두 권장량 안이에요`}</span><span class="c-sub">${dd ? `모두 합치면 소주 ${fmt1(tot / SOJU_G)}잔만큼이에요` : '좋은 흐름이에요'}</span>${bars(av, ai.limit, 'g', 'alc', days, today)}</section>`;
+  }
+  // 4) 자주 마신 것
+  const top = k => { const m = {}; recs.filter(r => k === 'alc' ? r.alc > 0 : r.caf > 0 && !(r.alc > 0)).forEach(r => { const x = m[r.name] || (m[r.name] = {n:0, v:0}); x.n++; x.v += k === 'alc' ? r.alc : r.caf; }); return Object.entries(m).sort((a, b) => b[1].n - a[1].n || b[1].v - a[1].v).slice(0, 3); };
+  const tc = top('caf'), ta = off ? [] : top('alc');
+  if (tc.length || ta.length) {
+    const li = (L, k) => L.map(([n, x]) => `<div class="insr"><span>${esc(n)}</span><b class="${k}">${x.n}번 · ${k === 'alc' ? fmt1(x.v) + 'g' : Math.round(x.v) + 'mg'}</b></div>`).join('');
+    h += `<section class="card" data-in><span class="c-label">자주 마신 것</span><div class="ins">${li(tc, 'caf')}${li(ta, 'alc')}</div></section>`;
+  }
+  // 5) 몸 상태 기록
+  const log = S.feedback.filter(f => f.ans !== 'skip').slice(-6).reverse();
+  if (log.length) {
+    h += `<section class="card" data-in><span class="c-label">몸 상태 기록</span><div class="fblog">${log.map(f => {
+      const unit = f.kind === 'caf' ? 'mg' : 'g', lab = (FB[f.kind].find(o => o[0] === f.ans) || ['', ''])[1];
+      return `<div class="fbl"><span>${dayLabel(f.day)} ${f.kind === 'caf' ? '카페인 ' + Math.round(f.amt) + 'mg' : '알코올 ' + fmt1(f.amt) + 'g'}<small>${esc(lab)}</small></span><span class="d">${f.before === f.after ? '기준 유지' : `${f.before} → ${f.after}${unit}`}</span></div>`;
+    }).join('')}</div></section>`;
+  }
+  return {html: h + '<p class="disc" data-in>막대를 누르면 그날 기록을 볼 수 있어요.</p></div>'};
+}
+function vDay(d) {
+  const k = d.day, rs = recsOn(k).sort((a, b) => a.t - b.t), ci = cafInfo(), ai = alcInfo();
+  const c = sum(rs, 'caf'), a = sum(rs, 'alc'), bedLeft = cafBody(bedAt(k));
+  const dt = new Date(dayStart(k));
+  return {html: bar({}) + head(`${dayLabel(k)}${['오늘', '어제', '그제'].includes(dayLabel(k)) ? ` <small class="hsm">${dt.getMonth() + 1}월 ${dt.getDate()}일</small>` : ''}`, rs.length ? `${rs.length}번 기록했어요` : '기록이 없어요') +
+    `<div class="vis" data-in><div class="vis-row"><span>카페인</span><span><b class="${c > ci.limit ? 'over' : ''}">${Math.round(c)}</b> / ${ci.limit}mg</span></div>
+      <span class="gauge"><i style="width:${Math.min(100, c / ci.limit * 100).toFixed(1)}%;background:${barColor(c / ci.limit, 'caf')}"></i></span>
+      ${ai.disabled ? '' : `<div class="vis-row" style="margin-top:16px"><span>알코올</span><span><b class="${a > ai.limit ? 'over' : ''}">${fmt1(a)}</b> / ${ai.limit}g</span></div>
+      <span class="gauge"><i style="width:${Math.min(100, a / ai.limit * 100).toFixed(1)}%;background:${barColor(a / ai.limit, 'alc')}"></i></span>`}
+      <div class="vis-foot"><span>잘 때 남은 카페인 ${Math.round(bedLeft)}mg</span><span>${bedLeft >= ci.bedR ? '잠에 영향' : '괜찮은 수준'}</span></div></div>
+    <h2 class="sec2" data-in>기록</h2><div class="rlist" data-in>${rs.map(recRow).join('') || '<p class="none">이날은 기록이 없어요</p>'}</div>`};
+}
+
+function scoreCard(k, info) {
+  const caf = k === 'caf';
+  return `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--${k})"></i>${caf ? '카페인' : '알코올'}<span class="score">${info.score}점</span></span>
+    <span class="c-big">하루 ${info.limit}${caf ? 'mg' : 'g'}</span><span class="c-sub">${caf ? `아메리카노 ${fmt1(info.limit / AME_MG)}잔` : `소주 ${fmt1(info.limit / SOJU_G)}잔`} 정도</span>${why(info)}</section>`;
+}
+function vMe() {
+  const ci = cafInfo(), ai = alcInfo(), hasDemo = S.records.some(r => r.demo);
+  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai)}
+    <p class="disc" data-in>점수 100점은 공개 기준량을 그대로 쓴다는 뜻이에요. 내 몸 정보와 다음 날 피드백이 쌓일수록 내 몸에 맞게 조정돼요.</p>
+    <div class="list" data-in><button class="li" data-a="edit">정보 다시 입력하기${I.chev}</button>
+      <button class="li" data-a="favs-me">즐겨찾기 관리<span class="li-n">${S.favs.length}개</span>${I.chev}</button>
+      <button class="li" data-a="${hasDemo ? 'unseed' : 'seed'}">${hasDemo ? '예시 기록 지우기' : '예시 기록 넣기'}${I.chev}</button>
+      <button class="li danger" data-a="reset">모든 데이터 지우기${I.chev}</button></div>
+    <p class="disc" data-in>${storageOK ? '기록은 이 기기의 브라우저에만 저장돼요. ' : '이 브라우저에서는 저장이 막혀 있어서 새로고침하면 기록이 사라져요. '}이 앱은 의료 기기가 아니에요. 권장량과 혈중알코올은 공개 기준(식약처 카페인 섭취 권고, WHO 저위험 음주 기준)과 관련 연구를 바탕으로 추정한 참고값이에요.</p></div>`};
+}
+const TABS = {home:vHome, report:vReport, me:vMe};
+
+/* =========================================================
+   토스트
+   ========================================================= */
+let toastT, undoFn = null;
+function toast(text, undo) {
+  clearTimeout(toastT); undoFn = undo || null;
+  const r = $('#toast');
+  r.innerHTML = `<div class="toast" role="status"><span>${esc(text)}</span>${undo ? '<button data-a="undo">되돌리기</button>' : ''}</div>`;
+  anim(r.firstChild, [{transform:'translateY(16px)', opacity:0}, {transform:'none', opacity:1}], {duration:280, fill:'backwards'});
+  toastT = setTimeout(() => { r.innerHTML = ''; undoFn = null; }, undo ? 5000 : 3200);
+}
+
+/* =========================================================
+   동작
+   ========================================================= */
+const draft = () => ({weight:'', height:'', birth:'', sex:null, pregnant:null, cafSens:null, conds:[], smoke:null, meds:[], bed:null, flush:null});
+const ACT = {
+  back: () => goBack(),
+  close: () => closeFlow(),
+  tab: el => { if (ui.tab === el.dataset.t && !ui.flow) return; ui.tab = el.dataset.t; paintTab('fade'); },
+  'tab-rec': () => startFlow('rec', 'pick', {k:defaultKind(), cat:'커피', q:'', qty:1, ago:0}, 'up'),
+  // 처음 설정
+  'ob-start': () => go('body'),
+  'ob-w-next': () => {
+    const f = ui.flow;
+    if (!validBody(f.d)) { const e = cur.querySelector('#ob-w-err'); if (e) e.hidden = false; return; }
+    f.d.weight = Math.round(Number(f.d.weight) * 10) / 10; f.d.height = Math.round(Number(f.d.height)); go(obNext(f.d, 'body'));
+  },
+  'ob-b-next': () => {
+    const f = ui.flow; if (!validB(f.d.birth)) { const e = cur.querySelector('#ob-b-err'); if (e) e.hidden = false; return; }
+    f.d.birth = Number(f.d.birth); f.d.adult = THIS_YEAR - f.d.birth >= 19; go(obNext(f.d, 'birth'));
+  },
+  med: el => {
+    const c = ui.flow.d.meds, v = el.dataset.v, i = c.indexOf(v);
+    if (i < 0) c.push(v); else c.splice(i, 1);
+    el.setAttribute('aria-pressed', String(i < 0));
+    const b = cur.querySelector('#meds-btn'); if (b) b.textContent = c.length ? '다음' : '없어요, 다음';
+  },
+  'ob-meds-next': () => go(obNext(ui.flow.d, 'meds')),
+  opt: el => {
+    const f = ui.flow; if (!f || f.busy) return;
+    const k = el.dataset.k, v = PARSE(el.dataset.v);
+    f.d[k] = v; if (k === 'ago') f.d.time = null; if (k === 'sex' && v === 'm') f.d.pregnant = false;
+    el.parentNode.querySelectorAll('.opt').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+    f.busy = true;
+    setTimeout(() => { f.busy = false; if (ui.flow !== f) return; const nx = NEXT[f.kind](f.d, f.cur); if (nx) go(nx); }, 220);
+  },
+  cond: el => {
+    const c = ui.flow.d.conds, v = el.dataset.v, i = c.indexOf(v);
+    if (i < 0) c.push(v); else c.splice(i, 1);
+    el.setAttribute('aria-pressed', String(i < 0));
+    const b = cur.querySelector('#conds-btn'); if (b) b.textContent = c.length ? '다음' : '없어요, 다음';
+  },
+  'ob-conds-next': () => go(obNext(ui.flow.d, 'conds')),
+  'ob-to-alc': () => go('resAlc'),
+  'ob-finish': el => {
+    const d = ui.flow.d, edit = d.edit;
+    S.profile = normProfile(d);
+    if (!S.profile.adult) S.records = S.records.filter(r => !(r.alc > 0));
+    save(); ui.flow = null; ui.tab = edit ? 'me' : 'home';
+    if (el.dataset.seed) seed();
+    ui.lastPct = {caf:0, alc:0};
+    paintTab(edit ? 'back' : 'fwd');
+    toast(edit ? '새 기준으로 다시 계산했어요' : el.dataset.seed ? '예시 기록을 넣었어요. 어제 기록에 답해 보세요' : '준비됐어요. 마신 걸 기록해 보세요');
+  },
+  // 기록하기
+  rk: el => {
+    const d = ui.flow.d; if (d.k === el.dataset.v) return;
+    d.k = el.dataset.v; d.q = ''; const q = cur.querySelector('#q'); if (q) q.value = '';
+    cur.querySelectorAll('[data-a="rk"]').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+    const pl = cur.querySelector('#plist'); pl.innerHTML = pickBody(d);
+    anim(pl, [{opacity:0, transform:'translateY(8px)'}, {opacity:1, transform:'none'}], {duration:260});
+  },
+  cat: el => {
+    const d = ui.flow.d, sl = el.parentNode.scrollLeft; d.cat = el.dataset.v;
+    cur.querySelector('#plist').innerHTML = pickBody(d);
+    const hs = cur.querySelector('#plist .hscroll'); if (hs) hs.scrollLeft = sl;
+  },
+  ritem: el => { const it = BYID[el.dataset.id]; if (it) openItem(it); },
+  rtpl: el => {
+    if (el.dataset.fav) {
+      const f = S.favs.find(x => x.key === el.dataset.fav); if (!f) return;
+      if (f.itemId && BYID[f.itemId]) openItem(BYID[f.itemId], f.opts); else if (f.custom) openCustom(f.custom);
+      return;
+    }
+    const r = S.records.find(x => x.id === el.dataset.rid); if (!r) return;
+    if (r.itemId && BYID[r.itemId]) openItem(BYID[r.itemId], r.opts); else openCustom(customOf(r));
+  },
+  rcustom: () => { const d = ui.flow.d; openCustom({k:d.k || 'caf', name:(d.q || '').trim()}); },
+  ck: el => { ui.flow.d.k = el.dataset.v; swapCur(); },
+  vsel: el => { ui.flow.d.o.size = Number(el.dataset.v); cur.querySelectorAll('[data-a="vsel"]').forEach(b => b.setAttribute('aria-pressed', String(b === el))); updPv(); },
+  sh: el => { const d = ui.flow.d; d.o.shots = clamp((d.o.shots || 0) + Number(el.dataset.d), 0, 4); updPanel('#sv'); updPv(); },
+  qty: el => { const d = ui.flow.d; d.qty = clamp((d.qty || 1) + Number(el.dataset.d) * 0.5, 0.5, 10); updPanel('#qv'); updPv(); },
+  when: el => { const d = ui.flow.d; d.ago = Number(el.dataset.v); d.time = null; updPanel(); updPv(); },
+  gsel: el => {
+    const d = ui.flow.d, it = BYID[d.id]; if (d.o.glass === el.dataset.v) return;
+    const sl = el.parentNode.scrollLeft; d.o = glassOpts(it, el.dataset.v, d.o); swapCur();
+    const hs = cur.querySelector('.gsel'); if (hs) hs.scrollLeft = sl;
+  },
+  pre: el => { const d = ui.flow.d, it = BYID[d.id], g = gOf(it, d.o), p = presetList(it, g)[Number(el.dataset.v)]; if (!p) return; applyPreset(d, it, g, p); updGlass(); },
+  fav: el => {
+    const d = ui.flow.d; if (d.custom && !customValid(d)) { toast('양을 먼저 넣어 주세요'); return; }
+    const i = S.favs.findIndex(x => x.key === favKey(d));
+    if (i >= 0) { S.favs.splice(i, 1); toast('즐겨찾기에서 뺐어요'); }
+    else { S.favs.unshift(favFromD(d)); if (S.favs.length > 12) S.favs.pop(); toast('즐겨찾기에 넣었어요. 홈에서 한 번에 기록할 수 있어요'); }
+    save(); el.setAttribute('aria-pressed', String(i < 0)); el.innerHTML = i < 0 ? I.starOn : I.star;
+    anim(el, [{transform:'scale(1.35)'}, {transform:'none'}], {duration:300, easing:'cubic-bezier(.3,1.45,.5,1)'});
+  },
+  favs: () => go('favs'),
+  'favs-me': () => startFlow('fav', 'list', {}, 'fwd'),
+  'fav-del': el => {
+    const i = S.favs.findIndex(x => x.key === el.dataset.key); if (i < 0) return;
+    const [f] = S.favs.splice(i, 1); save(); swapCur();
+    toast('즐겨찾기에서 뺐어요', () => { S.favs.splice(i, 0, f); save(); swapCur(); });
+  },
+  'photo-clear': () => { ui.flow.d.photo = null; swapCur(); },
+  'ing-add': el => { const d = ui.flow.d, it = BYID[d.id]; if (mixAdd(d, it, el.dataset.v)) { const sl = el.parentNode.scrollLeft; swapCur(); const hs = cur.querySelectorAll('.ingadd .hscroll')[ING[el.dataset.v].abv ? 0 : 1]; if (hs) hs.scrollLeft = sl; } },
+  'ing-del': el => { const d = ui.flow.d, it = BYID[d.id], g = gOf(it, d.o), i = Number(el.dataset.i), v = mixVols(g, d.o); d.o.ings.splice(i, 1); v.splice(i, 1); d.o.tops = mixTops(g, v); swapCur(); },
+  'ing-step': el => { const d = ui.flow.d, it = BYID[d.id]; mixStep(d, it, Number(el.dataset.i), Number(el.dataset.d)); updGlass(); },
+  'rec-commit': () => {
+    const d = ui.flow.d, rec = itemRec(d); if (!rec) return;
+    const before = status(); S.records.push(rec);
+    const fi = S.favs.findIndex(x => x.key === favKey(d)); if (fi >= 0) S.favs[fi] = favFromD(d);
+    save();
+    const top = status().alerts.filter(a => !before.alerts.some(b => b.id === a.id)).sort(bySev)[0];
+    closeFlow('down');
+    toast(top ? top.text : `${rec.name} 기록했어요`, () => { S.records = S.records.filter(r => r.id !== rec.id); save(); swapCur(); toast('기록을 취소했어요'); });
+  },
+  'rec-skip': () => { closeFlow('down'); toast('좋은 선택이에요. 대신 물 한 잔 어때요?'); },
+  // 피드백
+  'fb-start': () => { const q = pending(); if (q.length) startFlow('fb', 'ask', {queue:q, i:0}, 'fwd'); },
+  fbans: el => {
+    const f = ui.flow; if (f.busy) return; f.busy = true;
+    const p = f.d.queue[f.d.i];
+    if (el.classList.contains('opt')) el.setAttribute('aria-pressed', 'true');
+    setTimeout(() => { f.busy = false; if (ui.flow !== f) return; f.d.res = applyFb(p.day, p.kind, el.dataset.v); f.hist = []; f.cur = 'res'; paintFlow('fwd'); }, 220);
+  },
+  'fb-next': () => { const f = ui.flow; f.d.i++; f.cur = 'ask'; paintFlow('fwd'); },
+  'fb-close': () => closeFlow('back'),
+  // 홈
+  det: el => startFlow('det', el.dataset.k, {}, 'fwd'),
+  rp: el => { ui.rp = Number(el.dataset.v); swapCur(); },
+  day: el => startFlow('day', 'view', {day:el.dataset.d}, 'fwd'),
+  again: el => {
+    const r = S.records.find(x => x.id === el.dataset.id); if (!r) return;
+    const rec = Object.assign({}, oneOf(r), {id:uid(), t:Date.now()}); delete rec.demo; delete rec.photo;
+    addRecord(rec); swapCur();
+  },
+  'again-fav': el => { const f = S.favs.find(x => x.key === el.dataset.key), rec = f && favRec(f, Date.now()); if (!rec) return; addRecord(rec); swapCur(); },
+  del: el => {
+    const i = S.records.findIndex(x => x.id === el.dataset.id); if (i < 0) return;
+    const [r] = S.records.splice(i, 1); save(); swapCur();
+    toast(`${r.name} 기록을 지웠어요`, () => { S.records.push(r); save(); swapCur(); });
+  },
+  undo: () => { const f = undoFn; undoFn = null; $('#toast').innerHTML = ''; if (f) f(); },
+  // 내 기준
+  seed: () => { seed(); ui.lastPct = {caf:0, alc:0}; if (ui.tab === 'me') swapCur(); else { ui.tab = 'home'; paintTab('fade'); } toast('2주 치 예시 기록을 넣었어요'); },
+  unseed: () => { unseed(); swapCur(); toast('예시 기록을 지웠어요'); },
+  edit: () => startFlow('ob', 'body', Object.assign(draft(), S.profile, {conds:[...(S.profile.conds || [])], meds:[...(S.profile.meds || [])], edit:true}), 'fwd'),
+  reset: () => startFlow('reset', 'confirm', {}, 'up'),
+  'reset-do': () => {
+    Object.assign(S, fresh()); try { localStorage.removeItem(KEY); } catch (e) {}
+    ui.tab = 'home'; ui.lastPct = {caf:0, alc:0};
+    startFlow('ob', 'welcome', draft(), 'fade');
+  },
+};
+/* 기록 화면 부분 갱신 (다시 그리지 않고 필요한 곳만) */
+function updPv() {
+  const f = ui.flow; if (!f || f.cur !== 'item') return;
+  const x = pvData(f.d), box = cur.querySelector('#pv'); if (!box) return;
+  const pv = box.firstElementChild;
+  if (!x || !pv || pv.dataset.k !== x.k) box.innerHTML = pvHTML(x);
+  else {
+    pv.querySelector('#pva').textContent = x.amt;
+    const v = pv.querySelector('#pvv'); v.textContent = x.f(x.v1); v.className = x.v1 > x.lim ? 'over' : '';
+    const g0 = pv.querySelector('#pg0'), g1 = pv.querySelector('#pg1');
+    g0.style.width = x.p0.toFixed(1) + '%'; g1.style.width = x.p1.toFixed(1) + '%'; g0.style.background = g1.style.background = x.color;
+    pv.querySelector('#pval').innerHTML = x.news.slice(0, 2).map(alertRow).join('');
+  }
+  const s = cur.querySelector('#ctas'); if (s) { s.textContent = x ? x.h : emptyMsg(); s.className = 'cta-sum ' + (x ? x.tone : ''); }
+  const b = cur.querySelector('#ctab'); if (b && b.dataset.s !== ctaState(x)) { b.dataset.s = ctaState(x); b.innerHTML = ctaBtns(x); }
+}
+function updPanel(pop) {
+  const d = ui.flow.d, it = d.custom ? null : BYID[d.id], p = cur.querySelector('#panel'); if (!p) return;
+  const hs = p.querySelector('.hscroll'), sl = hs ? hs.scrollLeft : 0;
+  p.outerHTML = panelHTML(d, it).replace(' data-in', '');
+  const hs2 = cur.querySelector('#panel .hscroll'); if (hs2) hs2.scrollLeft = sl;
+  if (pop) anim(cur.querySelector(pop), [{transform:'scale(1.18)'}, {transform:'none'}], {duration:220});
+}
+function updGlass(focusH) {
+  const f = ui.flow; if (!f || f.cur !== 'item') return;
+  const d = f.d, it = BYID[d.id], gb = cur.querySelector('#gbox'); if (!gb || !it) return;
+  gb.innerHTML = gArt(d, it);
+  const g = gOf(it, d.o), ro = cur.querySelector('#ro'), L = it.builder ? [] : presetList(it, g); if (ro) ro.innerHTML = it.builder ? mixRo(d, it) : roText(d, it);
+  const ly = cur.querySelector('#layers'); if (ly && it.builder) ly.innerHTML = mixRows(d, it);
+  cur.querySelectorAll('[data-a="pre"]').forEach(b => b.setAttribute('aria-pressed', String(preOn(d, it, g, L[Number(b.dataset.v)]))));
+  if (focusH) { const h = gb.querySelector(`[data-h="${focusH}"]`); if (h) try { h.focus({preventScroll:true}); } catch (e) {} }
+  updPv();
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
+  if (el.closest('.screen') && el.closest('.screen') !== cur) return;
+  const fn = ACT[el.dataset.a]; if (fn) { e.preventDefault(); fn(el, e); }
+});
+document.addEventListener('input', e => {
+  const t = e.target, f = ui.flow; if (!f) return;
+  if (t.closest('.big-in')) fitInput(t);
+  if (t.id === 'ob-w' || t.id === 'ob-h') {
+    f.d[t.id === 'ob-w' ? 'weight' : 'height'] = t.value; const b = cur.querySelector('[data-a="ob-w-next"]'); if (b) b.disabled = !validBody(f.d);
+    const er = cur.querySelector('#ob-w-err'); if (er) er.hidden = true;
+  } else if (t.id === 'ob-b') {
+    f.d.birth = t.value; const b = cur.querySelector('[data-a="ob-b-next"]'); if (b) b.disabled = !validB(t.value);
+    const er = cur.querySelector('#ob-b-err'); if (er) er.hidden = true;
+  } else if (t.id === 'q') {
+    f.d.q = t.value; cur.querySelector('#plist').innerHTML = pickBody(f.d);
+  } else if (t.id && t.id.startsWith('cu-')) {
+    f.d[t.id.slice(3)] = t.value; updPv();
+    const sb = cur.querySelector('[data-a="fav"]'); if (sb) { const on = isFav(f.d); sb.setAttribute('aria-pressed', String(on)); sb.innerHTML = on ? I.starOn : I.star; }
+  } else if (t.id === 'mx-name') {
+    f.d.o.name = t.value; updPv();
+    const sb = cur.querySelector('[data-a="fav"]'); if (sb) { const on = isFav(f.d); sb.setAttribute('aria-pressed', String(on)); sb.innerHTML = on ? I.starOn : I.star; }
+  } else if (t.id === 'rtime' && t.value) {
+    f.d.ago = null; f.d.time = t.value;
+    cur.querySelectorAll('[data-a="when"]').forEach(b => b.setAttribute('aria-pressed', 'false')); t.closest('.tchip').classList.add('on'); updPv();
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'photo' && t.files && t.files[0] && ui.flow) {
+    const f = ui.flow;
+    readPhoto(t.files[0]).then(u => { if (ui.flow !== f) return; if (!u) return toast('사진을 읽지 못했어요. 다른 사진을 골라 주세요'); f.d.photo = u; swapCur(); });
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && ui.flow) { goBack(); return; }
+  if (e.key === 'Enter' && e.target.id === 'ob-h') { e.preventDefault(); const w = cur.querySelector('#ob-w'); if (w) w.focus(); }
+  if (e.key === 'Enter' && e.target.id === 'ob-w') { e.preventDefault(); ACT['ob-w-next'](); }
+  if (e.key === 'Enter' && e.target.id === 'ob-b') { e.preventDefault(); ACT['ob-b-next'](); }
+  const hd = e.target.closest && e.target.closest('.hdl');
+  if (hd && ui.flow && ui.flow.cur === 'item' && /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|PageUp|PageDown)$/.test(e.key)) {
+    e.preventDefault(); const d = ui.flow.d, it = BYID[d.id], h = hd.dataset.h, st = /Page/.test(e.key) ? 0.1 : 0.02, dir = /Up|Right/.test(e.key) ? 1 : -1;
+    gSet(d, it, h, (h[0] === 'b' ? d.o.tops[Number(h.slice(1))] : h === 'top' ? d.o.top : d.o.split) + dir * st); updGlass(h);
+  }
+});
+let gdrag = null, gRaf = 0;
+function gT(e, it, d) {
+  const svg = cur.querySelector('#gsvg'); if (!svg) return 0;
+  const r = svg.getBoundingClientRect(), G = gGeom(gOf(it, d.o));
+  return clamp((G.y0 - (e.clientY - r.top) * (GV.H / r.height)) / G.bh, 0, 1);
+}
+document.addEventListener('pointerdown', e => {
+  const gb = e.target.closest && e.target.closest('#gbox'), f = ui.flow;
+  if (!gb || !f || f.cur !== 'item' || gb.closest('.screen') !== cur) return;
+  const d = f.d, it = BYID[d.id]; if (!it || !it.glasses) return;
+  const pill = e.target.closest('.hdl'), t = gT(e, it, d);
+  let h = pill ? pill.dataset.h : 'top';
+  if (!pill && it.mix) h = Math.abs(t - d.o.split) < Math.abs(t - d.o.top) ? 'split' : 'top';
+  if (it.builder) { if (!d.o.tops.length) return; if (!pill) { let bi = 0; d.o.tops.forEach((x, i) => { if (Math.abs(x - t) < Math.abs(d.o.tops[bi] - t)) bi = i; }); h = 'b' + bi; } }
+  gdrag = {h, id:e.pointerId};
+  try { gb.setPointerCapture(e.pointerId); } catch (x) {}
+  if (!pill) { gSet(d, it, h, t); updGlass(); }
+  e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+  if (!gdrag || e.pointerId !== gdrag.id) return;
+  const f = ui.flow; if (!f || f.cur !== 'item') { gdrag = null; return; }
+  const d = f.d, it = BYID[d.id]; gSet(d, it, gdrag.h, gT(e, it, d));
+  if (!gRaf) gRaf = requestAnimationFrame(() => { gRaf = 0; updGlass(); });
+});
+const gEnd = e => { if (gdrag && e.pointerId === gdrag.id) { gdrag = null; if (gRaf) { cancelAnimationFrame(gRaf); gRaf = 0; } updGlass(); } };
+document.addEventListener('pointerup', gEnd); document.addEventListener('pointercancel', gEnd);
+setInterval(() => { if (!ui.flow && ui.tab === 'home' && document.visibilityState === 'visible') swapCur(); }, 60000);
+
+if (S.profile) S.profile = normProfile(S.profile);
+if (!S.profile) startFlow('ob', 'welcome', draft(), 'none');
+else paintTab('none');
+})();
+</script>
+
+</html>
