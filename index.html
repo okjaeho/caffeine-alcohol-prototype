@@ -409,7 +409,7 @@ button.card:active{transform:scale(.985)}
 .bdays span{white-space:nowrap;overflow:visible}
 .hsm{font-size:15px;font-weight:600;color:var(--ink-3);margin-left:4px}
 .wheels{display:flex;gap:12px;margin-top:32px}
-.wheels.one{max-width:240px;margin-left:auto;margin-right:auto}
+.wheels.one{width:100%;max-width:240px;margin-left:auto;margin-right:auto}
 .wheel{flex:1;min-width:0}
 .wl{font-size:14px;font-weight:600;color:var(--ink-3);text-align:center;margin-bottom:8px}
 .wbox{position:relative;height:220px;border-radius:20px;background:var(--fill);overflow:hidden}
@@ -642,7 +642,7 @@ const bySev = (a, b) => SEV[b.lv] - SEV[a.lv];
 /* 표시 단위 (계산은 mg·g 그대로, 보여 줄 때만 바꿈) */
 const UC = {mg:{t:'mg', sh:'mg', mg:1}, tall:{t:'아메리카노 톨', sh:'톨', s:'355ml · 카페인 150mg', mg:150, nm:'아메리카노', u:'잔'},
   grande:{t:'아메리카노 그란데', sh:'그란데', s:'473ml · 카페인 225mg', mg:225, nm:'그란데 아메리카노', u:'잔'}, mega:{t:'메가커피 아메리카노', sh:'메가', s:'ICE 710ml · 카페인 236mg', mg:236, nm:'메가 아아', u:'잔'},
-  can:{t:'에너지드링크 캔', sh:'캔', s:'핫식스 250ml · 카페인 60mg', mg:60, nm:'에너지드링크', u:'캔'}};
+  can:{t:'에너지드링크 캔', sh:'캔', s:'몬스터 355ml · 카페인 100mg', mg:100, nm:'몬스터', u:'캔'}};
 const UA = {glass:{t:'소주잔', sh:'소주잔', s:`보통 따르는 양 ${SOJU_ML}ml · 알코올 ${fmt1(SOJU_G)}g`, g:SOJU_G, nm:'소주', u:'잔'},
   bottle:{t:'소주 병', sh:'소주 병', s:`360ml · 알코올 ${fmt1(360 * 0.16 * ETH)}g`, g:360 * 0.16 * ETH, nm:'소주', u:'병'},
   beer:{t:'맥주 500cc', sh:'500cc', s:`4.5% · 알코올 ${fmt1(500 * 0.045 * ETH)}g`, g:500 * 0.045 * ETH, nm:'맥주 500cc', u:'잔'}, g:{t:'순수 알코올 g', sh:'g', g:1}};
