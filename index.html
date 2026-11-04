@@ -430,9 +430,10 @@ button.card:active{transform:scale(.985)}
 .wi{height:44px;display:grid;place-items:center;scroll-snap-align:center;font-size:19px;font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums;cursor:pointer;transition:color .12s}
 .wi.on{color:var(--ink);font-size:25px;font-weight:800}
 .wu{position:absolute;right:16px;top:110px;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--ink-2);pointer-events:none}
-.seg.mini{display:inline-grid;grid-template-columns:auto auto;margin:0;padding:3px;border-radius:12px;background:var(--card)}
-.seg.mini button{height:34px;padding:0 12px;font-size:14px;border-radius:9px}
-.seg.mini button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.seg.tiny{display:inline-grid;grid-template-columns:none;grid-auto-flow:column;flex:none;margin:0;padding:3px;border-radius:12px;background:var(--card)}
+.seg.tiny button{height:34px;padding:0 12px;font-size:14px;border-radius:9px;white-space:nowrap}
+.seg.tiny.por button{padding:0 10px}
+.seg.tiny button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
 .score.risk{color:var(--warn);background:var(--warn-soft)}
 .score.high{color:var(--danger);background:var(--danger-soft)}
 .score.low{color:var(--alc);background:var(--alc-soft)}
@@ -477,7 +478,8 @@ const GL = {
   soju:   {n:'소주잔', cap:50, r:[0.8, 1], ar:1, def:{ml:SOJU_ML}, marks:[{t:'보통', ml:SOJU_ML}]},
   shot:   {n:'샷잔', cap:30, r:[0.74, 1], ar:0.74, def:1},
   paper:  {n:'종이컵', cap:184, r:[0.7, 1], ar:0.92, def:0.6},
-  beer:   {n:'맥주잔', cap:225, r:[0.68, 1], ar:0.6, def:0.92, logo:0.36},
+  beer:   {n:'맥주잔', cap:225, r:[0.92, 1], ar:0.5, def:0.92, logo:0.36},   // 원통형 유리잔 (테라 전용잔 225ml 크기)
+  beer3:  {n:'큰 맥주잔', cap:300, r:[0.92, 1], ar:0.54, def:0.92, logo:0.36},   // 카스 신형 전용잔 300ml 크기
   jug:    {n:'500cc 잔', cap:500, r:[0.92, 1], ar:0.7, def:0.9, handle:true},
   hb:     {n:'하이볼잔', cap:350, r:[0.95, 1], ar:0.46, def:0.85},
   rock:   {n:'온더락잔', cap:250, r:[0.94, 1], ar:1.05, def:{ml:45}},
@@ -525,7 +527,7 @@ const DB = [
   {id:'greentea',k:'caf',cat:'에너지·탄산·차',name:'녹차',sizes:[['티백 1개',200,25]]},
   {id:'blacktea',k:'caf',cat:'에너지·탄산·차',name:'홍차',sizes:[['티백 1개',200,45]]},
   {id:'milktea',k:'caf',cat:'에너지·탄산·차',name:'밀크티',sizes:[['Regular',355,70]]},
-  {id:'mixb',k:'alc',cat:'혼합주',name:'혼합주 직접 만들기',builder:true,glasses:['beer','jug','hb','rock','paper','soju','wine','sabal'],q:'섞기 섞어 혼합 폭탄주 소맥 연맥 쏘맥 소토닉 막사 하이볼 에너지밤 직접'},
+  {id:'mixb',k:'alc',cat:'혼합주',name:'혼합주 직접 만들기',builder:true,glasses:['beer','beer3','jug','hb','rock','paper','soju','wine','sabal'],q:'섞기 섞어 혼합 폭탄주 소맥 연맥 쏘맥 소토닉 막사 하이볼 에너지밤 직접'},
   // 예전 조합(목록에는 숨김, 예전 기록·즐겨찾기용)
   {id:'somaek',k:'alc',cat:'말아 마시기',hidden:true,name:'소맥',mix:{a:{n:'소주',abv:16,liq:'clear'},b:{n:'맥주',abv:4.5,liq:'beer'}},glasses:['beer','jug','paper'],
     presets:[{t:'소주잔 1잔',ml:SOJU_ML},{t:'소주잔 2잔',ml:SOJU_ML * 2},{t:'로고까지',logo:true},{t:'3 : 7',ratio:0.3}],def:{glass:'beer',base:{ml:SOJU_ML}},q:'소주 맥주 쏘맥'},
@@ -541,7 +543,7 @@ const DB = [
     presets:[{t:'1샷 30ml',ml:30},{t:'1.5샷 45ml',ml:45},{t:'2샷 60ml',ml:60}],def:{glass:'hb',base:{ml:45}},q:'위스키 탄산'},
   // 소주·맥주
   {id:'soju',k:'alc',cat:'소주·맥주',name:'소주',abv:16,liq:'clear',glasses:['soju','paper','bot360'],q:'참이슬 처음처럼 진로 새로'},
-  {id:'beer',k:'alc',cat:'소주·맥주',name:'맥주',abv:4.5,liq:'beer',glasses:['beer','jug','can355','can500','bot500'],q:'생맥 카스 테라 켈리'},
+  {id:'beer',k:'alc',cat:'소주·맥주',name:'맥주',abv:4.5,liq:'beer',glasses:['beer','beer3','jug','can355','can500','bot500'],q:'생맥 카스 테라 켈리'},
   {id:'fruitsoju',k:'alc',cat:'소주·맥주',name:'과일소주',abv:12,liq:'clear',glasses:['soju','paper','bot360'],q:'자몽 청포도 복숭아'},
   {id:'makgeolli',k:'alc',cat:'와인·전통주',name:'막걸리',abv:6,liq:'mak',glasses:['sabal','paper','bot750']},
   {id:'canhb',k:'alc',cat:'소주·맥주',name:'캔 하이볼',abv:7,liq:'soda',glasses:['can350'],q:'편의점 하이볼'},
@@ -639,8 +641,8 @@ function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.par
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { storageOK = false; } }
 const fresh = () => ({profile:null, records:[], feedback:[], favs:[], mine:[], units:{caf:'mg', alc:'glass'}, kc:1, ka:1});
 const S = Object.assign(fresh(), load() || {});
-/* 내가 만든 술·음료: 직접 입력하면서 저장한 제품 (예: 한라산 21%, 올드 라스푸틴 9%) */
-const MY_T = {soju:{t:'소주·전통주', glasses:['soju', 'paper', 'bot360'], liq:'clear'}, beer:{t:'맥주', glasses:['beer', 'jug', 'can355', 'can500', 'bot500'], liq:'beer'},
+/* 내가 만든 술·음료: 직접 입력하면서 저장한 제품 */
+const MY_T = {soju:{t:'소주·전통주', glasses:['soju', 'paper', 'bot360'], liq:'clear'}, beer:{t:'맥주', glasses:['beer', 'beer3', 'jug', 'can355', 'can500', 'bot500'], liq:'beer'},
   wine:{t:'와인', glasses:['wine', 'paper', 'bot750'], liq:'wine'}, spirit:{t:'양주·리큐르', glasses:['shot', 'rock', 'soju'], liq:'whisky'}, etc:{t:'기타', glasses:['soju', 'beer', 'paper', 'wine'], liq:'clear'}};
 const myType = abv => abv < 9 ? 'beer' : abv < 14 ? 'wine' : abv < 25 ? 'soju' : 'spirit';
 const myItem = p => p.k === 'caf' ? {id:p.id, k:'caf', cat:'내가 만든 것', name:p.name, sizes:[['1회', Number(p.ml) || 0, Number(p.mg)]], shot:0, mine:true, q:'내가 만든 직접'}
@@ -1182,10 +1184,16 @@ function whenTime(d) {
   const x = new Date(now); x.setHours(h, m || 0, 0, 0); let t = x.getTime(); if (t > now + 5 * MIN) t -= DAY; return t;
 }
 const customValid = d => d.k === 'caf' ? (Number(d.mg) > 0 && Number(d.mg) <= 2000) : (Number(d.ml) > 0 && Number(d.ml) <= 5000 && Number(d.abv) > 0 && Number(d.abv) <= 100);
-const fmtQty = (q, u = '잔') => q === 0.5 ? `반 ${u}` : `${q}${u}`;
+const FRQ = {25:'1/4', 50:'반', 75:'3/4'};
+const fmtQty = (q, u = '잔') => {
+  const w = Math.floor(q + 1e-9), f = FRQ[Math.round((q - w) * 100)];
+  if (!f) return `${Math.round(q * 100) / 100}${u}`;
+  return w ? `${w}${u} ${f}` : f === '반' ? `반 ${u}` : `${f}${u}`;
+};
+const needPor = (it, d) => d.custom ? d.k === 'caf' : !!it && (it.k === 'caf' || !!it.recipe || (!!it.glasses && !it.builder && !!gOf(it, d.o).pack));
 const fmtMg = v => (v >= 10 ? Math.round(v) : fmt1(v)) + 'mg';
 function itemRec(d) {
-  const t = whenTime(d), q = d.qty || 1; let r;
+  const it0 = d.custom ? null : BYID[d.id], t = whenTime(d), q = (d.qty || 1) * (needPor(it0, d) ? (d.por || 1) : 1); let r;
   if (d.custom) { if (!customValid(d)) return null; r = customRec(d, q, t); }
   else { const it = BYID[d.id]; if (!it) return null; r = makeRec(it, Object.assign({}, d.o, {qty:q}), t); }
   if (r.alc > 0) { r.food = d.food !== false; if (!r.food) r.sub += ' · 빈속'; }
@@ -1204,8 +1212,8 @@ function favRec(f, t) {
 }
 function openItem(it, o) {
   if (it.mix) { const c = cleanOpts(it, o), p = pour(it, c); return openItem(BYID.mixb, mixOpts(gOf(it, c).id, [[ingKey(it.mix.a.n), p.a], [ingKey(it.mix.b.n), p.b]])); }   // 예전 조합은 혼합주로 열기
-  const d = ui.flow.d; Object.assign(d, {id:it.id, k:it.k, custom:false, o:cleanOpts(it, o), qty:1, ago:0, time:null, food:true}); go('item'); }
-function openCustom(c) { const d = ui.flow.d; Object.assign(d, {custom:true, id:null, k:c.k || 'caf', name:c.name || '', mg:c.mg != null ? c.mg : '', ml:c.ml != null ? c.ml : '', abv:c.abv != null ? c.abv : '', o:{}, qty:1, ago:0, time:null, food:true}); go('item'); }
+  const d = ui.flow.d; Object.assign(d, {id:it.id, k:it.k, custom:false, o:cleanOpts(it, o), qty:1, por:1, ago:0, time:null, food:true}); go('item'); }
+function openCustom(c) { const d = ui.flow.d; Object.assign(d, {custom:true, id:null, k:c.k || 'caf', name:c.name || '', mg:c.mg != null ? c.mg : '', ml:c.ml != null ? c.ml : '', abv:c.abv != null ? c.abv : '', o:{}, qty:1, por:1, ago:0, time:null, food:true}); go('item'); }
 function defaultKind() {
   if (alcInfo().disabled) return 'caf';
   const now = Date.now(), last = S.records.filter(r => r.t <= now && now - r.t < 3 * H).sort((a, b) => b.t - a.t)[0];
@@ -1272,7 +1280,7 @@ function pickBody(d) {
   const rec = recentList(12).filter(r => kindOf(r) === d.k && !fk.has(recKey(r))).slice(0, 3);
   if (rec.length) h += `<h2 class="grp">최근</h2><div class="rows">${rec.map(r => tplRow('rid', r.id, oneOf(r), false)).join('')}</div>`;
   const dir = d.k === 'caf' ? `<button class="row mkrow" data-a="rcustom"><span class="mk-ic c" aria-hidden="true">+</span><span class="row-t"><b>카페인 mg로 직접 기록</b><small>컵이나 캔에 적힌 카페인을 그대로 넣어요</small></span>${I.chev}</button>`
-    : `<button class="row mkrow" data-a="rcustom"><span class="mk-ic" aria-hidden="true">+</span><span class="row-t"><b>도수·양으로 직접 기록</b><small>한라산, 수제맥주처럼 목록에 없는 술</small></span>${I.chev}</button>` + itemRowHTML(BYID.mixb);
+    : `<button class="row mkrow" data-a="rcustom"><span class="mk-ic" aria-hidden="true">+</span><span class="row-t"><b>도수·양으로 직접 기록</b><small>목록에 없는 술을 도수와 양으로 기록해요</small></span>${I.chev}</button>` + itemRowHTML(BYID.mixb);
   h += `<h2 class="grp">직접 넣기</h2><div class="rows">${dir}</div>`;
   const mine = DB.filter(x => x.mine && x.k === d.k);
   if (mine.length) h += `<h2 class="grp">내가 만든 것<button data-a="mine">편집</button></h2><div class="rows">${mine.map(it => itemRowHTML(it, false)).join('')}</div>`;
@@ -1368,7 +1376,7 @@ function builderHTML(d, it) {
     <p class="ro" id="ro" data-in>${mixRo(d, it)}</p>
     <div class="layers" id="layers" data-in>${mixRows(d, it)}</div>
     <div class="ingadd" data-in>${grp('술 넣기', ks.filter(k => ING[k].abv > 0))}${grp('섞는 음료 넣기', ks.filter(k => !ING[k].abv))}</div>
-    <label class="field" data-in><span>이름 (선택)</span><input class="text-in" id="mx-name" value="${esc(o.name)}" placeholder="${esc(o.ings.length ? mixAuto(o) : '예: 우리 과 폭탄주')}" autocomplete="off"></label>`;
+    <label class="field" data-in><span>이름 (선택)</span><input class="text-in" id="mx-name" value="${esc(o.name)}" placeholder="${esc(o.ings.length ? mixAuto(o) : '비워 두면 재료 이름으로 저장돼요')}" autocomplete="off"></label>`;
 }
 function mixAdd(d, it, k) {
   const g = gOf(it, d.o), o = d.o, x = ING[k];
@@ -1450,11 +1458,11 @@ function recipeBody(it) {
     <div class="recipe" data-in>${it.recipe.map(([n, v, a]) => `<div class="rc"><span>${esc(n)}</span><span class="n">${v >= 5 ? v + 'ml' : v > 0 ? '약간' : ''}${a ? ` · ${a}%` : ''}</span></div>`).join('')}</div>
     <p class="disc" data-in style="margin-top:10px">${it.src === 'cdb' ? 'TheCocktailDB 공개 레시피를 ml로 바꾼 값이에요.' : '일반적인 레시피 기준이에요.'} 가게마다 조금씩 달라요.</p>`;
 }
-const ML_CH = [['소주잔', SOJU_ML], ['샷', 30], ['와인 한 잔', 150], ['맥주잔', 225], ['캔', 355], ['소주 한 병', 360], ['500cc', 500]];
+const ML_CH = [['소주잔', SOJU_ML], ['샷', 30], ['와인 한 잔', 150], ['맥주잔', 225], ['큰 맥주잔', 300], ['캔', 355], ['소주 한 병', 360], ['500cc', 500]];
 function customHTML(d) {
   const caf = d.k === 'caf', adult = !alcInfo().disabled, mt = d.mt || myType(Number(d.abv) || 0);
   return (adult ? `<div class="seg" data-in>${[['caf', '카페인 음료'], ['alc', '술']].map(([v, t]) => `<button data-a="ck" data-v="${v}" aria-pressed="${d.k === v}">${t}</button>`).join('')}</div>` : '') +
-    `<label class="field" data-in><span>이름${d.save ? '' : ' (선택)'}</span><input class="text-in" id="cu-name" value="${esc(d.name)}" placeholder="${caf ? '예: 학식 자판기 커피' : '예: 한라산 21, 올드 라스푸틴'}" autocomplete="off"></label>` +
+    `<label class="field" data-in><span>이름${d.save ? '' : ' (선택)'}</span><input class="text-in" id="cu-name" value="${esc(d.name)}" placeholder="${caf ? '음료 이름' : '술 이름'}" autocomplete="off"></label>` +
     (caf ? `<label class="big-in sm" data-in><input id="cu-mg" type="number" inputmode="decimal" placeholder="0" value="${esc(d.mg)}" aria-label="카페인 mg"><span>mg</span></label>
             <p class="disc" data-in style="margin-top:8px">컵이나 캔에 적힌 카페인을 넣어 주세요. 모르면 뒤로 가서 비슷한 메뉴를 고르는 게 더 정확해요.</p>`
          : `<div class="grid2" data-in><label class="big-in sm"><input id="cu-abv" type="number" inputmode="decimal" placeholder="0" value="${esc(d.abv)}" aria-label="도수 %"><span>%</span></label><label class="big-in sm"><input id="cu-ml" type="number" inputmode="decimal" placeholder="0" value="${esc(d.ml)}" aria-label="마신 양 ml"><span>ml</span></label></div>
@@ -1467,7 +1475,7 @@ function glassHTML(d, it) {
   if (it.builder) return builderHTML(d, it);
   const g = gOf(it, d.o);
   let h = it.glasses.length > 1 ? `<div class="hscroll gsel" data-in>${it.glasses.map(id => { const x = GL[id]; return `<button class="gchip" data-a="gsel" data-v="${id}" aria-pressed="${id === g.id}">${gIcon(x)}<span>${x.n}<small>${x.pack ? x.ml : x.cap}ml</small></span></button>`; }).join('')}</div>` : '';
-  if (g.pack) return h + `<div class="pack" data-in><svg viewBox="0 0 24 24" width="96" height="96" aria-hidden="true"><path d="${PACK_D[g.pack]}" class="gl-out"/></svg><p>${g.ml}ml ${g.u === '병' ? '한 병' : '한 캔'} 기준이에요.<br>반 ${g.u}이면 아래에서 줄여 주세요.</p></div>`;
+  if (g.pack) return h + `<div class="pack" data-in><svg viewBox="0 0 24 24" width="96" height="96" aria-hidden="true"><path d="${PACK_D[g.pack]}" class="gl-out"/></svg><p>${g.ml}ml ${g.u === '병' ? '한 병' : '한 캔'} 기준이에요.<br>덜 마셨으면 아래 ‘얼마나’에서 골라 주세요.</p></div>`;
   h += `<p class="ghint" data-in>${it.mix ? '내 잔과 비교하면서 두 선을 끌어 맞춰 보세요' : '내 잔과 비교하면서 선을 끌어 맞춰 보세요'}</p>
     <div class="gbox" id="gbox" role="group" aria-label="잔에 채운 높이" data-in>${gArt(d, it)}</div>
     <div class="chips pre" data-in>${presetList(it, g).map((p, i) => `<button class="chip" data-a="pre" data-v="${i}" aria-pressed="${preOn(d, it, g, p)}">${esc(p.t)}</button>`).join('')}</div>
@@ -1479,8 +1487,9 @@ function panelHTML(d, it) {
   const g = it && it.glasses ? gOf(it, d.o) : null, u = g && g.pack ? g.u : '잔', q = d.qty || 1, sh = (d.o && d.o.shots) || 0;
   let h = `<div class="panel" id="panel" data-in>`;
   if (it && it.k === 'caf' && it.shot) h += `<div class="prow"><span>샷 추가<small>1샷에 ${it.shot}mg</small></span><span class="step"><button data-a="sh" data-d="-1" aria-label="샷 하나 빼기" ${sh ? '' : 'disabled'}>−</button><b id="sv">${sh ? '+' + sh + '샷' : '없음'}</b><button data-a="sh" data-d="1" aria-label="샷 하나 추가" ${sh >= 4 ? 'disabled' : ''}>+</button></span></div>`;
-  if ((it && it.k === 'alc') || (!it && d.k === 'alc')) h += `<div class="prow"><span>안주<small>빈속이면 더 빨리 취해요</small></span><span class="seg mini">${[[1, '먹으면서'], [0, '빈속에']].map(([v, t]) => `<button data-a="food" data-v="${v}" aria-pressed="${(d.food !== false) === !!v}">${t}</button>`).join('')}</span></div>`;
-  h += `<div class="prow"><span>몇 ${u}</span><span class="step"><button data-a="qty" data-d="-1" aria-label="반 ${u} 줄이기" ${q <= 0.5 ? 'disabled' : ''}>−</button><b id="qv">${fmtQty(q, u)}</b><button data-a="qty" data-d="1" aria-label="반 ${u} 늘리기" ${q >= 10 ? 'disabled' : ''}>+</button></span></div>`;
+  if ((it && it.k === 'alc') || (!it && d.k === 'alc')) h += `<div class="prow"><span>안주<small>빈속이면 더 빨리 취해요</small></span><span class="seg tiny">${[[1, '먹으면서'], [0, '빈속에']].map(([v, t]) => `<button data-a="food" data-v="${v}" aria-pressed="${(d.food !== false) === !!v}">${t}</button>`).join('')}</span></div>`;
+  h += `<div class="prow"><span>몇 ${u}</span><span class="step"><button data-a="qty" data-d="-1" aria-label="한 ${u} 줄이기" ${q <= 1 ? 'disabled' : ''}>−</button><b id="qv">${q}${u}</b><button data-a="qty" data-d="1" aria-label="한 ${u} 늘리기" ${q >= 20 ? 'disabled' : ''}>+</button></span></div>`;
+  if (needPor(it, d)) h += `<div class="prow"><span>얼마나<small>한 ${u}에서 마신 만큼</small></span><span class="seg tiny por">${[[1, '다'], [0.75, '3/4'], [0.5, '반'], [0.25, '1/4']].map(([v, t]) => `<button data-a="por" data-v="${v}" aria-pressed="${(d.por || 1) === v}">${t}</button>`).join('')}</span></div>`;
   h += `<div class="prow col"><span>언제</span><div class="hscroll">${WHEN.map(([v, t]) => `<button class="chip" data-a="when" data-v="${v}" aria-pressed="${d.ago === v}">${t}</button>`).join('')}<label class="chip tchip ${d.ago == null ? 'on' : ''}">${I.clock}<input type="time" id="rtime" value="${esc(d.time || hm(Date.now()))}" aria-label="다른 시각 고르기"></label></div></div>`;
   return h + '</div>';
 }
@@ -1999,7 +2008,8 @@ const ACT = {
   ck: el => { ui.flow.d.k = el.dataset.v; swapCur(); },
   vsel: el => { ui.flow.d.o.size = Number(el.dataset.v); cur.querySelectorAll('[data-a="vsel"]').forEach(b => b.setAttribute('aria-pressed', String(b === el))); updPv(); },
   sh: el => { const d = ui.flow.d; d.o.shots = clamp((d.o.shots || 0) + Number(el.dataset.d), 0, 4); updPanel('#sv'); updPv(); },
-  qty: el => { const d = ui.flow.d; d.qty = clamp((d.qty || 1) + Number(el.dataset.d) * 0.5, 0.5, 10); updPanel('#qv'); updPv(); },
+  qty: el => { const d = ui.flow.d; d.qty = clamp(Math.round(d.qty || 1) + Number(el.dataset.d), 1, 20); updPanel('#qv'); updPv(); },
+  por: el => { ui.flow.d.por = Number(el.dataset.v); updPanel(); updPv(); },
   when: el => { const d = ui.flow.d; d.ago = Number(el.dataset.v); d.time = null; updPanel(); updPv(); },
   gsel: el => {
     const d = ui.flow.d, it = BYID[d.id]; if (d.o.glass === el.dataset.v) return;
