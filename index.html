@@ -56,6 +56,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 .screen.tabscr{z-index:1;background:var(--bg-2);padding-bottom:100px}
 .screen.flow{z-index:10}
+.screen > *{flex-shrink:0}   /* 화면이 길어도 가로 스크롤 줄이 눌려 사라지지 않게 */
 
 /* top bar */
 .bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;min-height:56px;margin:0 -10px;background:var(--bg)}
@@ -435,6 +436,11 @@ button.card:active{transform:scale(.985)}
 .score.risk{color:var(--warn);background:var(--warn-soft)}
 .score.high{color:var(--danger);background:var(--danger-soft)}
 .score.low{color:var(--alc);background:var(--alc-soft)}
+.mkrow .mk-ic.c{background:var(--caf-soft);color:var(--caf)}
+.save{display:flex;align-items:flex-start;gap:12px;margin-top:22px;padding:14px 16px;border-radius:16px;background:var(--fill);cursor:pointer}
+.save input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent);flex:none}
+.save span{font-size:15px;font-weight:600}
+.save small{display:block;font-size:13px;font-weight:500;color:var(--ink-3);margin-top:2px}
 .whyt{margin-top:18px}
 .whyt p{font-size:14px;font-weight:600;color:var(--ink-3)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -631,8 +637,17 @@ const COND_Q = {insomnia:'잠들기 어려운 날이 많아요', heart:'심장�
 let storageOK = true;
 function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { storageOK = false; return null; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { storageOK = false; } }
-const fresh = () => ({profile:null, records:[], feedback:[], favs:[], units:{caf:'mg', alc:'glass'}, kc:1, ka:1});
+const fresh = () => ({profile:null, records:[], feedback:[], favs:[], mine:[], units:{caf:'mg', alc:'glass'}, kc:1, ka:1});
 const S = Object.assign(fresh(), load() || {});
+/* 내가 만든 술·음료: 직접 입력하면서 저장한 제품 (예: 한라산 21%, 올드 라스푸틴 9%) */
+const MY_T = {soju:{t:'소주·전통주', glasses:['soju', 'paper', 'bot360'], liq:'clear'}, beer:{t:'맥주', glasses:['beer', 'jug', 'can355', 'can500', 'bot500'], liq:'beer'},
+  wine:{t:'와인', glasses:['wine', 'paper', 'bot750'], liq:'wine'}, spirit:{t:'양주·리큐르', glasses:['shot', 'rock', 'soju'], liq:'whisky'}, etc:{t:'기타', glasses:['soju', 'beer', 'paper', 'wine'], liq:'clear'}};
+const myType = abv => abv < 9 ? 'beer' : abv < 14 ? 'wine' : abv < 25 ? 'soju' : 'spirit';
+const myItem = p => p.k === 'caf' ? {id:p.id, k:'caf', cat:'내가 만든 것', name:p.name, sizes:[['1회', Number(p.ml) || 0, Number(p.mg)]], shot:0, mine:true, q:'내가 만든 직접'}
+  : {id:p.id, k:'alc', cat:'내가 만든 것', name:p.name, abv:Number(p.abv), liq:MY_T[p.t].liq, glasses:MY_T[p.t].glasses, mine:true, q:'내가 만든 직접'};
+function regMine(p) { const it = myItem(p), i = DB.findIndex(x => x.id === it.id); if (i >= 0) DB[i] = it; else DB.push(it); BYID[it.id] = it; return it; }
+function unregMine(id) { const i = DB.findIndex(x => x.id === id); if (i >= 0) DB.splice(i, 1); delete BYID[id]; }
+S.mine.forEach(regMine);
 
 /* ---------- 유틸 ---------- */
 const $ = s => document.querySelector(s);
@@ -899,7 +914,7 @@ function pour(it, o) {
 /* ---------- 기록 ---------- */
 function calc(it, o) {
   o = o || {}; const q = o.qty || 1; let caf = 0, alc = 0, ml = 0, label;
-  if (it.k === 'caf') { const s = it.sizes[o.size || 0] || it.sizes[0]; caf = (s[2] + (o.shots || 0) * (it.shot || 0)) * q; ml = s[1] * q; label = s[0] === '1잔' ? s[1] + 'ml' : s[0]; }
+  if (it.k === 'caf') { const s = it.sizes[o.size || 0] || it.sizes[0]; caf = (s[2] + (o.shots || 0) * (it.shot || 0)) * q; ml = s[1] * q; label = s[0] === '1잔' ? s[1] + 'ml' : s[0] === '1회' && s[1] ? s[1] + 'ml' : s[0]; }
   else if (it.recipe) { for (const [, v, a] of it.recipe) { alc += v * a / 100 * ETH * q; ml += v * q; } caf = (it.caf || 0) * q; label = '1잔'; }
   else if (it.builder) {
     const g = gOf(it, o), vols = mixVols(g, o), ks = o.ings || [];
@@ -1256,12 +1271,17 @@ function pickBody(d) {
   const fk = new Set(S.favs.map(f => f.key));
   const rec = recentList(12).filter(r => kindOf(r) === d.k && !fk.has(recKey(r))).slice(0, 3);
   if (rec.length) h += `<h2 class="grp">최근</h2><div class="rows">${rec.map(r => tplRow('rid', r.id, oneOf(r), false)).join('')}</div>`;
+  const dir = d.k === 'caf' ? `<button class="row mkrow" data-a="rcustom"><span class="mk-ic c" aria-hidden="true">+</span><span class="row-t"><b>카페인 mg로 직접 기록</b><small>컵이나 캔에 적힌 카페인을 그대로 넣어요</small></span>${I.chev}</button>`
+    : `<button class="row mkrow" data-a="rcustom"><span class="mk-ic" aria-hidden="true">+</span><span class="row-t"><b>도수·양으로 직접 기록</b><small>한라산, 수제맥주처럼 목록에 없는 술</small></span>${I.chev}</button>` + itemRowHTML(BYID.mixb);
+  h += `<h2 class="grp">직접 넣기</h2><div class="rows">${dir}</div>`;
+  const mine = DB.filter(x => x.mine && x.k === d.k);
+  if (mine.length) h += `<h2 class="grp">내가 만든 것<button data-a="mine">편집</button></h2><div class="rows">${mine.map(it => itemRowHTML(it, false)).join('')}</div>`;
   if (d.k === 'caf') {
     const cats = ['커피', '에너지·탄산·차', ...BRANDS];
     h += `<h2 class="grp">메뉴</h2><div class="hscroll">${cats.map(c => `<button class="chip" data-a="cat" data-v="${esc(c)}" aria-pressed="${d.cat === c}">${esc(CATN[c] || c)}</button>`).join('')}</div>
       <div class="rows">${DB.filter(x => x.k === 'caf' && x.cat === d.cat).map(it => itemRowHTML(it, false)).join('')}</div>`;
   } else {
-    [...new Set(DB.filter(x => x.k === 'alc' && !x.hidden).map(x => x.cat))].filter(c => c !== '칵테일 전체' || d.ckAll).forEach(c => { h += `<h2 class="grp">${esc(CATN[c] || c)}</h2><div class="rows">${DB.filter(x => x.k === 'alc' && !x.hidden && x.cat === c).map(it => itemRowHTML(it, false)).join('')}</div>`; });
+    [...new Set(DB.filter(x => x.k === 'alc' && !x.hidden && !x.mine && !x.builder).map(x => x.cat))].filter(c => c !== '칵테일 전체' || d.ckAll).forEach(c => { h += `<h2 class="grp">${esc(CATN[c] || c)}</h2><div class="rows">${DB.filter(x => x.k === 'alc' && !x.hidden && x.cat === c).map(it => itemRowHTML(it, false)).join('')}</div>`; });
     if (!d.ckAll) h += `<button class="ghost" data-a="ckall">그 밖의 칵테일 ${DB.filter(x => x.cat === '칵테일 전체').length}개 더 보기</button>`;
   }
   return h;
@@ -1422,7 +1442,7 @@ function roText(d, it) {
 function cafPick(d, it) {
   const vs = it.sizes, si = d.o.size || 0;
   if (vs.length > 1) return `<div class="vgrid" data-in>${vs.map((s, i) => `<button class="vopt" data-a="vsel" data-v="${i}" aria-pressed="${si === i}"><b>${esc(s[0])}</b><small>${s[1]}ml · ${fmtMg(s[2])}</small></button>`).join('')}</div>`;
-  const s = vs[0]; return `<p class="sub" data-in>${s[0] === '1잔' ? '' : esc(s[0]) + ' · '}${s[1]}ml · 카페인 ${fmtMg(s[2])}</p>`;
+  const s = vs[0]; return `<p class="sub" data-in>${s[0] === '1잔' || s[0] === '1회' ? '' : esc(s[0]) + ' · '}${s[1] ? s[1] + 'ml · ' : ''}카페인 ${fmtMg(s[2])}</p>`;
 }
 function recipeBody(it) {
   const c = calc(it, {qty:1});
@@ -1430,14 +1450,18 @@ function recipeBody(it) {
     <div class="recipe" data-in>${it.recipe.map(([n, v, a]) => `<div class="rc"><span>${esc(n)}</span><span class="n">${v >= 5 ? v + 'ml' : v > 0 ? '약간' : ''}${a ? ` · ${a}%` : ''}</span></div>`).join('')}</div>
     <p class="disc" data-in style="margin-top:10px">${it.src === 'cdb' ? 'TheCocktailDB 공개 레시피를 ml로 바꾼 값이에요.' : '일반적인 레시피 기준이에요.'} 가게마다 조금씩 달라요.</p>`;
 }
+const ML_CH = [['소주잔', SOJU_ML], ['샷', 30], ['와인 한 잔', 150], ['맥주잔', 225], ['캔', 355], ['소주 한 병', 360], ['500cc', 500]];
 function customHTML(d) {
-  const caf = d.k === 'caf', adult = !alcInfo().disabled;
+  const caf = d.k === 'caf', adult = !alcInfo().disabled, mt = d.mt || myType(Number(d.abv) || 0);
   return (adult ? `<div class="seg" data-in>${[['caf', '카페인 음료'], ['alc', '술']].map(([v, t]) => `<button data-a="ck" data-v="${v}" aria-pressed="${d.k === v}">${t}</button>`).join('')}</div>` : '') +
+    `<label class="field" data-in><span>이름${d.save ? '' : ' (선택)'}</span><input class="text-in" id="cu-name" value="${esc(d.name)}" placeholder="${caf ? '예: 학식 자판기 커피' : '예: 한라산 21, 올드 라스푸틴'}" autocomplete="off"></label>` +
     (caf ? `<label class="big-in sm" data-in><input id="cu-mg" type="number" inputmode="decimal" placeholder="0" value="${esc(d.mg)}" aria-label="카페인 mg"><span>mg</span></label>
             <p class="disc" data-in style="margin-top:8px">컵이나 캔에 적힌 카페인을 넣어 주세요. 모르면 뒤로 가서 비슷한 메뉴를 고르는 게 더 정확해요.</p>`
-         : `<div class="grid2" data-in><label class="big-in sm"><input id="cu-ml" type="number" inputmode="decimal" placeholder="0" value="${esc(d.ml)}" aria-label="양 ml"><span>ml</span></label><label class="big-in sm"><input id="cu-abv" type="number" inputmode="decimal" placeholder="0" value="${esc(d.abv)}" aria-label="도수 %"><span>%</span></label></div>
-            <p class="disc" data-in style="margin-top:8px">병이나 캔에 적힌 양과 도수를 넣어 주세요.</p>`) +
-    `<label class="field" data-in><span>이름 (선택)</span><input class="text-in" id="cu-name" value="${esc(d.name)}" placeholder="${caf ? '예: 학식 자판기 커피' : '예: 동아리방 담금주'}" autocomplete="off"></label>`;
+         : `<div class="grid2" data-in><label class="big-in sm"><input id="cu-abv" type="number" inputmode="decimal" placeholder="0" value="${esc(d.abv)}" aria-label="도수 %"><span>%</span></label><label class="big-in sm"><input id="cu-ml" type="number" inputmode="decimal" placeholder="0" value="${esc(d.ml)}" aria-label="마신 양 ml"><span>ml</span></label></div>
+            <p class="disc" data-in style="margin-top:8px">병이나 캔에 적힌 도수와, 마신 양을 넣어 주세요.</p>
+            <div class="hscroll" data-in>${ML_CH.map(([t, v]) => `<button class="chip" data-a="cu-mlset" data-v="${v}" aria-pressed="${Number(d.ml) === v}">${t} ${v}ml</button>`).join('')}</div>`) +
+    `<label class="save" data-in><input type="checkbox" id="mysave" ${d.save ? 'checked' : ''}><span>${caf ? '내 음료로 저장하기' : '내 술로 저장하기'}<small>${caf ? '다음부터 검색해서 바로 찾을 수 있어요' : '다음부터 검색해서 잔 그림으로 기록할 수 있어요'}</small></span></label>` +
+    (!caf && d.save ? `<p class="ing-g" data-in>어떤 술이에요?</p><div class="chips" data-in>${Object.entries(MY_T).map(([k, x]) => `<button class="chip" data-a="cu-type" data-v="${k}" aria-pressed="${mt === k}">${x.t}</button>`).join('')}</div>` : '');
 }
 function glassHTML(d, it) {
   if (it.builder) return builderHTML(d, it);
@@ -1491,6 +1515,11 @@ const ctaHTML = x => `<div class="cta" id="ctaw"><p class="cta-sum ${x ? x.tone 
 function unitList(k) {
   const L = k === 'caf' ? UC : UA;
   return `<h2 class="sec2" data-in>${k === 'caf' ? '카페인' : '술'}</h2><div class="opts" style="margin-top:10px">${Object.entries(L).map(([id, u]) => `<button class="opt" data-a="unit" data-k="${k}" data-v="${id}" aria-pressed="${S.units[k] === id}" data-in><span class="opt-t">${u.t}${u.s ? `<small>${u.s}</small>` : ''}</span><span class="ck">${I.check}</span></button>`).join('')}</div>`;
+}
+function mineList() {
+  const L = DB.filter(x => x.mine);
+  return {html: bar({}) + head('내가 만든 음료·술', L.length ? '검색과 목록에서 바로 찾을 수 있어요.' : '직접 입력할 때 저장하기를 켜면 여기에 모여요.') +
+    (L.length ? `<div class="rlist" data-in style="margin-top:20px">${L.map(it => { const p = S.mine.find(x => x.id === it.id) || {}; return `<div class="rrow"><span class="row-t"><b>${esc(it.name)}</b><small>${it.k === 'caf' ? '카페인 ' + fmtMg(it.sizes[0][2]) : `도수 ${it.abv}% · ${(MY_T[p.t] || MY_T.etc).t}`}</small></span><button class="icon-btn sm" data-a="mine-del" data-id="${esc(it.id)}" aria-label="${esc(it.name)} 지우기">${I.xs}</button></div>`; }).join('')}</div>` : '')};
 }
 function favList() {
   const now = Date.now(), rows = S.favs.map(f => {
@@ -1579,7 +1608,7 @@ const STEPS = {
     },
     item: d => {
       const it = d.custom ? null : BYID[d.id], k = d.custom ? d.k : it.k, fav = isFav(d);
-      const eb = d.custom ? '직접 입력' : it.brand || CATN[it.cat] || it.cat, title = d.custom ? (k === 'caf' ? '카페인 음료' : '술') : it.name;
+      const eb = d.custom ? '직접 입력' : it.brand || CATN[it.cat] || it.cat, title = d.custom ? (k === 'caf' ? '카페인 직접 입력' : '술 직접 입력') : it.name;
       const body = d.custom ? customHTML(d) : it.k === 'caf' ? cafPick(d, it) : it.recipe ? recipeBody(it) : `<div id="gsec">${glassHTML(d, it)}</div>`;
       const x = pvData(d);
       return {html: bar({close:true}) +
@@ -1588,8 +1617,10 @@ const STEPS = {
         mount:(el, re) => { if (re || !d.custom) return; const i = el.querySelector('#cu-mg, #cu-ml'); if (i && !i.value) setTimeout(() => { if (cur === el) try { i.focus({preventScroll:true}); } catch (e) {} }, DUR + 80); }};
     },
     favs: () => favList(),
+    mine: () => mineList(),
   },
   fav: {list: () => favList()},
+  mine: {list: () => mineList()},
   day: {view: d => vDay(d)},
   units: {pick: () => ({html: bar({}) + head('표시 단위', '남은 양과 권장량을 어떤 단위로 볼지 골라 주세요. 계산 결과는 같아요.') + unitList('caf') + (alcInfo().disabled ? '' : unitList('alc'))})},
 
@@ -1864,6 +1895,7 @@ function vMe() {
     <div class="list" data-in><button class="li" data-a="edit">정보 다시 입력하기${I.chev}</button>
       <button class="li" data-a="units">표시 단위<span class="li-n">${(UC[S.units.caf] || UC.mg).sh}${ai.disabled ? '' : ' · ' + (UA[S.units.alc] || UA.g).sh}</span>${I.chev}</button>
       <button class="li" data-a="favs-me">즐겨찾기 관리<span class="li-n">${S.favs.length}개</span>${I.chev}</button>
+      <button class="li" data-a="mine-me">내가 만든 음료·술<span class="li-n">${S.mine.length}개</span>${I.chev}</button>
       <button class="li" data-a="${hasDemo ? 'unseed' : 'seed'}">${hasDemo ? '예시 기록 지우기' : '예시 기록 넣기'}${I.chev}</button>
       <button class="li danger" data-a="reset">모든 데이터 지우기${I.chev}</button></div>
     <p class="disc" data-in>${storageOK ? '기록은 이 기기의 브라우저에만 저장돼요. ' : '이 브라우저에서는 저장이 막혀 있어서 새로고침하면 기록이 사라져요. '}이 앱은 의료 기기가 아니에요. 권장량과 혈중알코올은 공개 기준(식약처 카페인 섭취 권고, WHO 저위험 음주 기준)과 관련 연구를 바탕으로 추정한 참고값이에요.</p></div>`};
@@ -1991,6 +2023,15 @@ const ACT = {
     toast('즐겨찾기에서 뺐어요', () => { S.favs.splice(i, 0, f); save(); swapCur(); });
   },
   'photo-clear': () => { ui.flow.d.photo = null; swapCur(); },
+  'cu-mlset': el => { const d = ui.flow.d; d.ml = el.dataset.v; const i = cur.querySelector('#cu-ml'); if (i) { i.value = d.ml; fitInput(i); } cur.querySelectorAll('[data-a="cu-mlset"]').forEach(b => b.setAttribute('aria-pressed', String(b === el))); updPv(); },
+  'cu-type': el => { ui.flow.d.mt = el.dataset.v; cur.querySelectorAll('[data-a="cu-type"]').forEach(b => b.setAttribute('aria-pressed', String(b === el))); },
+  mine: () => go('mine'),
+  'mine-me': () => startFlow('mine', 'list', {}, 'fwd'),
+  'mine-del': el => {
+    const i = S.mine.findIndex(p => p.id === el.dataset.id); if (i < 0) return;
+    const [p] = S.mine.splice(i, 1); unregMine(p.id); const fv = S.favs.filter(f => f.itemId === p.id); S.favs = S.favs.filter(f => f.itemId !== p.id); save(); swapCur();
+    toast(`${josa(p.name, "을", "를")} 지웠어요`, () => { S.mine.splice(i, 0, p); regMine(p); S.favs.push(...fv); save(); swapCur(); });
+  },
   ckall: () => { const d = ui.flow.d; d.ckAll = true; cur.querySelector('#plist').innerHTML = pickBody(d); },
   food: el => { ui.flow.d.food = el.dataset.v === '1'; updPanel(); updPv(); },
   unit: el => { S.units[el.dataset.k] = el.dataset.v; save(); el.parentNode.querySelectorAll('.opt').forEach(b => b.setAttribute('aria-pressed', String(b === el))); },
@@ -2000,12 +2041,18 @@ const ACT = {
   'ing-step': el => { const d = ui.flow.d, it = BYID[d.id]; mixStep(d, it, Number(el.dataset.i), Number(el.dataset.d)); updGlass(); },
   'rec-commit': () => {
     const d = ui.flow.d, rec = itemRec(d); if (!rec) return;
+    let saved = null;
+    if (d.custom && d.save) {
+      const name = (d.name || '').trim(); if (!name) { toast('저장하려면 이름을 넣어 주세요'); const n = cur.querySelector('#cu-name'); if (n) n.focus(); return; }
+      saved = {id:'my:' + uid(), k:d.k, name, mg:Number(d.mg) || 0, ml:d.k === 'caf' ? 0 : Number(d.ml), abv:Number(d.abv) || 0, t:d.mt || myType(Number(d.abv) || 0)};
+      S.mine.push(saved); regMine(saved);
+    }
     const before = status(); S.records.push(rec);
     const fi = S.favs.findIndex(x => x.key === favKey(d)); if (fi >= 0) S.favs[fi] = favFromD(d);
     save();
     const top = status().alerts.filter(a => !before.alerts.some(b => b.id === a.id)).sort(bySev)[0];
     closeFlow('down');
-    toast(top ? top.text : `${rec.name} 기록했어요`, () => { S.records = S.records.filter(r => r.id !== rec.id); save(); swapCur(); toast('기록을 취소했어요'); });
+    toast(top ? top.text : saved ? `${rec.name} 기록하고 내 ${saved.k === 'caf' ? '음료' : '술'}로 저장했어요` : `${rec.name} 기록했어요`, () => { S.records = S.records.filter(r => r.id !== rec.id); save(); swapCur(); toast('기록을 취소했어요'); });
   },
   'rec-skip': () => { closeFlow('down'); toast('좋은 선택이에요. 대신 물 한 잔 어때요?'); },
   // 피드백
@@ -2097,8 +2144,11 @@ document.addEventListener('input', e => {
     const er = cur.querySelector('#ob-b-err'); if (er) er.hidden = true;
   } else if (t.id === 'q') {
     f.d.q = t.value; cur.querySelector('#plist').innerHTML = pickBody(f.d);
+  } else if (t.id === 'mysave') {
+    f.d.save = t.checked; swapCur();
   } else if (t.id && t.id.startsWith('cu-')) {
     f.d[t.id.slice(3)] = t.value; updPv();
+    if (t.id === 'cu-ml') cur.querySelectorAll('[data-a="cu-mlset"]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === Number(t.value))));
     const sb = cur.querySelector('[data-a="fav"]'); if (sb) { const on = isFav(f.d); sb.setAttribute('aria-pressed', String(on)); sb.innerHTML = on ? I.starOn : I.star; }
   } else if (t.id === 'mx-name') {
     f.d.o.name = t.value; updPv();
