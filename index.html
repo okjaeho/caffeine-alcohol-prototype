@@ -305,6 +305,16 @@ button.card:active{transform:scale(.985)}
 #root.in-flow #toast{bottom:100px}
 .toast{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:15px;line-height:1.45;box-shadow:var(--shadow)}
 .toast button{flex:none;font-weight:700;color:var(--toast-link)}
+/* 아래에서 올라오는 확인 창 */
+.scrim{position:absolute;inset:0;z-index:40;display:flex;align-items:flex-end;background:rgba(0,0,0,.45)}
+.sheet{width:100%;padding:28px 20px max(16px,env(safe-area-inset-bottom,0px));border-radius:24px 24px 0 0;background:var(--card);box-shadow:var(--shadow)}
+.sheet h2{font-size:21px;font-weight:800;letter-spacing:-.03em;line-height:1.4}
+.sheet > p{margin-top:8px;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.sheet ul{list-style:none;margin:16px 0 0;padding:14px 16px;border-radius:16px;background:var(--fill);display:grid;gap:8px}
+.sheet li{display:flex;align-items:baseline;gap:10px;font-size:15px;font-weight:600;line-height:1.45}
+.sheet li i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--warn-bar);transform:translateY(-2px)}
+.sheet > p.sheet-note{font-size:13.5px;color:var(--ink-3);margin-top:12px}
+.sheet .btn-row{margin-top:22px}
 /* record: pick */
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-top:24px;border-radius:14px;background:var(--fill)}
 .seg button{height:40px;border-radius:10px;font-size:15px;font-weight:700;color:var(--ink-3);text-align:center;transition:background-color .15s,color .15s,box-shadow .15s}
@@ -2167,6 +2177,30 @@ function toast(text, undo) {
   toastT = setTimeout(() => { r.innerHTML = ''; undoFn = null; }, undo ? 5000 : 3200);
 }
 
+/* 확인 창: 바깥을 누르거나 Esc면 닫혀요 */
+function sheet(html) {
+  closeSheet(true);
+  const s = document.createElement('div'); s.className = 'scrim'; s.id = 'sheet'; s.dataset.a = 'sheet-close';
+  s.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h">${html}</div>`;
+  $('#root').appendChild(s);
+  anim(s, [{opacity:0}, {opacity:1}], {duration:200});
+  anim(s.firstChild, [{transform:'translateY(100%)'}, {transform:'none'}], {duration:320});
+  const b = s.querySelector('.btn:not(.sec)'); if (b) b.focus({preventScroll:true});
+}
+function closeSheet(now) {
+  const s = $('#sheet'); if (!s) return; s.removeAttribute('id');
+  if (now || reduce) { s.remove(); return; }
+  anim(s, [{opacity:1}, {opacity:0}], {duration:180, fill:'forwards'});
+  anim(s.firstChild, [{transform:'none'}, {transform:'translateY(100%)'}], {duration:200, fill:'forwards'});
+  setTimeout(() => s.remove(), 220);
+}
+// 건너뛰면 덜 정확해지는 결과 (건너뛸 질문에 따라 골라서 보여 줘요)
+const SKIP_LOSS = [
+  [['preg', 'meds', 'ahealth'], '임신·먹는 약·간 질환처럼 꼭 챙겨야 할 경고'],
+  [['sens', 'conds', 'smoke', 'bed'], '하루 카페인 권장량과 커피 마감 시각'],
+  [['sex', 'flush'], '술 권장량과 혈중알코올 계산'],
+  [['afreq', 'aqty', 'abinge'], '음주 습관 점수'],
+];
 /* =========================================================
    동작
    ========================================================= */
@@ -2216,10 +2250,24 @@ const ACT = {
   'ob-conds-next': () => go(obNext(ui.flow.d, 'conds')),
   'ob-to-alc': () => go('resAlc'),
   'ob-skip': () => {
-    const f = ui.flow, d = f.d, L = obList(d);
+    const f = ui.flow, d = f.d, L = obList(d), rest = L.slice(Math.max(0, L.indexOf(f.cur)));
+    const lost = d.edit ? rest.filter(s => (d.skipped || []).includes(s)) : rest;   // 다시 입력할 때는 전에 건너뛴 것만 비어 있어요
+    const items = SKIP_LOSS.filter(([ks]) => ks.some(k => lost.includes(k))).map(([, t]) => `<li><i></i>${t}</li>`).join('');
+    if (f.skipAsked || !items) return ACT['skip-go']();
+    f.skipAsked = true;   // 한 번만 붙잡아요. 계속 답하다가 다시 누르면 바로 건너뛰어요
+    sheet(`<h2 id="sheet-h">질문 ${rest.length}개만 더 답해 볼까요?</h2>
+      <p>${rest.length <= 6 ? '30초' : '1분'}이면 끝나요. 건너뛰면 일반적인 경우로 계산해서, 이런 결과가 내 몸과 다를 수 있어요.</p>
+      <ul>${items}</ul>
+      <p class="sheet-note">건너뛴 질문은 나중에 내 기준 탭에서 이어서 답할 수 있어요.</p>
+      <div class="btn-row"><button class="btn sec" data-a="skip-go">건너뛰기</button><button class="btn" data-a="sheet-close">계속 답하기</button></div>`);
+  },
+  'skip-go': () => {
+    closeSheet(); const f = ui.flow; if (!f || f.kind !== 'ob') return;
+    const d = f.d, L = obList(d);
     if (!d.edit) d.skipped = L.slice(Math.max(0, L.indexOf(f.cur)));   // 다시 입력할 때는 이미 답한 값이 남아 있으니 그대로 둬요
     go('calc');
   },
+  'sheet-close': (el, e) => { if (el.id === 'sheet' && e && e.target !== el) return; closeSheet(); },
   'ob-finish': el => {
     const d = ui.flow.d, edit = d.edit;
     S.profile = normProfile(d);
@@ -2451,6 +2499,7 @@ document.addEventListener('change', e => {
   }
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#sheet')) { closeSheet(); return; }
   if (e.key === 'Escape' && ui.flow) { goBack(); return; }
   if (e.target.classList && e.target.classList.contains('wlist') && /^Arrow(Up|Down)$/.test(e.key)) { e.preventDefault(); e.target.scrollTop += (e.key === 'ArrowUp' ? -1 : 1) * WH; return; }
   if (e.key === 'Enter' && e.target.id === 'ob-h') { e.preventDefault(); const w = cur.querySelector('#ob-w'); if (w) w.focus(); }
