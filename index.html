@@ -423,6 +423,14 @@ button.card:active{transform:scale(.985)}
 .abtn.google{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
 .abtn.mail{background:var(--fill);color:var(--ink)}
 .abtn svg{flex:none}
+.gwrap{position:relative}
+.gwrap .abtn{width:100%}
+.gis{position:absolute;inset:0;overflow:hidden;opacity:.01;pointer-events:none;border-radius:14px}
+.gis.on{pointer-events:auto}
+.gis>div{transform-origin:0 0}
+.cta .auth-btns{margin-top:0}
+.cta .disc{text-align:center;margin-top:4px}
+.cta-note.authing{margin:0 0 24px;font-size:15px}
 .rp{margin-top:4px}
 .c-big.sm{font-size:22px;line-height:1.4}
 .bw{width:100%;padding:0;border-radius:6px}
@@ -539,6 +547,8 @@ const SUPA = {url:'https://yfhmzwwswnjzaeptekgk.supabase.co', key:'sb_publishabl
 const SUPA_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js';
 let sb = null, me = null, SM = null, syncT = 0, syncBusy = false, syncErr = false;   // 계정 상태 (아래 '계정 · 기록 보관')
 const SYNC_KEY = 'jango.sync';
+const AUTH_ON = !!(SUPA.url && SUPA.key);
+const PRIVACY_A = '<a href="privacy.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">개인정보 처리방침</a>';
 
 /* ---------- 잔 ----------
    r = 바닥→입구 반지름 비율(원뿔대), ar = 몸통 가로÷세로, cap = 입구까지 채웠을 때 ml
@@ -1191,7 +1201,7 @@ function startFlow(kind, first, d, dir = 'fwd') { ui.lastProg = null; ui.flow = 
 function go(id) { const f = ui.flow; if (document.activeElement) document.activeElement.blur(); f.hist.push(f.cur); f.cur = id; paintFlow('fwd'); }
 function closeFlow(dir) {
   const f = ui.flow; ui.flow = null;
-  if (!S.profile) { startFlow('ob', 'welcome', draft(), dir || 'down'); return; }   // 처음 설정 전이면 첫 화면으로
+  if (!S.profile) { startFlow('ob', 'welcome', draft(), dir || (f && f.enter === 'up' ? 'down' : 'back')); return; }   // 처음 설정 전이면 첫 화면으로
   paintTab(dir || (f && f.enter === 'up' ? 'down' : 'back'));
 }
 function goBack() { const f = ui.flow; if (!f) return; if (f.hist.length) { f.cur = f.hist.pop(); paintFlow('back'); } else closeFlow(); }
@@ -1802,10 +1812,17 @@ function favList() {
 const STEPS = {
   /* ----- 처음 설정 ----- */
   ob: {
-    welcome: () => ({html:`<div class="welcome">
+    welcome: () => {
+      // 첫 화면 = 로그인 화면. 로그인하거나 "로그인 없이 시작하기"를 누르면 처음 설정으로 넘어가요
+      const low = me ? btn('시작하기', 'ob-start') + `<p class="cta-note">${esc(me.name || me.email) || '내'} 계정에 기록이 보관돼요</p><button class="txt-btn" data-a="logout">다른 계정으로 로그인</button>`
+        : ui.authing ? '<p class="cta-note authing" role="status">로그인하는 중이에요…</p>'
+        : AUTH_ON ? authBtns() + '<button class="txt-btn" data-a="ob-start">로그인 없이 시작하기</button>' + `<p class="disc" data-in>로그인하면 ${PRIVACY_A}에 동의하는 것으로 봐요.</p>`
+        : btn('시작하기', 'ob-start') + '<p class="cta-note">질문 몇 개면 끝나요</p>';
+      return {html:`<div class="welcome">
         <div class="hero" aria-hidden="true" data-in><span class="hb"><i class="hl caf" data-fill="350" style="height:62%"></i></span><span class="hb sm"><i class="hl alc" data-fill="350" style="height:40%"></i></span></div>
         ${head('마시기 전에,<br>오늘 얼마나 남았는지<br>알려드릴게요', '커피 한 잔, 술 한 잔이 내 몸에 얼마나 쌓였는지 보여 주고, 멈출 때를 먼저 알려 드려요.', '잔잔')}</div>
-        ${cta(btn('시작하기', 'ob-start') + (sb ? '<button class="txt-btn" data-a="auth-open" data-from="welcome">이미 계정이 있어요 · 로그인</button>' : '<p class="cta-note">질문 몇 개면 끝나요</p>'))}`}),
+        ${cta(low)}`, mount:el => gisMount(el)};
+    },
     body: d => ({html: obBar(d, 'body') + head('키와 몸무게를<br>알려주세요', '위아래로 굴려서 맞춰 주세요. 권장량과 혈중알코올을 계산하는 데만 써요.') +
         `<div class="wheels">${wheel('w-h', 100, 230, d.height || 170, 'cm', '키')}${wheel('w-w', 20, 250, d.weight || 60, 'kg', '몸무게')}</div>` + cta(btn('다음', 'ob-w-next')),
       mount:el => wheelInit(el)}),
@@ -2615,9 +2632,12 @@ async function syncAll() {   // 로그인했을 때: 서버와 이 기기의 기
 function authInit() {
   if (!SUPA.url || !SUPA.key) return;
   const s = document.createElement('script'); s.src = SUPA_JS; s.async = true;
+  s.onerror = () => authFail('지금은 로그인할 수 없어요. 잠시 뒤 다시 해 주세요');
   s.onload = () => {
-    try { sb = window.supabase.createClient(SUPA.url, SUPA.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:'pkce', storageKey:'jango.auth'}}); } catch (e) { sb = null; return; }
+    try { sb = window.supabase.createClient(SUPA.url, SUPA.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:'pkce', storageKey:'jango.auth'}}); } catch (e) { sb = null; authFail('지금은 로그인할 수 없어요. 잠시 뒤 다시 해 주세요'); return; }
     SM = smLoad();
+    // Google·카카오에서 돌아왔는데 로그인이 안 됐으면 "로그인하는 중"을 풀어요
+    sb.auth.getSession().then(r => { if (!(r && r.data && r.data.session)) authFail('로그인하지 못했어요. 다시 해 주세요'); }).catch(() => authFail('로그인하지 못했어요. 다시 해 주세요'));
     sb.auth.onAuthStateChange((ev, session) => {
       const u = session && session.user, prev = me && me.id, md = (u && u.user_metadata) || {};
       me = u ? {id:u.id, email:u.email || md.email || '', name:md.name || md.full_name || md.nickname || md.user_name || '', pic:/^https:\/\//.test(md.avatar_url || md.picture || '') ? (md.avatar_url || md.picture) : '', provider:(u.app_metadata && u.app_metadata.provider) || 'email'} : null;
@@ -2634,14 +2654,22 @@ function authInit() {
 }
 const LOGIN_ASK = 'jango.login';   // 사용자가 직접 로그인했는지 (카카오·구글은 다녀와도 남게 sessionStorage)
 const askLogin = () => { try { sessionStorage.setItem(LOGIN_ASK, '1'); } catch (e) {} };
+const onWelcome = () => !!(ui.flow && ui.flow.kind === 'ob' && ui.flow.cur === 'welcome');
+const cleanUrl = () => { if (/[?&](code|error)=/.test(location.search)) history.replaceState(null, '', location.pathname); };   // 주소에 남은 로그인 코드 정리
+function authFail(msg) {
+  if (!ui.authing) return;
+  ui.authing = false; cleanUrl(); try { sessionStorage.removeItem(LOGIN_ASK); } catch (e) {}
+  if (onWelcome()) swapCur(); toast(msg);
+}
 async function onLogin() {
   let quiet = true; try { quiet = !sessionStorage.getItem(LOGIN_ASK); sessionStorage.removeItem(LOGIN_ASK); } catch (e) {}   // 새로고침으로 이어진 로그인이면 조용히
-  if (/[?&](code|error)=/.test(location.search)) history.replaceState(null, '', location.pathname);   // 주소에 남은 로그인 코드 정리
-  const got = await syncAll(), f = ui.flow;
+  cleanUrl();
+  const got = await syncAll(), f = ui.flow, wel = onWelcome();
+  ui.authing = false;
   if (S.profile && f && (f.kind === 'auth' || (f.kind === 'ob' && !f.d.edit))) {
     ui.flow = null; if (f && f.kind === 'auth' && f.d.back !== 'me') ui.tab = 'home'; ui.lastPct = {caf:0, alc:0}; paintTab('fade');
-  } else if (!S.profile && f && f.kind === 'auth') startFlow('ob', 'body', draft(), 'fwd');   // 계정에 정보가 없으면 처음 설정부터
-  else if (!ui.flow) swapCur();
+  } else if (!S.profile && f && (f.kind === 'auth' || (wel && !quiet))) startFlow('ob', 'body', draft(), 'fwd');   // 계정에 정보가 없으면 바로 처음 설정으로
+  else if (!ui.flow || wel) swapCur();
   if (!quiet) toast(got == null ? '로그인했지만 기록을 아직 못 불러왔어요. 잠시 뒤 다시 해 볼게요' : got ? '계정에 있던 기록을 불러왔어요' : '로그인했어요. 이제 기록이 계정에 보관돼요');
 }
 const authErr = e => {
@@ -2658,10 +2686,63 @@ const authErr = e => {
 const LOGIN_KAKAO = false;
 const AUTH_KAKAO = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#000" d="M12 3.5C6.75 3.5 2.5 6.86 2.5 11c0 2.67 1.77 5.01 4.43 6.34l-.9 3.3c-.08.29.25.52.5.36l3.95-2.6c.5.07 1 .1 1.52.1 5.25 0 9.5-3.36 9.5-7.5S17.25 3.5 12 3.5z"/></svg>';
 const AUTH_GOOGLE = '<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+/* Google 로그인: Google이 주는 버튼(GIS)을 우리 버튼 위에 투명하게 겹쳐요.
+   이렇게 하면 Google 화면에 Supabase 주소(yfhmz….supabase.co) 대신 우리 사이트 주소가 떠요.
+   GIS를 못 불러오면 우리 버튼이 그대로 눌려서 예전 방식(Supabase 경유)으로 로그인해요 */
+const GOOGLE_CID = '274057408319-fo8hadfqcvm4ucplmg6phpn4qvc20d33.apps.googleusercontent.com';
+const GIS_JS = 'https://accounts.google.com/gsi/client';
+let gis = 0, gisRaw = '', gisRZ = 0;   // gis: 0 안 불러옴, 1 불러오는 중, 2 준비됨, -1 못 씀
+const hex = a => Array.from(new Uint8Array(a), b => b.toString(16).padStart(2, '0')).join('');
+async function gisSetup() {
+  const raw = hex(crypto.getRandomValues(new Uint8Array(16)));
+  const hashed = hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw)));
+  gisRaw = raw;
+  google.accounts.id.initialize({client_id:GOOGLE_CID, callback:gisDone, nonce:hashed, ux_mode:'popup', auto_select:false, itp_support:true, context:'signin'});
+}
+function gisLoad() {
+  if (gis || !GOOGLE_CID || !window.crypto || !crypto.subtle) return;
+  gis = 1;
+  const s = document.createElement('script'); s.src = GIS_JS; s.async = true;
+  s.onload = async () => { try { await gisSetup(); gis = 2; gisMount(cur); } catch (e) { gis = -1; } };
+  s.onerror = () => { gis = -1; };
+  document.head.appendChild(s);
+}
+function gisMount(root) {
+  if (!AUTH_ON) return;
+  if (!gis) gisLoad();
+  if (gis !== 2 || !root) return;
+  root.querySelectorAll('.gis').forEach(box => {
+    const b = box.previousElementSibling, W = b && b.offsetWidth;
+    if (!W) return;
+    box.classList.remove('on'); box.innerHTML = '';
+    try { google.accounts.id.renderButton(box, {type:'standard', theme:'outline', size:'large', text:'continue_with', shape:'rectangular', width:Math.min(400, Math.max(200, Math.round(W))), locale:'ko'}); } catch (e) { return; }
+    const fit = () => {
+      const c = box.firstElementChild, fr = box.querySelector('iframe');
+      if (!c || !fr || !box.isConnected || !fr.offsetWidth || !fr.offsetHeight) return;
+      c.style.width = fr.offsetWidth + 'px';
+      c.style.transform = `scale(${b.offsetWidth / fr.offsetWidth},${b.offsetHeight / fr.offsetHeight})`;
+      fr.tabIndex = -1; box.classList.add('on');
+    };
+    // Google 버튼은 사이트 주소를 확인한 뒤에야 크기가 생겨요. 크기가 생기면 그때 겹쳐요 (주소가 안 맞으면 우리 버튼이 그대로 눌려요)
+    const fr = box.querySelector('iframe');
+    if (fr && window.ResizeObserver) new ResizeObserver(fit).observe(fr);
+    [400, 1500, 4000].forEach(t => setTimeout(fit, t));
+  });
+}
+async function gisDone(res) {
+  if (!res || !res.credential || !sb) { toast('로그인하지 못했어요. 잠시 뒤 다시 해 주세요'); return; }
+  askLogin();
+  const {error} = await sb.auth.signInWithIdToken({provider:'google', token:res.credential, nonce:gisRaw});
+  gisSetup().then(() => gisMount(cur)).catch(() => {});   // 다음 로그인은 새 nonce로
+  if (error) { try { sessionStorage.removeItem(LOGIN_ASK); } catch (e) {} toast(authErr(error)); }
+  // 성공하면 onAuthStateChange → onLogin 이 다음 화면으로 넘겨요
+}
+window.addEventListener('resize', () => { clearTimeout(gisRZ); gisRZ = setTimeout(() => { if (cur.querySelector('.gis')) gisMount(cur); }, 250); });
+const authBtns = () => `<div class="auth-btns" data-in>${LOGIN_KAKAO ? `<button class="abtn kakao" data-a="auth-oauth" data-v="kakao">${AUTH_KAKAO}카카오로 계속하기</button>` : ''}<div class="gwrap"><button class="abtn google" data-a="auth-oauth" data-v="google">${AUTH_GOOGLE}Google로 계속하기</button><div class="gis" aria-hidden="true"></div></div><button class="abtn mail" data-a="auth-mail">이메일로 계속하기</button></div>`;
 STEPS.auth = {
-  choose: d => ({html: bar({back:false, close:true}) + head('로그인하고<br>기록을 보관해요', '폰을 바꾸거나 브라우저를 지워도 기록과 내 기준이 그대로 남아요.') +
-    `<div class="auth-btns" data-in>${LOGIN_KAKAO ? `<button class="abtn kakao" data-a="auth-oauth" data-v="kakao">${AUTH_KAKAO}카카오로 계속하기</button>` : ''}<button class="abtn google" data-a="auth-oauth" data-v="google">${AUTH_GOOGLE}Google로 계속하기</button><button class="abtn mail" data-a="auth-mail">이메일로 계속하기</button></div>
-     <p class="disc" data-in style="margin-top:18px">${S.records.some(r => !r.demo) ? '이 기기에 있던 기록도 계정에 함께 보관돼요. ' : ''}예시 기록은 계정에 올리지 않아요. 로그인하면 <a href="privacy.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">개인정보 처리방침</a>에 동의하는 것으로 봐요.</p>`}),
+  choose: d => ({html: bar({back:false, close:true}) + head('로그인하고<br>기록을 보관해요', '폰을 바꾸거나 브라우저를 지워도 기록과 내 기준이 그대로 남아요.') + authBtns() +
+    `<p class="disc" data-in style="margin-top:18px">${S.records.some(r => !r.demo) ? '이 기기에 있던 기록도 계정에 함께 보관돼요. ' : ''}예시 기록은 계정에 올리지 않아요. 로그인하면 ${PRIVACY_A}에 동의하는 것으로 봐요.</p>`,
+    mount:el => gisMount(el)}),
   mail: d => {
     const up = d.mode === 'up';
     return {html: bar({}) + head(up ? '이메일로 가입하기' : '이메일로 로그인', up ? '비밀번호는 8자 이상으로 정해 주세요.' : '가입할 때 쓴 이메일과 비밀번호를 넣어 주세요.') +
@@ -2694,7 +2775,7 @@ Object.assign(ACT, {
     const {error} = await sb.auth.signInWithOAuth({provider:el.dataset.v, options:{redirectTo:location.origin + location.pathname}});
     if (error) toast(authErr(error));   // 성공하면 카카오·구글 화면으로 넘어가요
   },
-  'auth-mail': () => go('mail'),
+  'auth-mail': () => { if (ui.flow && ui.flow.kind === 'auth') go('mail'); else startFlow('auth', 'mail', {back:'welcome', mode:'in'}, 'fwd'); },
   'auth-mode': el => { const f = ui.flow, em = cur.querySelector('#au-email'); if (em) f.d.email = em.value.trim(); f.d.mode = el.dataset.v; swapCur(); },
   'auth-submit': () => mailSubmit(),
   'sync-retry': () => { if (syncErr) syncAll(); },
@@ -2877,6 +2958,9 @@ setInterval(() => { if (!ui.flow && ui.tab === 'home' && document.visibilityStat
 setInterval(() => notiRefresh(), 5 * 60000);
 
 if (S.profile) S.profile = normProfile(S.profile);
+// Google·카카오에서 막 돌아왔으면 로그인 버튼 대신 "로그인하는 중"을 보여 줘요
+ui.authing = AUTH_ON && /[?&]code=/.test(location.search);
+if (/[?&]error=/.test(location.search)) { cleanUrl(); try { sessionStorage.removeItem(LOGIN_ASK); } catch (e) {} setTimeout(() => toast('로그인하지 못했어요. 다시 해 주세요'), 600); }
 if (!S.profile) startFlow('ob', 'welcome', draft(), 'none');
 else { paintTab('none'); notiRefresh(); }
 authInit();
