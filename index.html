@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<title>기록</title>
+<title>잔잔</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="기록">
+<meta name="apple-mobile-web-app-title" content="잔잔">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
@@ -1786,7 +1786,7 @@ const STEPS = {
   ob: {
     welcome: () => ({html:`<div class="welcome">
         <div class="hero" aria-hidden="true" data-in><span class="hb"><i class="hl caf" data-fill="350" style="height:62%"></i></span><span class="hb sm"><i class="hl alc" data-fill="350" style="height:40%"></i></span></div>
-        ${head('마시기 전에,<br>오늘 얼마나 남았는지<br>알려드릴게요', '커피 한 잔, 술 한 잔이 내 몸에 얼마나 쌓였는지 보여 주고, 멈출 때를 먼저 알려 드려요.', '기록')}</div>
+        ${head('마시기 전에,<br>오늘 얼마나 남았는지<br>알려드릴게요', '커피 한 잔, 술 한 잔이 내 몸에 얼마나 쌓였는지 보여 주고, 멈출 때를 먼저 알려 드려요.', '잔잔')}</div>
         ${cta(btn('시작하기', 'ob-start') + '<p class="cta-note">질문 몇 개면 끝나요</p>')}`}),
     body: d => ({html: obBar(d, 'body') + head('키와 몸무게를<br>알려주세요', '위아래로 굴려서 맞춰 주세요. 권장량과 혈중알코올을 계산하는 데만 써요.') +
         `<div class="wheels">${wheel('w-h', 100, 230, d.height || 170, 'cm', '키')}${wheel('w-w', 20, 250, d.weight || 60, 'kg', '몸무게')}</div>` + cta(btn('다음', 'ob-w-next')),
