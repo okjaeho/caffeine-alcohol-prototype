@@ -425,7 +425,7 @@ button.card:active{transform:scale(.985)}
 .abtn svg{flex:none}
 .gwrap{position:relative}
 .gwrap .abtn{width:100%}
-.gis{position:absolute;inset:0;overflow:hidden;opacity:.01;pointer-events:none;border-radius:14px}
+.gis{position:absolute;inset:0;overflow:hidden;opacity:.01;pointer-events:none}
 .gis.on{pointer-events:auto}
 .gis>div{transform-origin:0 0}
 .cta .auth-btns{margin-top:0}
@@ -2715,12 +2715,18 @@ function gisMount(root) {
     const b = box.previousElementSibling, W = b && b.offsetWidth;
     if (!W) return;
     box.classList.remove('on'); box.innerHTML = '';
-    try { google.accounts.id.renderButton(box, {type:'standard', theme:'outline', size:'large', text:'continue_with', shape:'rectangular', width:Math.min(400, Math.max(200, Math.round(W))), locale:'ko'}); } catch (e) { return; }
-    const fit = () => {
+    const reqW = Math.min(400, Math.max(200, Math.round(W)));
+    try { google.accounts.id.renderButton(box, {type:'standard', theme:'outline', size:'large', text:'continue_with', shape:'rectangular', width:reqW, locale:'ko'}); } catch (e) { return; }
+    const fit = () => {   // Google 버튼(iframe 안, 위아래·양옆 여백 있음)의 실제 버튼 부분을 우리 버튼 크기에 딱 맞춰요
       const c = box.firstElementChild, fr = box.querySelector('iframe');
       if (!c || !fr || !box.isConnected || !fr.offsetWidth || !fr.offsetHeight) return;
-      c.style.width = fr.offsetWidth + 'px';
-      c.style.transform = `scale(${b.offsetWidth / fr.offsetWidth},${b.offsetHeight / fr.offsetHeight})`;
+      c.style.transform = '';
+      const rx = box.getBoundingClientRect(), rc = c.getBoundingClientRect(), rf = fr.getBoundingClientRect(), k = rc.width ? c.offsetWidth / rc.width : 1;
+      const fw = fr.offsetWidth, fh = fr.offsetHeight, bw = Math.min(reqW, fw), bh = Math.min(40, fh);
+      const ox = (rc.left - rx.left) * k, oy = (rc.top - rx.top) * k;   // Google 바깥 상자가 우리 상자에서 떨어진 만큼
+      const bx = (rf.left - rc.left) * k + (fw - bw) / 2, by = (rf.top - rc.top) * k + (fh - bh) / 2;   // 그 안에서 실제 버튼 위치
+      const sx = b.offsetWidth / bw, sy = b.offsetHeight / bh;
+      c.style.transform = `translate(${-ox - bx * sx}px,${-oy - by * sy}px) scale(${sx},${sy})`;
       fr.tabIndex = -1; box.classList.add('on');
     };
     // Google 버튼은 사이트 주소를 확인한 뒤에야 크기가 생겨요. 크기가 생기면 그때 겹쳐요 (주소가 안 맞으면 우리 버튼이 그대로 눌려요)
