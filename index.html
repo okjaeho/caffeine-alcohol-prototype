@@ -413,6 +413,7 @@ button.card:active{transform:scale(.985)}
 .li-n + svg{margin-left:6px}
 /* 계정 */
 .li.acct:active{background:none}
+.avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;background:var(--fill)}
 .li-t small{display:block;font-size:13.5px;font-weight:500;color:var(--ink-3);margin-top:2px}
 .li.bad .li-n{color:var(--danger)}
 .auth-btns{display:grid;gap:10px;margin-top:36px}
@@ -2237,7 +2238,7 @@ function vMe() {
   const ci = cafInfo(), ai = alcInfo(), hasDemo = S.records.some(r => r.demo), sk = skippedOf(S.profile);
   const PROV = {kakao:'카카오', google:'Google', email:'이메일'};
   const acct = !sb ? '' : me
-    ? `<div class="list" data-in><div class="li acct"><span class="li-t">${esc(me.email || me.name || '내 계정')}<small>${PROV[me.provider] || me.provider}로 로그인했어요</small></span></div>
+    ? `<div class="list" data-in><div class="li acct">${me.pic ? `<img class="avatar" src="${esc(me.pic)}" alt="" referrerpolicy="no-referrer">` : ''}<span class="li-t">${esc(me.name || me.email || '내 계정')}<small>${me.name && me.email ? esc(me.email) + ' · ' : ''}${PROV[me.provider] || esc(me.provider)}로 로그인했어요</small></span></div>
         <button class="li" data-a="sync-retry">기록 보관<span class="li-n" id="sync-st">${syncLabel()}</span></button>
         <button class="li" data-a="logout">로그아웃${I.chev}</button></div>`
     : `<button class="prompt" data-a="auth-open" data-from="me" data-in><span class="pi">${I.cloud}</span><span class="pt"><b>로그인하고 기록 보관하기</b><small>폰을 바꾸거나 브라우저를 지워도 기록이 남아요</small></span>${I.chev}</button>`;
@@ -2619,7 +2620,7 @@ function authInit() {
     SM = smLoad();
     sb.auth.onAuthStateChange((ev, session) => {
       const u = session && session.user, prev = me && me.id, md = (u && u.user_metadata) || {};
-      me = u ? {id:u.id, email:u.email || md.email || '', name:md.name || md.full_name || md.nickname || '', provider:(u.app_metadata && u.app_metadata.provider) || 'email'} : null;
+      me = u ? {id:u.id, email:u.email || md.email || '', name:md.name || md.full_name || md.nickname || md.user_name || '', pic:/^https:\/\//.test(md.avatar_url || md.picture || '') ? (md.avatar_url || md.picture) : '', provider:(u.app_metadata && u.app_metadata.provider) || 'email'} : null;
       // 이 콜백 안에서 바로 서버를 부르면 멈출 수 있어서 한 박자 뒤에
       if (me && me.id !== prev) setTimeout(onLogin, 0);
       else if (!me && prev) setTimeout(() => { SM = null; smSave(); if (!ui.flow) swapCur(); }, 0);
