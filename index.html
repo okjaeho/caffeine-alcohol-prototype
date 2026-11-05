@@ -421,6 +421,29 @@ button.card:active{transform:scale(.985)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .legend i{width:9px;height:9px;border-radius:3px}
 .legend .cbi{border-radius:50%;background:var(--warn-bar)}
+.legend .ovt{font-size:13px;font-weight:800;color:var(--danger);font-variant-numeric:tabular-nums}
+.cd.over .cn{color:var(--danger);font-weight:800}
+.cd.today.over .cn{background:var(--danger);color:#fff}
+/* 달력 */
+.seg.rp{grid-template-columns:repeat(3,1fr)}
+.cal-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cal-h b{font-size:19px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.cal-nav{display:flex;gap:2px;margin-right:-8px}
+.cal-nav button{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--ink-2)}
+.cal-nav button:active{background:var(--fill)}
+.cal-nav button:disabled{opacity:.25;cursor:default}
+.cal-wd,.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin:0 -8px}
+.cal-wd{margin-top:16px;font-size:12.5px;font-weight:600;color:var(--ink-3);text-align:center}
+.cal{margin-top:4px}
+.cd{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;height:56px;padding-top:4px;border-radius:12px;text-align:center}
+.cd:active{background:var(--fill)}
+.cd:disabled{opacity:.3;cursor:default;background:none}
+.cd .cn{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.cd.today .cn{background:var(--accent);color:var(--on-accent);font-weight:800}
+.cd .cm{display:flex;justify-content:center;width:64%;height:4px}
+.cd .cm i{display:block;height:100%;border-radius:2px}
+.cd .cb{top:3px;left:auto;right:4px;margin:0;width:6px;height:6px}
+.cal-sum{margin-top:2px}
 .ins{margin-top:14px;border-top:1px solid var(--line)}
 .insr{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
 .insr:last-child{border-bottom:0}
@@ -729,6 +752,8 @@ const I = {
   x: sv('<path d="M6 6l12 12M18 6 6 18"/>', 24, 2.2),
   xs: sv('<path d="M7 7l10 10M17 7 7 17"/>', 18, 2.2),
   chev: sv('<path d="M9 6l6 6-6 6"/>', 18, 2.2),
+  prevM: sv('<path d="M15 6l-6 6 6 6"/>', 20, 2.2),
+  nextM: sv('<path d="M9 6l6 6-6 6"/>', 20, 2.2),
   cup: sv('<path d="M5 8h12v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M9 3.5v2M13 3.5v2"/>', 28, 1.9),
   glass: sv('<path d="M6 4h12l-1.7 15.1a1 1 0 0 1-1 .9H8.7a1 1 0 0 1-1-.9z"/><path d="M6.7 10h10.6"/>', 28, 1.9),
   check: sv('<path d="M6 12.5l4 4L18 8.5"/>', 16, 3),
@@ -2052,9 +2077,11 @@ function bedAt(k) {   // 그날 밤 잠드는 시각
   const [h, m] = (S.profile.bed || '01:00').split(':').map(Number);
   return dayStart(k) + ((h < 5 ? h + 24 : h) - 5) * H + m * MIN;
 }
+// 같이 마신 날: 한 잔에 둘 다 있거나, 카페인과 술을 3시간 안에 마심
+const comboOf = rs => rs.some(r => r.caf > 0 && r.alc > 0) || rs.some(a => a.alc > 0 && rs.some(c => c.caf > 0 && !(c.alc > 0) && Math.abs(c.t - a.t) <= 3 * H));
 function insights(days, today) {
   const ci = cafInfo(), ai = alcInfo(), past = days.filter(d => d !== today);
-  const combo = days.map(d => { const rs = recsOn(d); return rs.some(r => r.caf > 0 && r.alc > 0) || rs.some(a => a.alc > 0 && rs.some(c => c.caf > 0 && !(c.alc > 0) && Math.abs(c.t - a.t) <= 3 * H)); });
+  const combo = days.map(d => comboOf(recsOn(d)));
   const drank = d => sum(recsOn(d), 'alc') > 0;
   const prevKey = d => dayKey(dayStart(d) - DAY + H);
   const after = past.filter(d => drank(prevKey(d))), other = past.filter(d => !drank(prevKey(d)) && sum(recsOn(d), 'caf') > 0);
@@ -2070,13 +2097,44 @@ function hourStrip(recs, k) {
   const mx = Math.max(...cnt), order = [...Array(24)].map((_, i) => (i + 5) % 24);
   return {peak:mx ? cnt.indexOf(mx) : null, html:`<div class="hstrip" aria-hidden="true">${order.map(h => `<i style="background:var(--${k});opacity:${cnt[h] ? (0.22 + 0.78 * cnt[h] / mx).toFixed(2) : 0.07}"></i>`).join('')}</div>`};
 }
+/* 달력: 한 달 전체를 보고, 날짜를 누르면 그날 기록으로 */
+function calMonth(h) {
+  const today = dayKey(Date.now()), cm = today.slice(0, 7), m = ui.calM && ui.calM <= cm ? ui.calM : cm, [y, mo] = m.split('-').map(Number);
+  const fm = dayKey(S.records.reduce((a, r) => Math.min(a, r.t), Date.now())).slice(0, 7);
+  const ci = cafInfo(), ai = alcInfo(), off = ai.disabled, by = {};
+  S.records.forEach(r => { const k = dayKey(r.t); if (k.slice(0, 7) === m) (by[k] || (by[k] = [])).push(r); });
+  const nd = new Date(y, mo, 0).getDate(), lead = new Date(y, mo - 1, 1).getDay();
+  // 막대 길이 = 권장량 대비 (꽉 차면 권장량), 색은 카페인·술 그대로. 넘은 날은 날짜를 빨갛게
+  const mini = (v, lim, k) => v > 0 ? `<span class="cm"><i style="width:${Math.max(22, Math.min(1, v / lim) * 100).toFixed(0)}%;background:var(--${k})"></i></span>` : '<span class="cm"></span>';
+  let cells = '<span></span>'.repeat(lead), st = {cd:0, ad:0, co:0, ao:0, cb:0, n:0, c:0, a:0};
+  for (let d = 1; d <= nd; d++) {
+    const k = `${m}-${pad(d)}`, rs = by[k] || [], c = sum(rs, 'caf'), a = off ? 0 : sum(rs, 'alc'), cb = !off && comboOf(rs), fut = k > today;
+    if (rs.length) { st.n++; st.c += c; st.a += a; if (c > 0) st.cd++; if (a > 0) st.ad++; if (c > ci.limit) st.co++; if (a > ai.limit) st.ao++; if (cb) st.cb++; }
+    const lab = `${mo}월 ${d}일${k === today ? ' 오늘' : ''}${rs.length ? `, 카페인 ${Math.round(c)}mg${off ? '' : `, 알코올 ${fmt1(a)}g`}${c > ci.limit || a > ai.limit ? ', 권장량 넘음' : ''}${cb ? ', 같이 마신 날' : ''}` : ', 기록 없음'}`;
+    cells += `<button class="cd${k === today ? ' today' : ''}${c > ci.limit || a > ai.limit ? ' over' : ''}" data-a="day" data-d="${k}" aria-label="${lab}" ${fut ? 'disabled' : ''}>${cb ? '<em class="cb"></em>' : ''}<span class="cn">${d}</span>${mini(c, ci.limit, 'caf')}${off ? '' : mini(a, ai.limit, 'alc')}</button>`;
+  }
+  h += `<section class="card" data-in><div class="cal-h"><b>${y}년 ${mo}월</b><span class="cal-nav"><button data-a="calm" data-d="-1" aria-label="이전 달" ${m <= fm ? 'disabled' : ''}>${I.prevM}</button><button data-a="calm" data-d="1" aria-label="다음 달" ${m >= cm ? 'disabled' : ''}>${I.nextM}</button></span></div>
+    <div class="cal-wd" aria-hidden="true">${WD.map(w => `<span>${w}</span>`).join('')}</div><div class="cal">${cells}</div>
+    <div class="legend"><span><i style="background:var(--caf)"></i>카페인</span>${off ? '' : '<span><i style="background:var(--alc)"></i>술</span>'}<span><b class="ovt">7</b>권장량 넘은 날</span>${off ? '' : '<span><i class="cbi"></i>같이 마신 날</span>'}</div></section>`;
+  // 이 달 요약
+  const big = !st.n ? '이 달엔 기록이 없어요' : off ? `${mo}월엔 카페인을<br>${st.cd}일 마셨어요` : `${mo}월엔 커피를 ${st.cd}일,<br>술을 ${st.ad}일 마셨어요`;
+  const rows = st.n ? [
+    ['카페인 권장량 넘은 날', st.co ? `${st.co}일` : '없음', st.co ? 'warn' : ''],
+    ...(off ? [] : [['술 권장량 넘은 날', st.ao ? `${st.ao}일` : '없음', st.ao ? 'warn' : ''], ['같이 마신 날', st.cb ? `${st.cb}일` : '없음', st.cb ? 'warn' : '']]),
+    ['카페인 마신 날 평균', st.cd ? uC(st.c / st.cd) : '-', 'caf'],
+    ...(off ? [] : [['이 달 알코올 합계', st.ad ? uA(st.a) : '-', 'alc']]),
+  ] : [];
+  h += `<section class="card cal-sum" data-in><span class="c-label">${mo}월 한눈에</span><span class="c-big sm">${big}</span>${rows.length ? `<div class="ins">${rows.map(r => `<div class="insr"><span>${r[0]}</span><b class="${r[2]}">${r[1]}</b></div>`).join('')}</div>` : ''}</section>`;
+  return {html: h + '<p class="disc" data-in>날짜를 누르면 그날 기록을 볼 수 있어요. 하루는 새벽 5시에 넘어가요.</p></div>'};
+}
 function vReport() {
-  const now = Date.now(), today = dayKey(now), st0 = dayStart(today), N = ui.rp || 7;
+  const now = Date.now(), today = dayKey(now), st0 = dayStart(today), N = ui.rp === 'cal' ? 7 : ui.rp || 7;
   const days = [...Array(N)].map((_, i) => dayKey(st0 - (N - 1 - i) * DAY + H));
   const ci = cafInfo(), ai = alcInfo(), off = ai.disabled, per = N === 7 ? '이번 주' : '최근 4주';
   const cv = days.map(d => sum(recsOn(d), 'caf')), av = days.map(d => sum(recsOn(d), 'alc'));
-  let h = `<div class="home"><h1 class="tab-h" data-in>리포트</h1><div class="seg rp" data-in>${[[7, '최근 1주'], [28, '최근 4주']].map(([v, t]) => `<button data-a="rp" data-v="${v}" aria-pressed="${N === v}">${t}</button>`).join('')}</div>`;
+  let h = `<div class="home"><h1 class="tab-h" data-in>리포트</h1><div class="seg rp" data-in>${[[7, '최근 1주'], [28, '최근 4주'], ['cal', '달력']].map(([v, t]) => `<button data-a="rp" data-v="${v}" aria-pressed="${(ui.rp || 7) === v}">${t}</button>`).join('')}</div>`;
   if (!S.records.length) return {html: h + `<div class="empty" data-in><p>기록이 쌓이면 흐름을 보여 드려요.</p><button class="btn sec" data-a="seed">예시 기록으로 둘러보기</button></div></div>`};
+  if (ui.rp === 'cal') return calMonth(h);
   const X = insights(days, today), recs = S.records.filter(r => days.includes(dayKey(r.t)));
   // 1) 카페인과 술 같이 보기
   if (!off) {
@@ -2380,7 +2438,11 @@ const ACT = {
   'fb-close': () => closeFlow('back'),
   // 홈
   det: el => startFlow('det', el.dataset.k, {}, 'fwd'),
-  rp: el => { ui.rp = Number(el.dataset.v); swapCur(); },
+  rp: el => { ui.rp = el.dataset.v === 'cal' ? 'cal' : Number(el.dataset.v); swapCur(); },
+  calm: el => {
+    const [y, m] = (ui.calM || dayKey(Date.now()).slice(0, 7)).split('-').map(Number), d = new Date(y, m - 1 + Number(el.dataset.d), 1);
+    ui.calM = d.getFullYear() + '-' + pad(d.getMonth() + 1); swapCur();
+  },
   day: el => startFlow('day', 'view', {day:el.dataset.d}, 'fwd'),
   again: el => {
     const r = S.records.find(x => x.id === el.dataset.id); if (!r) return;
