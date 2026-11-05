@@ -411,6 +411,17 @@ button.card:active{transform:scale(.985)}
 .cta-sum.over{color:var(--danger)} .cta-sum.warn{color:var(--warn)}
 .li-n{margin-left:auto;font-size:14px;font-weight:600;color:var(--ink-3)}
 .li-n + svg{margin-left:6px}
+/* 계정 */
+.li.acct:active{background:none}
+.li-t small{display:block;font-size:13.5px;font-weight:500;color:var(--ink-3);margin-top:2px}
+.li.bad .li-n{color:var(--danger)}
+.auth-btns{display:grid;gap:10px;margin-top:36px}
+.abtn{display:flex;align-items:center;justify-content:center;gap:10px;height:54px;border-radius:14px;font-size:16.5px;font-weight:700;transition:transform .12s}
+.abtn:active{transform:scale(.98)}
+.abtn.kakao{background:#FEE500;color:rgba(0,0,0,.85)}
+.abtn.google{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.abtn.mail{background:var(--fill);color:var(--ink)}
+.abtn svg{flex:none}
 .rp{margin-top:4px}
 .c-big.sm{font-size:22px;line-height:1.4}
 .bw{width:100%;padding:0;border-radius:6px}
@@ -521,6 +532,12 @@ const SOJU_ML = 40;               // 소주잔에 보통 따르는 양 (잔은 �
 const SOJU_G = SOJU_ML * 0.16 * ETH;   // 소주 한 잔(40ml, 16%) ≈ 5.0g
 const AME_MG = 150;               // 아메리카노 1잔(2샷)
 const KEY = 'jango.v1';
+/* 서버(Supabase): 대시보드 → Project Settings → API 의 Project URL과 공개 키(anon 또는 publishable).
+   공개 키는 브라우저에 보여도 되는 키예요(남의 기록은 RLS로 막혀 있음). 비밀 키(service_role / secret)는 절대 넣지 마세요. */
+const SUPA = {url:'https://yfhmzwwswnjzaeptekgk.supabase.co', key:'sb_publishable_7cEmOwGMvKMWESehEZLeMg_xeuMhTl9'};
+const SUPA_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js';
+let sb = null, me = null, SM = null, syncT = 0, syncBusy = false, syncErr = false;   // 계정 상태 (아래 '계정 · 기록 보관')
+const SYNC_KEY = 'jango.sync';
 
 /* ---------- 잔 ----------
    r = 바닥→입구 반지름 비율(원뿔대), ar = 몸통 가로÷세로, cap = 입구까지 채웠을 때 ml
@@ -691,8 +708,8 @@ const COND_Q = {insomnia:'잠들기 어려운 날이 많아요', heart:'심장�
 let storageOK = true;
 function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { storageOK = false; return null; } }
 let onSave = null;
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { storageOK = false; } if (onSave) onSave(); }
-const fresh = () => ({profile:null, records:[], feedback:[], favs:[], mine:[], units:{caf:'mg', alc:'glass'}, noti:{kinds:{}}, notiLog:{}, vis:[], kc:1, ka:1});
+function save() { pinLim(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { storageOK = false; } if (onSave) onSave(); syncSoon(); }
+const fresh = () => ({profile:null, records:[], feedback:[], favs:[], mine:[], units:{caf:'mg', alc:'glass'}, noti:{kinds:{}}, notiLog:{}, vis:[], kc:1, ka:1, lim:null});
 const S = Object.assign(fresh(), load() || {});
 /* 내가 만든 술·음료: 직접 입력하면서 저장한 제품 */
 const MY_T = {soju:{t:'소주·전통주', glasses:['soju', 'paper', 'bot360'], liq:'clear'}, beer:{t:'맥주', glasses:['beer', 'beer3', 'jug', 'can355', 'can500', 'bot500'], liq:'beer'},
@@ -766,17 +783,11 @@ const I = {
   star: sv('<path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/>', 24, 1.9),
   starOn: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z" fill="#F5B400" stroke="#F5B400" stroke-width="1.9" stroke-linejoin="round"/></svg>',
   clock: sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', 16, 2),
+  cloud: sv('<path d="M7 18.5h10.5a4 4 0 0 0 .4-7.98A6 6 0 0 0 6.3 9.6 4.5 4.5 0 0 0 7 18.5z"/><path d="M12 15.5v-5M9.8 12.6 12 10.4l2.2 2.2"/>', 24),
 };
 
-/* ---------- 내 기준 계산 (내부 모델 · 화면에는 식을 보여 주지 않음) ----------
-   근거 요약 (자세한 건 계산모델 문서):
-   - 카페인 상한: 식약처(성인 400mg, 임신 300mg, 청소년 2.5mg/kg), EFSA 2015(1회 200mg≈3mg/kg)
-   - 반감기: 흡연 시 짧아지고(Parsons 1978), 경구피임약·임신 시 길어짐(Grzegorzewski 2022 리뷰)
-   - 잠들기 전: 커피 107mg은 취침 8.8시간 전까지(Gardiner 2023 메타분석) → 잘 때 남는 양 기준 약 35mg
-   - 혈중알코올: Watson 1980 체수분(키·몸무게·나이·성별) + 1차 흡수, 안주가 있으면 흡수 느리고 최고치 낮음(Jones 1997),
-     분해 0.015%/h(Jones 2010 평균)
-   - 홍조 설문 '가끔 이상' → ALDH2 비활성 가능성 높음(Yokoyama, 민감도 96%)
-   - 피드백: (마신 양 ÷ 기준, 다음 날 몸 상태)로 로지스틱 위험 곡선의 문턱값을 사후 최빈값으로 추정 */
+/* ---------- 내 몸 정보 ----------
+   혈중알코올: Watson 1980 체수분(키·몸무게·나이·성별) + 1차 흡수, 안주가 있으면 흡수 느리고 최고치 낮음(Jones 1997), 분해 0.015%/h(Jones 2010 평균) */
 const THIS_YEAR = new Date().getFullYear();
 const ageOf = p => THIS_YEAR - (p.birth || THIS_YEAR - 22);
 function normProfile(d) {
@@ -787,61 +798,62 @@ function normProfile(d) {
     conds:[...(d.conds || [])], smoke:d.smoke || 'none', meds:[...(d.meds || [])], flush:adult ? (d.flush || 'none') : 'none',
     ahealth:adult ? [...(d.ahealth || [])] : [], afreq:adult && d.afreq != null ? Number(d.afreq) : null, aqty:d.aqty != null ? Number(d.aqty) : null, abinge:d.abinge != null ? Number(d.abinge) : null, ride:d.ride === true, skipped:[...(d.skipped || [])]};
 }
-const SENS_K = {low:1, mid:0.92, high:0.72}, COND_K = {insomnia:0.88, heart:0.85, anxiety:0.85, stomach:0.92};
-const SEV_Y = {caf:{ok:0, jitter:1, sleep:0.8, stomach:0.6}, alc:{ok:0, mild:0.5, bad:1, blackout:1}};
-const LCACHE = {};
-function learn(fb, kind, base) {
-  const obs = (fb || []).filter(f => f.kind === kind && f.amt > 0 && SEV_Y[kind][f.ans] != null);
-  if (!obs.length) return {f:1, n:0};
-  const key = kind + base.toFixed(2) + obs.map(o => o.ans + o.amt).join(); if (LCACHE[key]) return LCACHE[key];
-  const K = 5, n = obs.length; let best = 1.25, bv = -Infinity;
-  for (let th = 0.3; th <= 2.2; th += 0.005) {
-    let v = -Math.pow(th - 1.25, 2) / 0.08;
-    obs.forEach((o, i) => {
-      const w = Math.pow(0.85, n - 1 - i) * (o.ans === 'blackout' ? 2 : 1), y = SEV_Y[kind][o.ans], z = K * (o.amt / base - th);
-      v += w * (y * -Math.log1p(Math.exp(-z)) + (1 - y) * -Math.log1p(Math.exp(z)));
-    });
-    if (v > bv) { bv = v; best = th; }
-  }
-  return (LCACHE[key] = {f:clamp(best - Math.log(4) / K, 0.5, 1), n});
+/* 하루 권장량과 개인 보정은 서버 함수(limits)에서 계산해요. 계산식은 이 페이지에 없어요.
+   앱은 받은 결과를 기기에 저장해 두고 쓰고, 서버에 닿지 못하면 마지막 결과나 공개 기준(식약처 카페인 권고, WHO 저위험 음주)만으로 계산해요. */
+const cyrb = s => { let a = 0xdeadbeef, b = 0x41c6ce57; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a = Math.imul(a ^ c, 2654435761); b = Math.imul(b ^ c, 1597334677); }
+  a = Math.imul(a ^ (a >>> 16), 2246822507) ^ Math.imul(b ^ (b >>> 13), 3266489909); b = Math.imul(b ^ (b >>> 16), 2246822507) ^ Math.imul(a ^ (a >>> 13), 3266489909);
+  return (b >>> 0).toString(36) + (a >>> 0).toString(36); };
+const fbOut = fb => (fb || []).map(f => ({kind:f.kind, ans:f.ans, amt:Math.round(f.amt * 10) / 10}));
+const LIMS = {}, LIM_ASK = {};
+let limMemo = {p:null, n:-1, last:null, k:''};
+function limKey(p, fb) {
+  if (p === S.profile && fb === S.feedback && limMemo.p === p && limMemo.n === fb.length && limMemo.last === fb[fb.length - 1]) return limMemo.k;
+  const k = cyrb(JSON.stringify([p, fbOut(fb)]));
+  if (p === S.profile && fb === S.feedback) limMemo = {p, n:fb.length, last:fb[fb.length - 1], k};
+  return k;
 }
-function cafHalf(p) {
-  let h = 5; if (p.smoke === 'daily') h *= 0.6; else if (p.smoke === 'some') h *= 0.8;
-  if (p.meds.includes('oc')) h *= 1.6; if (p.pregnant) h *= 1.8;
-  return clamp(h, 2.5, 12);
+function baseLimits(p) {   // 서버 없이 쓰는 공개 기준 (개인 보정 없음)
+  const pub = !p.adult ? 2.5 * p.weight : p.pregnant ? 300 : Math.min(400, 5.7 * p.weight), male = p.sex === 'm', ap = male ? 40 : 20;
+  return {base:true, caf:{limit:Math.max(5, Math.round(pub / 5) * 5), pub, score:100, tags:['몸무게', ...(p.adult ? [] : ['청소년 기준']), ...(p.pregnant ? ['임신·수유'] : [])], half:HALF, bedR:35, single:Math.min(200, 3 * p.weight), n:0},
+    alc:!p.adult ? {limit:0, disabled:true, tags:[], score:0} : {limit:ap, pub:ap, score:100, tags:['성별'], binge:male ? 47 : 33, weekly:ap * 2.5, audit:null, n:0}};
 }
-function cafInfo(p = S.profile, fb = S.feedback) {
-  const pub = !p.adult ? 2.5 * p.weight : p.pregnant ? 300 : Math.min(400, 5.7 * p.weight);
-  let k = SENS_K[p.cafSens] || 0.92; p.conds.forEach(c => { k *= COND_K[c] || 0.9; }); if (p.meds.includes('adhd')) k *= 0.8; k = Math.max(k, 0.45);
-  const L = learn(fb, 'caf', pub * k), limit = Math.max(5, Math.round(pub * k * L.f / 5) * 5);
-  const tags = ['몸무게', ...(p.adult ? [] : ['청소년 기준']), ...(p.pregnant ? ['임신·수유'] : []), ...((p.skipped || []).includes('sens') ? [] : ['카페인 민감도']), ...p.conds.map(c => CONDS[c]),
-    ...(p.smoke !== 'none' ? ['흡연'] : []), ...(p.meds.length ? ['복용 중인 약'] : []), ...((p.skipped || []).includes('bed') ? [] : ['잠드는 시간']), ...(L.n ? [`피드백 ${L.n}번`] : [])];
-  return {limit, pub, score:Math.round(limit / pub * 100), tags, half:cafHalf(p), bedR:35 * ({low:1.4, mid:1, high:0.7}[p.cafSens] || 1), single:Math.min(200, 3 * p.weight) * k, n:L.n};
+function limGet(p, fb) {
+  const k = limKey(p, fb), v = LIMS[k] || (S.lim && S.lim.k === k ? S.lim.v : null);
+  if (v) return v;
+  fetchLimits(p, fb);
+  // 아직 결과가 없으면: 같은 몸 정보의 마지막 결과 → 공개 기준
+  if (S.lim && S.lim.p === cyrb(JSON.stringify(p))) return S.lim.v;
+  return baseLimits(p);
 }
+function fetchLimits(p, fb) {
+  const k = limKey(p, fb);
+  if (LIMS[k]) return Promise.resolve(LIMS[k]);
+  if (!SUPA.url) return Promise.resolve(null);
+  const ask = LIM_ASK[k]; if (ask && (ask.p || Date.now() - ask.t < 60e3)) return ask.p || Promise.resolve(null);   // 실패하면 1분 뒤 다시
+  const pr = fetch(SUPA.url + '/functions/v1/limits', {method:'POST', headers:{'Content-Type':'application/json', apikey:SUPA.key, Authorization:'Bearer ' + SUPA.key}, body:JSON.stringify({profile:p, feedback:fbOut(fb)})})
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(v => {
+      if (!v || !v.caf || !v.alc) throw new Error('bad');
+      LIMS[k] = v; delete LIM_ASK[k];
+      if (S.profile && limKey(S.profile, S.feedback) === k) { S.lim = {k, p:cyrb(JSON.stringify(S.profile)), v}; save(); if (!ui.flow && cur) swapCur(); }
+      return v;
+    })
+    .catch(() => { LIM_ASK[k] = {t:Date.now()}; return null; });
+  LIM_ASK[k] = {p:pr, t:Date.now()};
+  return pr;
+}
+function pinLim() {   // 지금 내 몸 정보의 결과를 기기에 저장 (다음에 켤 때·인터넷 없을 때 씀)
+  if (!S.profile) return; const k = limKey(S.profile, S.feedback);
+  if (LIMS[k] && !(S.lim && S.lim.k === k)) S.lim = {k, p:cyrb(JSON.stringify(S.profile)), v:LIMS[k]};
+}
+function cafInfo(p = S.profile, fb = S.feedback) { return limGet(p, fb).caf; }
 const tbw = p => p.sex === 'm' ? 2.447 - 0.09516 * ageOf(p) + 0.1074 * p.height + 0.3362 * p.weight : -2.097 + 0.1069 * p.height + 0.2466 * p.weight;
-const AH_K = {liver:0.5, hep:0.3, gout:0.6, bp:0.8, dm:0.8};   // 간 질환은 가능하면 금주, 통풍은 하루 1~2잔 이하(ACR) 등을 반영한 보정
-function auditOf(p) {   // AUDIT-C (0~12점)
-  if (p.afreq == null) return null;
-  // 위험음주: 남 7점·여 6점 (한국 성인 온라인 표본 연구), 문제음주 점검: 남 8점 (성정환 외 2009, 대한가정의학회지), 여성은 +1점으로 둠
-  const score = p.afreq + (p.afreq ? (p.aqty || 0) + (p.abinge || 0) : 0), cut = p.sex === 'm' ? 7 : 6;
-  return {score, lv:score >= cut + 1 ? 'high' : score >= cut ? 'risk' : 'low'};
-}
-function alcInfo(p = S.profile, fb = S.feedback) {
-  if (!p.adult) return {limit:0, disabled:true, tags:[], score:0};
-  const male = p.sex === 'm', pub = male ? 40 : 20, body = clamp(tbw(p) / (male ? 42 : 29), 0.6, 1);
-  const fl = {often:0.5, some:0.75, none:1}[p.flush] ?? 1, md = p.meds.includes('psy') ? 0.6 : p.meds.includes('adhd') ? 0.85 : 1;
-  const ah = p.ahealth || [], hk = Math.max(0.25, ah.reduce((a, h) => a * (AH_K[h] || 1), 1)) * (p.conds.includes('stomach') ? 0.9 : 1);
-  const k = body * fl * md * hk, L = learn(fb, 'alc', pub * k), limit = Math.max(1, Math.round(pub * k * L.f * 2) / 2);
-  const tags = ['키·몸무게·나이', ...(p.sex === 'x' ? ['보수적 기준'] : []), ...(fl < 1 ? ['얼굴 빨개짐'] : []), ...(md < 1 ? ['복용 중인 약'] : []),
-    ...(ah.some(h => h === 'liver' || h === 'hep') ? ['간 건강'] : []), ...(ah.includes('gout') ? ['통풍'] : []), ...(ah.some(h => h === 'bp' || h === 'dm') ? ['혈압·혈당'] : []),
-    ...(p.conds.includes('stomach') ? ['위장'] : []), ...(L.n ? [`피드백 ${L.n}번`] : [])];
-  return {limit, pub, score:Math.round(limit / pub * 100), tags, binge:male ? 47 : 33, weekly:Math.round(pub * 2.5 * k * L.f), audit:auditOf(p), n:L.n};
-}
+function alcInfo(p = S.profile, fb = S.feedback) { return limGet(p, fb).alc; }
 
 /* ---------- 체내 카페인 / 혈중알코올 ---------- */
 const KA_CAF = 4;   // 흡수 속도(/h): 30~60분에 최고치
 function cafBody(T, recs = S.records) {
-  const ke = Math.LN2 / cafHalf(S.profile);
+  const ke = Math.LN2 / cafInfo().half;
   return recs.reduce((a, r) => {
     if (!(r.caf > 0) || r.t > T || T - r.t > 48 * H) return a;
     const tau = (T - r.t) / H; return a + r.caf * KA_CAF / (KA_CAF - ke) * (Math.exp(-ke * tau) - Math.exp(-KA_CAF * tau));
@@ -1035,15 +1047,16 @@ function pending() {
   }
   return out.slice(0, 2);
 }
-function applyFb(day, kind, ans) {
+async function applyFb(day, kind, ans) {   // 답을 저장하고, 서버에서 새 기준을 받아 와요
   const amt = sum(recsOn(day), kind), get = () => kind === 'caf' ? cafInfo() : alcInfo(), before = get().limit;
   const f = {day, kind, ans, amt, before, t:Date.now(), demo:recsOn(day).some(r => r.demo)};
-  S.feedback.push(f); const a = get(); f.after = a.limit; save();
-  return {kind, ans, before, after:a.limit, capped:ans === 'ok' && a.limit >= a.pub};
+  S.feedback.push(f); save();
+  const got = await fetchLimits(S.profile, S.feedback), a = get(); f.after = a.limit; save();
+  return {kind, ans, before, after:a.limit, capped:ans === 'ok' && a.limit >= a.pub, offline:!got && ans !== 'skip'};
 }
 
 /* ---------- 예시 데이터 ---------- */
-function seed() {
+async function seed() {
   unseed(false);
   const now = Date.now(), st = dayStart(dayKey(now)), adult = !alcInfo().disabled;
   const at = (off, h, m = 0) => st - off * DAY + (h - 5) * H + m * MIN;
@@ -1064,8 +1077,8 @@ function seed() {
     }
   }
   add(AME[0], {}, Math.max(st + 20 * MIN, now - 150 * MIN));
-  if (adult) applyFb(dayKey(at(12, 12)), 'alc', 'mild');
-  applyFb(dayKey(at(9, 12)), 'caf', 'sleep');
+  if (adult) await applyFb(dayKey(at(12, 12)), 'alc', 'mild');
+  await applyFb(dayKey(at(9, 12)), 'caf', 'sleep');
   save();
 }
 function unseed(doSave = true) { S.records = S.records.filter(r => !r.demo); S.feedback = S.feedback.filter(f => !f.demo); if (doSave) save(); }
@@ -1175,7 +1188,11 @@ function paintTab(dir = 'fade') {
 function paintFlow(dir) { const f = ui.flow; show(STEPS[f.kind][f.cur](f.d), {dir, flow:true}); }
 function startFlow(kind, first, d, dir = 'fwd') { ui.lastProg = null; ui.flow = {kind, cur:first, hist:[], d, enter:dir}; paintFlow(dir); }
 function go(id) { const f = ui.flow; if (document.activeElement) document.activeElement.blur(); f.hist.push(f.cur); f.cur = id; paintFlow('fwd'); }
-function closeFlow(dir) { const f = ui.flow; ui.flow = null; paintTab(dir || (f && f.enter === 'up' ? 'down' : 'back')); }
+function closeFlow(dir) {
+  const f = ui.flow; ui.flow = null;
+  if (!S.profile) { startFlow('ob', 'welcome', draft(), dir || 'down'); return; }   // 처음 설정 전이면 첫 화면으로
+  paintTab(dir || (f && f.enter === 'up' ? 'down' : 'back'));
+}
 function goBack() { const f = ui.flow; if (!f) return; if (f.hist.length) { f.cur = f.hist.pop(); paintFlow('back'); } else closeFlow(); }
 
 /* ---------- 화면 조각 ---------- */
@@ -1787,7 +1804,7 @@ const STEPS = {
     welcome: () => ({html:`<div class="welcome">
         <div class="hero" aria-hidden="true" data-in><span class="hb"><i class="hl caf" data-fill="350" style="height:62%"></i></span><span class="hb sm"><i class="hl alc" data-fill="350" style="height:40%"></i></span></div>
         ${head('마시기 전에,<br>오늘 얼마나 남았는지<br>알려드릴게요', '커피 한 잔, 술 한 잔이 내 몸에 얼마나 쌓였는지 보여 주고, 멈출 때를 먼저 알려 드려요.', '잔잔')}</div>
-        ${cta(btn('시작하기', 'ob-start') + '<p class="cta-note">질문 몇 개면 끝나요</p>')}`}),
+        ${cta(btn('시작하기', 'ob-start') + (sb ? '<button class="txt-btn" data-a="auth-open" data-from="welcome">이미 계정이 있어요 · 로그인</button>' : '<p class="cta-note">질문 몇 개면 끝나요</p>'))}`}),
     body: d => ({html: obBar(d, 'body') + head('키와 몸무게를<br>알려주세요', '위아래로 굴려서 맞춰 주세요. 권장량과 혈중알코올을 계산하는 데만 써요.') +
         `<div class="wheels">${wheel('w-h', 100, 230, d.height || 170, 'cm', '키')}${wheel('w-w', 20, 250, d.weight || 60, 'kg', '몸무게')}</div>` + cta(btn('다음', 'ob-w-next')),
       mount:el => wheelInit(el)}),
@@ -1824,7 +1841,14 @@ const STEPS = {
     ride: d => ({html: obBar(d, 'ride') + head('운전을 하거나<br>전동킥보드를 타나요?', '술이 완전히 깨는 시각을 더 잘 보이게 알려 드릴게요.') +
         opts('ride', d.ride, [{v:true, t:'네, 자주 타요'}, {v:false, t:'거의 안 타요'}])}),
     calc: () => ({html:`<div class="center"><div class="spinner" aria-hidden="true" data-in></div><h1 class="h" data-in>권장량을 계산하고 있어요</h1><p class="sub" data-in>공개 기준에 답변을 반영하는 중이에요</p></div>`,
-      mount:(el, re) => { if (re) return; const f = ui.flow; setTimeout(() => { if (ui.flow === f && f.cur === 'calc') { f.cur = 'resCaf'; paintFlow('fwd'); } }, 1500); }}),
+      mount:(el, re) => {   // 서버에서 권장량을 받아 오는 동안 보여 줘요 (최소 1.2초)
+        if (re) return; const f = ui.flow, t0 = Date.now();
+        fetchLimits(normProfile(f.d), S.feedback).then(v => setTimeout(() => {
+          if (ui.flow !== f || f.cur !== 'calc') return;
+          if (!v && SUPA.url) toast('서버에 연결하지 못해서 공개 기준으로 계산했어요');
+          f.cur = 'resCaf'; paintFlow('fwd');
+        }, Math.max(0, 1200 - (Date.now() - t0))));
+      }}),
     resCaf: d => {
       const p = normProfile(d), ci = cafInfo(p), hrs = Math.round(ci.half * Math.log2(AME_MG / ci.bedR)), sk = skippedOf(p);
       const parts = ['몸무게', ...(p.adult ? [] : ['청소년 기준']), ...(p.pregnant ? ['임신·수유'] : []), ...(sk.includes('sens') ? [] : ['카페인 민감도']), ...(p.conds.length ? ['평소 증상'] : []), ...(p.smoke !== 'none' ? ['흡연'] : []), ...(p.meds.length ? ['먹는 약'] : [])];
@@ -1891,6 +1915,7 @@ const STEPS = {
       const r = d.res, caf = r.kind === 'caf', unit = caf ? 'mg' : 'g', diff = caf ? Math.round(r.before - r.after) : fmt1(r.before - r.after);
       let h, sub, ic = I.done;
       if (r.ans === 'skip') { h = '괜찮아요,<br>다음에 알려 주세요'; sub = '기준은 그대로 둘게요.'; }
+      else if (r.offline) { h = '답해 주셔서<br>고마워요'; sub = '지금은 서버에 연결되지 않아요. 연결되면 기준에 반영할게요.'; }
       else if (r.after < r.before) {
         h = `다음부터 하루<br><span class="num" data-count="${r.after}" data-from="${r.before}" ${caf ? '' : 'data-dec="1"'}>${r.after}</span>${unit}까지로 맞출게요`;
         sub = r.ans === 'blackout' ? '기억이 끊길 정도면 몸이 감당하기 어려운 양이었어요. 기준을 많이 낮췄어요.' : `전보다 ${diff}${unit} 낮췄어요. 답해 주실수록 내 몸에 맞게 조정돼요.`;
@@ -1942,7 +1967,7 @@ const STEPS = {
 
   /* ----- 데이터 지우기 ----- */
   reset: {
-    confirm: () => ({html: bar({back:false, close:true}) + head('모든 기록과 설정을<br>지울까요?', '지운 기록은 되돌릴 수 없어요. 처음 설정부터 다시 시작해요.') +
+    confirm: () => ({html: bar({back:false, close:true}) + head('모든 기록과 설정을<br>지울까요?', `지운 기록은 되돌릴 수 없어요.${me ? ' 계정에 보관된 기록도 함께 지워져요.' : ''} 처음 설정부터 다시 시작해요.`) +
       cta('<div class="btn-row"><button class="btn sec" data-a="close">취소</button><button class="btn warn" data-a="reset-do">모두 지우기</button></div>')}),
   },
 };
@@ -2210,7 +2235,13 @@ function auditCard(ai) {
 }
 function vMe() {
   const ci = cafInfo(), ai = alcInfo(), hasDemo = S.records.some(r => r.demo), sk = skippedOf(S.profile);
-  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${sk.length ? `<button class="prompt" data-a="edit" data-from="1" data-in><span class="pi">${I.chat}</span><span class="pt"><b>건너뛴 질문이 ${sk.length}개 있어요</b><small>답하면 권장량이 내 몸에 더 잘 맞아요</small></span>${I.chev}</button>` : ''}${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
+  const PROV = {kakao:'카카오', google:'Google', email:'이메일'};
+  const acct = !sb ? '' : me
+    ? `<div class="list" data-in><div class="li acct"><span class="li-t">${esc(me.email || me.name || '내 계정')}<small>${PROV[me.provider] || me.provider}로 로그인했어요</small></span></div>
+        <button class="li" data-a="sync-retry">기록 보관<span class="li-n" id="sync-st">${syncLabel()}</span></button>
+        <button class="li" data-a="logout">로그아웃${I.chev}</button></div>`
+    : `<button class="prompt" data-a="auth-open" data-from="me" data-in><span class="pi">${I.cloud}</span><span class="pt"><b>로그인하고 기록 보관하기</b><small>폰을 바꾸거나 브라우저를 지워도 기록이 남아요</small></span>${I.chev}</button>`;
+  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${me ? '' : acct}${sk.length ? `<button class="prompt" data-a="edit" data-from="1" data-in><span class="pi">${I.chat}</span><span class="pt"><b>건너뛴 질문이 ${sk.length}개 있어요</b><small>답하면 권장량이 내 몸에 더 잘 맞아요</small></span>${I.chev}</button>` : ''}${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
     <p class="disc" data-in>점수 100점은 공개 기준량을 그대로 쓴다는 뜻이에요. 내 몸 정보와 다음 날 피드백이 쌓일수록 내 몸에 맞게 조정돼요.</p>
     <div class="list" data-in><button class="li" data-a="edit">정보 다시 입력하기${I.chev}</button>
       <button class="li" data-a="units">표시 단위<span class="li-n">${(UC[S.units.caf] || UC.mg).sh}${ai.disabled ? '' : ' · ' + (UA[S.units.alc] || UA.g).sh}</span>${I.chev}</button>
@@ -2219,7 +2250,8 @@ function vMe() {
       <button class="li" data-a="mine-me">내가 만든 음료·술<span class="li-n">${S.mine.length}개</span>${I.chev}</button>
       <button class="li" data-a="${hasDemo ? 'unseed' : 'seed'}">${hasDemo ? '예시 기록 지우기' : '예시 기록 넣기'}${I.chev}</button>
       <button class="li danger" data-a="reset">모든 데이터 지우기${I.chev}</button></div>
-    <p class="disc" data-in>${storageOK ? '기록은 이 기기의 브라우저에만 저장돼요. ' : '이 브라우저에서는 저장이 막혀 있어서 새로고침하면 기록이 사라져요. '}이 앱은 의료 기기가 아니에요. 권장량과 혈중알코올은 공개 기준(식약처 카페인 섭취 권고, WHO 저위험 음주 기준)과 관련 연구를 바탕으로 추정한 참고값이에요.</p></div>`};
+    ${me ? acct : ''}
+    <p class="disc" data-in>${me ? '기록은 이 기기와 내 계정에 저장돼요. 예시 기록은 이 기기에만 있어요. ' : storageOK ? '기록은 이 기기의 브라우저에만 저장돼요. ' : '이 브라우저에서는 저장이 막혀 있어서 새로고침하면 기록이 사라져요. '}이 앱은 의료 기기가 아니에요. 권장량과 혈중알코올은 공개 기준(식약처 카페인 섭취 권고, WHO 저위험 음주 기준)과 관련 연구를 바탕으로 추정한 참고값이에요.</p></div>`};
 }
 const TABS = {home:vHome, report:vReport, me:vMe};
 
@@ -2331,7 +2363,7 @@ const ACT = {
     S.profile = normProfile(d);
     if (!S.profile.adult) S.records = S.records.filter(r => !(r.alc > 0));
     save(); ui.flow = null; ui.tab = edit ? 'me' : 'home';
-    if (el.dataset.seed) seed();
+    if (el.dataset.seed) seed().then(() => { if (!ui.flow) swapCur(); });
     ui.lastPct = {caf:0, alc:0};
     paintTab(edit ? 'back' : 'fwd');
     toast(edit ? '새 기준으로 다시 계산했어요' : el.dataset.seed ? '예시 기록을 넣었어요. 어제 기록에 답해 보세요' : '준비됐어요. 마신 걸 기록해 보세요');
@@ -2432,7 +2464,7 @@ const ACT = {
     const f = ui.flow; if (f.busy) return; f.busy = true;
     const p = f.d.queue[f.d.i];
     if (el.classList.contains('opt')) el.setAttribute('aria-pressed', 'true');
-    setTimeout(() => { f.busy = false; if (ui.flow !== f) return; f.d.res = applyFb(p.day, p.kind, el.dataset.v); f.hist = []; f.cur = 'res'; paintFlow('fwd'); }, 220);
+    setTimeout(async () => { const res = await applyFb(p.day, p.kind, el.dataset.v); f.busy = false; if (ui.flow !== f) return; f.d.res = res; f.hist = []; f.cur = 'res'; paintFlow('fwd'); }, 220);
   },
   'fb-next': () => { const f = ui.flow; f.d.i++; f.cur = 'ask'; paintFlow('fwd'); },
   'fb-close': () => closeFlow('back'),
@@ -2457,7 +2489,7 @@ const ACT = {
   },
   undo: () => { const f = undoFn; undoFn = null; $('#toast').innerHTML = ''; if (f) f(); },
   // 내 기준
-  seed: () => { seed(); ui.lastPct = {caf:0, alc:0}; if (ui.tab === 'me') swapCur(); else { ui.tab = 'home'; paintTab('fade'); } toast('2주 치 예시 기록을 넣었어요'); },
+  seed: () => { const pr = seed(); ui.lastPct = {caf:0, alc:0}; if (ui.tab === 'me') swapCur(); else { ui.tab = 'home'; paintTab('fade'); } toast('2주 치 예시 기록을 넣었어요'); pr.then(() => { if (!ui.flow) swapCur(); }); },
   unseed: () => { unseed(); swapCur(); toast('예시 기록을 지웠어요'); },
   edit: el => {
     const p = S.profile, sk = skippedOf(p);   // '건너뛴 질문' 카드에서 오면 첫 번째 건너뛴 질문부터
@@ -2466,12 +2498,219 @@ const ACT = {
     startFlow('ob', el.dataset.from && sk.length ? sk[0] : 'body', d, 'fwd');
   },
   reset: () => startFlow('reset', 'confirm', {}, 'up'),
-  'reset-do': () => {
-    Object.assign(S, fresh()); try { localStorage.removeItem(KEY); } catch (e) {}
+  'reset-do': async el => {
+    if (me) {   // 로그인했으면 계정에 보관된 것도 지워요
+      el.disabled = true;
+      const r1 = await sb.from('records').delete().eq('user_id', me.id), r2 = r1.error ? r1 : await sb.from('user_state').delete().eq('user_id', me.id);
+      if (r1.error || r2.error) { el.disabled = false; toast('계정의 기록을 지우지 못했어요. 인터넷 연결을 확인해 주세요'); return; }
+      SM = {uid:me.id, recs:{}, st:null, stAt:null}; smSave();
+    }
+    S.mine.forEach(p => unregMine(p.id)); Object.assign(S, fresh()); try { localStorage.removeItem(KEY); } catch (e) {}
     ui.tab = 'home'; ui.lastPct = {caf:0, alc:0};
     startFlow('ob', 'welcome', draft(), 'fade');
   },
 };
+
+/* =========================================================
+   계정 · 기록 보관 (Supabase)
+   - 로그인하지 않아도 지금처럼 이 기기에만 저장해요.
+   - 로그인하면 서버와 이 기기의 기록을 합치고, 그다음부터는 바뀐 것만 1.5초씩 모아서 올려요.
+   - 기록은 한 잔에 한 줄(records), 내 정보·설정은 한 줄(user_state). 지운 기록은 deleted로 남겨서 다른 기기에서도 지워져요.
+   - 예시 기록, 사진 인식 학습, 알림 보낸 시각은 이 기기에만 둬요.
+   - SM(동기화 메모): 마지막으로 서버와 맞춘 상태 {uid, recs:{기록 id: 해시}, st:내 정보 해시, stAt:서버 시각}
+   ========================================================= */
+const smLoad = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || null; } catch (e) { return null; } };
+const smSave = () => { try { if (SM) localStorage.setItem(SYNC_KEY, JSON.stringify(SM)); else localStorage.removeItem(SYNC_KEY); } catch (e) {} };
+const stateOf = () => ({profile:S.profile, feedback:S.feedback.filter(f => !f.demo), favs:S.favs, mine:S.mine, units:S.units, noti:S.noti});
+const hOf = o => cyrb(JSON.stringify(o));
+const syncLabel = () => syncBusy ? '저장 중' : syncErr ? '저장 못 함 · 다시 시도' : '모두 저장됨';
+function updSyncUI() { const el = document.querySelector('#sync-st'); if (el) { el.textContent = syncLabel(); el.closest('button').classList.toggle('bad', syncErr); } }
+function syncSoon() { if (!sb || !me) return; clearTimeout(syncT); syncT = setTimeout(pushChanges, 1500); }
+function unsynced() {   // 아직 계정에 못 올린 기록 수
+  if (!SM) return 0; let n = 0;
+  S.records.forEach(r => { if (!r.demo && SM.recs[r.id] !== hOf(r)) n++; });
+  return n + Object.keys(SM.recs).filter(id => !S.records.some(r => r.id === id)).length;
+}
+async function pushChanges() {   // 서버와 맞춘 뒤로 바뀐 것만 올려요
+  if (!sb || !me || !SM || SM.uid !== me.id) return;
+  if (syncBusy) { syncSoon(); return; }
+  syncBusy = true;
+  try {
+    const now = new Date().toISOString(), live = new Map(S.records.filter(r => !r.demo).map(r => [r.id, r])), ups = [], gone = [];
+    live.forEach((r, id) => { const h = hOf(r); if (SM.recs[id] !== h) ups.push([id, h, r]); });
+    Object.keys(SM.recs).forEach(id => { if (!live.has(id)) gone.push(id); });
+    for (let i = 0; i < ups.length; i += 200) {
+      const part = ups.slice(i, i + 200);
+      const {error} = await sb.from('records').upsert(part.map(([id, , r]) => ({user_id:me.id, id, t:new Date(r.t).toISOString(), data:r, deleted:false, updated_at:now})), {onConflict:'user_id,id'});
+      if (error) throw error;
+      part.forEach(([id, h]) => { SM.recs[id] = h; });
+    }
+    for (let i = 0; i < gone.length; i += 200) {
+      const part = gone.slice(i, i + 200);
+      const {error} = await sb.from('records').update({deleted:true, data:{}, updated_at:now}).in('id', part);
+      if (error) throw error;
+      part.forEach(id => { delete SM.recs[id]; });
+    }
+    const st = stateOf(), sh = hOf(st);
+    if (S.profile && sh !== SM.st) {
+      const {error} = await sb.from('user_state').upsert({user_id:me.id, data:st, updated_at:now}, {onConflict:'user_id'});
+      if (error) throw error;
+      SM.st = sh; SM.stAt = now;
+    }
+    smSave(); syncErr = false;
+  } catch (e) { syncErr = true; }
+  syncBusy = false; updSyncUI();
+}
+async function fetchAll(table, cols) {   // 1000줄씩 나눠 받기
+  const out = [];
+  for (let i = 0; ; i += 1000) {
+    const {data, error} = await sb.from(table).select(cols).order('id').range(i, i + 999);
+    if (error) throw error; out.push(...data); if (data.length < 1000) return out;
+  }
+}
+function mergeState(L, R, first) {   // 양쪽 다 바뀌었을 때: 몸 정보·설정은 처음 로그인이면 계정 쪽, 아니면 이 기기 쪽. 목록은 합쳐요
+  const uni = (a, b, key) => { const m = new Map(); [...(b || []), ...(a || [])].forEach(x => m.set(key(x), x)); return [...m.values()]; };
+  return {profile:first ? (R.profile || L.profile) : (L.profile || R.profile),
+    feedback:uni(L.feedback, R.feedback, f => f.day + f.kind).sort((a, b) => (a.t || 0) - (b.t || 0)),
+    favs:uni(L.favs, R.favs, f => f.key), mine:uni(L.mine, R.mine, m => m.id),
+    units:first ? (R.units || L.units) : (L.units || R.units), noti:first ? (R.noti || L.noti) : (L.noti || R.noti)};
+}
+function applyState(M) {
+  if (M.profile) S.profile = normProfile(M.profile);
+  S.feedback = [...(M.feedback || []), ...S.feedback.filter(f => f.demo)];
+  S.favs = M.favs || [];
+  S.mine.forEach(p => unregMine(p.id)); S.mine = M.mine || []; S.mine.forEach(regMine);
+  if (M.units) S.units = M.units; if (M.noti) S.noti = M.noti;
+}
+async function syncAll() {   // 로그인했을 때: 서버와 이 기기의 기록을 합쳐요. 계정에서 새로 받은 게 있으면 true
+  if (!sb || !me) return null;
+  syncBusy = true; updSyncUI();
+  let got = false;
+  try {
+    const rows = await fetchAll('records', 'id,data,deleted');
+    const {data:st, error} = await sb.from('user_state').select('data,updated_at').maybeSingle(); if (error) throw error;
+    const first = !SM || SM.uid !== me.id;
+    if (first) SM = {uid:me.id, recs:{}, st:null, stAt:null};
+    const local = new Map(S.records.map(r => [r.id, r]));
+    rows.forEach(row => {
+      const id = row.id, L = local.get(id);
+      if (row.deleted) { if (L && !L.demo) S.records = S.records.filter(r => r.id !== id); delete SM.recs[id]; return; }
+      if (L) { SM.recs[id] = hOf(row.data); return; }   // 같은 기록 (다르면 이 기기 것을 올려요)
+      if (!first && SM.recs[id]) return;               // 이 기기에서 지운 기록 → 지움 표시를 올려요
+      if (row.data && row.data.id === id) { S.records.push(row.data); SM.recs[id] = hOf(row.data); got = true; }
+    });
+    if (st && st.data) {
+      const R = st.data, L = stateOf(), localChanged = !first && hOf(L) !== SM.st, remoteChanged = !SM.stAt || new Date(st.updated_at) > new Date(SM.stAt);
+      const had = !!S.profile, M = !had ? R : first ? mergeState(L, R, true) : localChanged && remoteChanged ? mergeState(L, R, false) : localChanged ? L : R;
+      if (M !== L) { applyState(M); got = got || (!had && !!R.profile); }
+      SM.st = hOf(R); SM.stAt = st.updated_at;
+    }
+    smSave();
+  } catch (e) { syncBusy = false; syncErr = true; updSyncUI(); return null; }
+  syncBusy = false; syncErr = false; save();
+  await pushChanges();
+  return got;
+}
+function authInit() {
+  if (!SUPA.url || !SUPA.key) return;
+  const s = document.createElement('script'); s.src = SUPA_JS; s.async = true;
+  s.onload = () => {
+    try { sb = window.supabase.createClient(SUPA.url, SUPA.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:'pkce', storageKey:'jango.auth'}}); } catch (e) { sb = null; return; }
+    SM = smLoad();
+    sb.auth.onAuthStateChange((ev, session) => {
+      const u = session && session.user, prev = me && me.id, md = (u && u.user_metadata) || {};
+      me = u ? {id:u.id, email:u.email || md.email || '', name:md.name || md.full_name || md.nickname || '', provider:(u.app_metadata && u.app_metadata.provider) || 'email'} : null;
+      // 이 콜백 안에서 바로 서버를 부르면 멈출 수 있어서 한 박자 뒤에
+      if (me && me.id !== prev) setTimeout(onLogin, 0);
+      else if (!me && prev) setTimeout(() => { SM = null; smSave(); if (!ui.flow) swapCur(); }, 0);
+    });
+    if (!ui.flow && ui.tab === 'me') swapCur();   // 로그인 카드 보이게
+    else if (ui.flow && ui.flow.kind === 'ob' && ui.flow.cur === 'welcome') swapCur();
+  };
+  document.head.appendChild(s);
+  window.addEventListener('online', () => { if (me) { if (syncErr) syncAll(); else pushChanges(); } });
+  setInterval(() => { if (me && syncErr && navigator.onLine !== false) syncAll(); }, 60e3);
+}
+const LOGIN_ASK = 'jango.login';   // 사용자가 직접 로그인했는지 (카카오·구글은 다녀와도 남게 sessionStorage)
+const askLogin = () => { try { sessionStorage.setItem(LOGIN_ASK, '1'); } catch (e) {} };
+async function onLogin() {
+  let quiet = true; try { quiet = !sessionStorage.getItem(LOGIN_ASK); sessionStorage.removeItem(LOGIN_ASK); } catch (e) {}   // 새로고침으로 이어진 로그인이면 조용히
+  if (/[?&](code|error)=/.test(location.search)) history.replaceState(null, '', location.pathname);   // 주소에 남은 로그인 코드 정리
+  const got = await syncAll(), f = ui.flow;
+  if (S.profile && f && (f.kind === 'auth' || (f.kind === 'ob' && !f.d.edit))) {
+    ui.flow = null; if (f && f.kind === 'auth' && f.d.back !== 'me') ui.tab = 'home'; ui.lastPct = {caf:0, alc:0}; paintTab('fade');
+  } else if (!S.profile && f && f.kind === 'auth') startFlow('ob', 'body', draft(), 'fwd');   // 계정에 정보가 없으면 처음 설정부터
+  else if (!ui.flow) swapCur();
+  if (!quiet) toast(got == null ? '로그인했지만 기록을 아직 못 불러왔어요. 잠시 뒤 다시 해 볼게요' : got ? '계정에 있던 기록을 불러왔어요' : '로그인했어요. 이제 기록이 계정에 보관돼요');
+}
+const authErr = e => {
+  const m = String((e && (e.code || '') + ' ' + (e.message || '')) || '');
+  if (/invalid_credentials|Invalid login/i.test(m)) return '이메일이나 비밀번호가 맞지 않아요';
+  if (/user_already_exists|already registered/i.test(m)) return '이미 가입한 이메일이에요. 로그인해 주세요';
+  if (/weak_password|Password should/i.test(m)) return '더 길거나 복잡한 비밀번호로 해 주세요';
+  if (/email_not_confirmed/i.test(m)) return '메일함에서 가입 확인 링크를 먼저 눌러 주세요';
+  if (/over_.*rate|rate limit|429/i.test(m)) return '잠시 뒤에 다시 해 주세요';
+  if (/provider_disabled|not enabled|Unsupported provider/i.test(m)) return '이 로그인 방법은 아직 준비 중이에요';
+  return '로그인하지 못했어요. 잠시 뒤 다시 해 주세요';
+};
+const AUTH_KAKAO = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#000" d="M12 3.5C6.75 3.5 2.5 6.86 2.5 11c0 2.67 1.77 5.01 4.43 6.34l-.9 3.3c-.08.29.25.52.5.36l3.95-2.6c.5.07 1 .1 1.52.1 5.25 0 9.5-3.36 9.5-7.5S17.25 3.5 12 3.5z"/></svg>';
+const AUTH_GOOGLE = '<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+STEPS.auth = {
+  choose: d => ({html: bar({back:false, close:true}) + head('로그인하고<br>기록을 보관해요', '폰을 바꾸거나 브라우저를 지워도 기록과 내 기준이 그대로 남아요.') +
+    `<div class="auth-btns" data-in><button class="abtn kakao" data-a="auth-oauth" data-v="kakao">${AUTH_KAKAO}카카오로 계속하기</button><button class="abtn google" data-a="auth-oauth" data-v="google">${AUTH_GOOGLE}Google로 계속하기</button><button class="abtn mail" data-a="auth-mail">이메일로 계속하기</button></div>
+     <p class="disc" data-in style="margin-top:18px">${S.records.some(r => !r.demo) ? '이 기기에 있던 기록도 계정에 함께 보관돼요. ' : ''}예시 기록은 계정에 올리지 않아요.</p>`}),
+  mail: d => {
+    const up = d.mode === 'up';
+    return {html: bar({}) + head(up ? '이메일로 가입하기' : '이메일로 로그인', up ? '비밀번호는 8자 이상으로 정해 주세요.' : '가입할 때 쓴 이메일과 비밀번호를 넣어 주세요.') +
+      `<label class="field" data-in><span>이메일</span><input class="text-in" id="au-email" type="email" inputmode="email" autocomplete="email" value="${esc(d.email || '')}" autocapitalize="off" spellcheck="false"></label>
+       <label class="field" data-in><span>비밀번호</span><input class="text-in" id="au-pw" type="password" autocomplete="${up ? 'new-password' : 'current-password'}" minlength="8"></label>
+       <p class="err" id="au-err" role="alert" hidden></p>` +
+      cta(btn(up ? '가입하기' : '로그인', 'auth-submit') + `<button class="txt-btn" data-a="auth-mode" data-v="${up ? 'in' : 'up'}">${up ? '이미 계정이 있어요 · 로그인' : '처음이에요 · 가입하기'}</button>`),
+      mount:el => { const i = el.querySelector(d.email ? '#au-pw' : '#au-email'); if (i) setTimeout(() => i.focus({preventScroll:true}), 350); }};
+  },
+};
+async function mailSubmit() {
+  const f = ui.flow; if (!f || f.kind !== 'auth') return;
+  const em = cur.querySelector('#au-email'), pw = cur.querySelector('#au-pw'), er = cur.querySelector('#au-err'), b = cur.querySelector('[data-a="auth-submit"]');
+  const email = em.value.trim(), pass = pw.value, up = f.d.mode === 'up';
+  const fail = m => { er.textContent = m; er.hidden = false; b.disabled = false; try { sessionStorage.removeItem(LOGIN_ASK); } catch (e) {} };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('이메일 주소를 확인해 주세요');
+  if (pass.length < 8) return fail('비밀번호는 8자 이상이에요');
+  if (!sb) return fail('지금은 로그인할 수 없어요. 잠시 뒤 다시 해 주세요');
+  b.disabled = true; er.hidden = true; f.d.email = email; askLogin();
+  const r = up ? await sb.auth.signUp({email, password:pass}) : await sb.auth.signInWithPassword({email, password:pass});
+  if (r.error) return fail(authErr(r.error));
+  if (up && !r.data.session) return fail('메일함에서 가입 확인 링크를 누른 뒤 로그인해 주세요');
+  // 성공하면 onAuthStateChange → onLogin 이 다음 화면으로 넘겨요
+}
+Object.assign(ACT, {
+  'auth-open': el => startFlow('auth', 'choose', {back:el.dataset.from || 'me', mode:'in'}, 'up'),
+  'auth-oauth': async el => {
+    if (!sb) return toast('지금은 로그인할 수 없어요. 잠시 뒤 다시 해 주세요');
+    askLogin();
+    const {error} = await sb.auth.signInWithOAuth({provider:el.dataset.v, options:{redirectTo:location.origin + location.pathname}});
+    if (error) toast(authErr(error));   // 성공하면 카카오·구글 화면으로 넘어가요
+  },
+  'auth-mail': () => go('mail'),
+  'auth-mode': el => { const f = ui.flow, em = cur.querySelector('#au-email'); if (em) f.d.email = em.value.trim(); f.d.mode = el.dataset.v; swapCur(); },
+  'auth-submit': () => mailSubmit(),
+  'sync-retry': () => { if (syncErr) syncAll(); },
+  logout: () => {
+    const n = unsynced();
+    sheet(`<h2 id="sheet-h">로그아웃할까요?</h2><p>이 기기에 있는 기록은 지워지고, 다시 로그인하면 계정에서 불러와요.${n ? ` 아직 계정에 못 올린 기록 ${n}개는 먼저 올릴게요.` : ''}</p>
+      <div class="btn-row"><button class="btn sec" data-a="sheet-close">취소</button><button class="btn" data-a="logout-go">로그아웃</button></div>`);
+  },
+  'logout-go': async () => {
+    closeSheet(); clearTimeout(syncT);
+    await pushChanges();
+    if (syncErr || unsynced()) { toast('계정에 아직 못 올린 기록이 있어서 로그아웃하지 않았어요. 인터넷 연결을 확인해 주세요'); return; }
+    try { await sb.auth.signOut(); } catch (e) {}
+    me = null; SM = null; smSave();
+    S.mine.forEach(p => unregMine(p.id)); Object.assign(S, fresh()); try { localStorage.removeItem(KEY); } catch (e) {}
+    ui.tab = 'home'; ui.lastPct = {caf:0, alc:0};
+    startFlow('ob', 'welcome', draft(), 'fade'); toast('로그아웃했어요');
+  },
+});
 /* 기록 화면 부분 갱신 (다시 그리지 않고 필요한 곳만) */
 function updPv() {
   const f = ui.flow; if (!f || f.cur !== 'item') return;
@@ -2567,6 +2806,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'ob-h') { e.preventDefault(); const w = cur.querySelector('#ob-w'); if (w) w.focus(); }
   if (e.key === 'Enter' && e.target.id === 'ob-w') { e.preventDefault(); ACT['ob-w-next'](); }
   if (e.key === 'Enter' && e.target.id === 'ob-b') { e.preventDefault(); ACT['ob-b-next'](); }
+  if (e.key === 'Enter' && e.target.id === 'au-email') { e.preventDefault(); const p = cur.querySelector('#au-pw'); if (p) p.focus(); }
+  if (e.key === 'Enter' && e.target.id === 'au-pw') { e.preventDefault(); mailSubmit(); }
   const hd = e.target.closest && e.target.closest('.hdl');
   if (hd && ui.flow && ui.flow.cur === 'item' && /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|PageUp|PageDown)$/.test(e.key)) {
     e.preventDefault(); const d = ui.flow.d, it = BYID[d.id], h = hd.dataset.h, st = /Page/.test(e.key) ? 0.1 : 0.02, dir = /Up|Right/.test(e.key) ? 1 : -1;
@@ -2635,6 +2876,7 @@ setInterval(() => notiRefresh(), 5 * 60000);
 if (S.profile) S.profile = normProfile(S.profile);
 if (!S.profile) startFlow('ob', 'welcome', draft(), 'none');
 else { paintTab('none'); notiRefresh(); }
+authInit();
 })();
 </script>
 
