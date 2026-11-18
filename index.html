@@ -577,6 +577,11 @@ button,label,.row,.tab,.qchip,.tile,.opt,.li{-webkit-touch-callout:none;-webkit-
 .mkrow .mk-ic.p{background:var(--accent-soft);color:var(--accent)}
 .ph-box{position:relative;margin-top:20px;border-radius:20px;overflow:hidden;background:var(--fill)}
 .ph-box img{display:block;width:100%;max-height:280px;object-fit:cover}
+.ph-cost{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px 0 0;font-size:13.5px;font-weight:600;color:var(--ink-3);text-align:center}
+.ph-cost svg{width:16px;height:16px;flex:none;color:var(--accent)}
+.ph-cost.off svg{color:var(--ink-3)}
+.cost{display:inline-flex;align-items:center;gap:3px;height:24px;padding:0 9px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:700;flex:none;white-space:nowrap}
+.cost svg{width:13px;height:13px}
 /* 사진을 확인하는 동안 위에서 아래로 훑는 빛 띠 */
 .ph-box.scan::after{content:'';position:absolute;left:0;right:0;top:0;height:45%;pointer-events:none;
   background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.22) 75%,rgba(255,255,255,.7));border-bottom:2px solid rgba(255,255,255,.95);
@@ -875,6 +880,7 @@ const I = {
   check: sv('<path d="M6 12.5l4 4L18 8.5"/>', 16, 3),
   done: sv('<path class="draw" d="M5 12.5l4.5 4.5L19 7.5"/>', 38, 2.6),
   camera: sv('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>', 20),
+  drop: sv('<path d="M12 3.5c3.3 4.1 5.6 7.2 5.6 10.1a5.6 5.6 0 0 1-11.2 0c0-2.9 2.3-6 5.6-10.1z"/>', 20),
   gallery: sv('<rect x="4" y="5" width="16" height="14" rx="2.5"/><circle cx="9.5" cy="10" r="1.6"/><path d="M20 15.5l-4.5-4.5L7 19"/>', 20),
   search: sv('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', 20),
   alert: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3v.2"/>', 20, 2.2),
@@ -1497,8 +1503,10 @@ function pickBody(d) {
   if (rec.length) h += `<h2 class="grp">최근</h2><div class="rows">${rec.map(r => tplRow('rid', r.id, oneOf(r), false)).join('')}</div>`;
   const dir = d.k === 'caf' ? `<button class="row mkrow" data-a="rcustom"><span class="mk-ic c" aria-hidden="true">+</span><span class="row-t"><b>카페인 mg로 직접 기록</b><small>컵이나 캔에 적힌 카페인을 그대로 넣어요</small></span>${I.chev}</button>`
     : `<button class="row mkrow" data-a="rcustom"><span class="mk-ic" aria-hidden="true">+</span><span class="row-t"><b>도수·양으로 직접 기록</b><small>목록에 없는 술을 도수와 양으로 기록해요</small></span>${I.chev}</button>` + itemRowHTML(BYID.mixb);
-  const pho = `<label class="row mkrow" for="photo"><span class="mk-ic p" aria-hidden="true">${I.camera}</span><span class="row-t"><b>사진 찍어서 찾기</b><small>컵·병·잔을 찍으면 메뉴를 찾아요</small></span>${I.chev}</label>` +
-    `<label class="row mkrow" for="photo-lib"><span class="mk-ic p" aria-hidden="true">${I.gallery}</span><span class="row-t"><b>앨범에서 찾기</b><small>찍어 둔 사진으로 찾아요</small></span>${I.chev}</label>`;
+  const cs = coinState(), pill = cs === 'has' ? `<span class="cost" aria-label="${COIN.name} 1${COIN.unit} 사용">${I.drop}${COIN.name} 1${COIN.unit}</span>` : '';
+  const coinTxt = cs === 'out' ? ` · ${COIN.name}이 없어서 잔 모양·색으로만 찾아요` : cs === 'guest' ? ' · 로그인하면 AI가 라벨·로고까지 읽어요' : cs === 'has' && S.coins != null ? ` · 남은 ${COIN.name} ${S.coins}${COIN.unit}` : '';
+  const pho = `<label class="row mkrow" for="photo"><span class="mk-ic p" aria-hidden="true">${I.camera}</span><span class="row-t"><b>사진 찍어서 찾기</b><small>컵·병·잔을 찍으면 메뉴를 찾아요${coinTxt}</small></span>${pill}${I.chev}</label>` +
+    `<label class="row mkrow" for="photo-lib"><span class="mk-ic p" aria-hidden="true">${I.gallery}</span><span class="row-t"><b>앨범에서 찾기</b><small>찍어 둔 사진으로 찾아요</small></span>${pill}${I.chev}</label>`;
   h += `<h2 class="grp">직접 넣기</h2><div class="rows">${pho}${dir}</div>`;
   const mine = DB.filter(x => x.mine && x.k === d.k);
   if (mine.length) h += `<h2 class="grp">내가 만든 것<button data-a="mine">편집</button></h2><div class="rows">${mine.map(it => itemRowHTML(it, false)).join('')}</div>`;
@@ -2017,6 +2025,12 @@ function aiOpts(it, c) {
    충전하기는 버튼만 두고 막아 뒀어요. 잔액은 서버(recognize 함수의 wallet 표)가 정하고, 앱은 마지막으로 받은 값을 보여 줘요.
    이름을 바꾸려면 COIN.name 만 고치면 돼요(서버 문구 '방울이 없어요'도 함께). */
 const COIN = {name:'방울', unit:'개', grant:10};
+const coinState = () => !(sb && me) ? 'guest' : S.coins === 0 ? 'out' : 'has';   // 사진 인식에 방울을 쓸 수 있는지
+let coinAt = 0;
+function coinSoon() {   // 내 기준을 열 때 잔액을 다시 받아 와요 (1분에 한 번까지)
+  if (!me || Date.now() - coinAt < 60e3) return; coinAt = Date.now();
+  const was = S.coins; coinRefresh().then(v => { if (v != null && v !== was && ui.tab === 'me' && !ui.flow) swapCur(); });
+}
 async function coinRefresh() {
   const tok = await authToken(); if (!tok) return null;
   try {
@@ -2034,6 +2048,7 @@ async function authToken() {
 async function runRecogAI(d, tok) {
   const R = d.recog = {state:'loading', ai:true, seen:''};
   const paint = () => { if (d.recog === R && ui.flow && ui.flow.d === d && ui.flow.cur === 'photo') swapCur(); };
+  paint();   // 읽기 시작할 때 한 번: 사진 아래에 '방울 1개를 써요'
   const hints = [...new Set(recentList(12).map(r => r.itemId).filter(id => id && BYID[id] && !BYID[id].mine && !BYID[id].builder))];
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 30000);
   try {
@@ -2104,11 +2119,13 @@ async function runRecog(d) {
     const tok = await authToken();
     if (!tok) d.aiNote = 'login';
     else if (await runRecogAI(d, tok)) return;
+    else if (!d.aiNote) d.aiNote = 'fail';   // AI가 못 읽었어요. 서버가 방울을 돌려줬어요
   }
   return runRecogLocal(d);
 }
 async function runRecogLocal(d) {
   const R = d.recog = {state:'loading', local:true, note:d.aiNote || ''};
+  if (ui.flow && ui.flow.d === d && ui.flow.cur === 'photo') swapCur();   // 읽기 시작할 때 한 번: '방울을 쓰지 않아요'
   try {
     const img = await imgOf(d.photoBig || d.photo), col = colorOf(img);
     let preds = [], emb = null, model = true;
@@ -2116,6 +2133,12 @@ async function runRecogLocal(d) {
     Object.assign(R, {state:'done', col, preds, emb, model, cands:guess(preds, col, emb), desc:describe(preds, col, model)});
   } catch (e) { Object.assign(R, {state:'done', cands:[], desc:'사진을 읽지 못했어요. 다른 사진으로 해 볼까요?'}); }
   if (ui.flow && ui.flow.d === d && ui.flow.cur === 'photo') swapCur();
+}
+function phCost(R, done) {   // 사진 아래: 이번 인식에 방울을 썼는지
+  if (!R.ai && !R.local) return '';   // 어느 쪽으로 읽을지 정하기 전
+  if (R.ai) return `<p class="ph-cost" data-in>${I.drop}${done ? `AI가 읽었어요 · ${COIN.name} 1${COIN.unit}를 썼어요${R.coins != null ? ` · 남은 ${R.coins}${COIN.unit}` : ''}` : `AI가 읽는 중이에요 · ${COIN.name} 1${COIN.unit}를 써요`}</p>`;
+  const t = R.note === 'fail' ? `AI가 읽지 못해서 휴대폰 안에서 찾았어요 · ${COIN.name}은 쓰지 않았어요` : done ? `휴대폰 안에서 찾았어요 · ${COIN.name}은 쓰지 않았어요` : `휴대폰 안에서 찾는 중이에요 · ${COIN.name}을 쓰지 않아요`;
+  return `<p class="ph-cost off" data-in>${I.drop}${t}</p>`;
 }
 function photoView(d) {
   // 결과는 앱의 다른 목록과 같은 모양으로: 이름 · 사이즈 · 카페인/알코올 양. 추정 이유 같은 설명은 붙이지 않음
@@ -2133,11 +2156,11 @@ function photoView(d) {
   return {html: bar({close:true}) + (done && !C.length ? head('음료를 찾지 못했어요', '다시 찍거나 직접 찾아 주세요') :
       done && R.local ? head('사진만으로는 확실하지 않아요', R.note === 'login' ? `로그인하면 ${COIN.name} ${COIN.grant}개를 드려요. ${COIN.name} 1개로 AI가 병 라벨·컵 로고까지 읽어요. 지금은 잔 모양과 색만 봤어요` :
         R.note === 'empty' ? `${COIN.name}을 다 써서 잔 모양과 색만 봤어요. 내 기준 → ${COIN.name}에서 확인할 수 있어요` : '라벨·로고는 못 읽고 잔 모양과 색만 봤어요. 없으면 직접 찾아 주세요') : '') +
-    `<div class="ph-box${done ? '' : ' scan'}" data-in role="img" aria-label="${done ? '찍은 사진' : '사진을 확인하는 중'}"><img src="${d.photo}" alt=""></div>` +
+    `<div class="ph-box${done ? '' : ' scan'}" data-in role="img" aria-label="${done ? '찍은 사진' : '사진을 확인하는 중'}"><img src="${d.photoAI || d.photoBig || d.photo}" alt=""></div>${phCost(R, done)}` +
     (done ? list : skel) +
     `<button class="ghost" data-a="back" data-in style="margin-top:20px">직접 찾기</button>
      <div class="ph-acts" data-in><label class="ghost" for="photo">${I.camera}다시 찍기</label><label class="ghost" for="photo-lib">${I.gallery}앨범</label></div>${PHOTO_INPUTS}` +
-    (C.length ? `<p class="disc" data-in style="margin-top:16px">${R.local ? '고른 사진은 기억해 두고, 비슷한 사진을 다시 찍으면 그 음료를 먼저 보여 줘요. ' : ''}${R.ai && R.coins != null ? `${COIN.name} 1개를 썼어요. 남은 ${COIN.name} ${R.coins}개. ` : ''}카페인·알코올 양은 브랜드 공개값과 앱 기준값이에요. 양은 다음 화면에서 맞출 수 있어요.</p>` : '')};
+    (C.length ? `<p class="disc" data-in style="margin-top:16px">${R.local ? '고른 사진은 기억해 두고, 비슷한 사진을 다시 찍으면 그 음료를 먼저 보여 줘요. ' : ''}카페인·알코올 양은 브랜드 공개값과 앱 기준값이에요. 양은 다음 화면에서 맞출 수 있어요.</p>` : '')};
 }
 
 onSave = notiRefresh;
@@ -2644,6 +2667,11 @@ function auditCard(ai) {
     high:['음주 습관을 점검해 보는 게 좋아요', '가까운 보건소나 정신건강복지센터에서 무료로 상담받을 수 있어요.']}[a.lv];
   return `<section class="card" data-in><span class="c-label"><i class="dot" style="background:var(--alc)"></i>음주 습관 체크<span class="score ${a.lv}">${a.score} / 12</span></span><span class="c-big sm">${T[0]}</span><span class="c-sub">${T[1]}</span><p class="disc" style="margin-top:10px;padding:0">처음 설정에서 답한 음주 빈도와 양으로 계산한 AUDIT-C 점수예요. 한국 연구 기준으로 남성 7점·여성 6점부터 위험 음주로 봐요. 정보 다시 입력하기에서 바꿀 수 있어요.</p></section>`;
 }
+function coinCard() {   // 내 기준 맨 위: 내 방울
+  coinSoon();
+  const n = S.coins;
+  return `<button class="prompt" data-a="coin-open" data-in><span class="pi">${I.drop}</span><span class="pt"><b>내 ${COIN.name} ${n != null ? n + COIN.unit : '확인하는 중'}</b><small>${n === 0 ? `다 썼어요. 사진은 잔 모양·색으로 찾아요` : `AI 사진 인식 1번에 1${COIN.unit}씩 써요. 실패하면 돌려받아요`}</small></span>${I.chev}</button>`;
+}
 function vMe() {
   const ci = cafInfo(), ai = alcInfo(), hasDemo = S.records.some(r => r.demo), sk = skippedOf(S.profile);
   const PROV = {kakao:'카카오', google:'Google', email:'이메일'};
@@ -2653,12 +2681,11 @@ function vMe() {
         ${hasHealth(S.profile) ? `<button class="li" data-a="hcons-open">건강 정보 계정 보관<span class="li-n">${S.hcons === true ? '동의함' : '이 기기에만'}</span>${I.chev}</button>` : ''}
         <button class="li" data-a="logout">로그아웃${I.chev}</button>
         <button class="li danger" data-a="acct-del">계정 삭제${I.chev}</button></div>`
-    : `<button class="prompt" data-a="auth-open" data-from="me" data-in><span class="pi">${I.cloud}</span><span class="pt"><b>로그인하고 기록 보관하기</b><small>폰을 바꾸거나 브라우저를 지워도 기록이 남아요</small></span>${I.chev}</button>`;
-  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${me ? '' : acct}${sk.length ? `<button class="prompt" data-a="edit" data-from="1" data-in><span class="pi">${I.chat}</span><span class="pt"><b>건너뛴 질문이 ${sk.length}개 있어요</b><small>답하면 권장량이 내 몸에 더 잘 맞아요</small></span>${I.chev}</button>` : ''}${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
+    : `<button class="prompt" data-a="auth-open" data-from="me" data-in><span class="pi">${I.cloud}</span><span class="pt"><b>로그인하고 기록 보관하기</b><small>폰을 바꾸거나 브라우저를 지워도 기록이 남아요. AI 사진 인식에 쓰는 ${COIN.name} ${COIN.grant}${COIN.unit}도 드려요</small></span>${I.chev}</button>`;
+  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${me ? coinCard() : acct}${sk.length ? `<button class="prompt" data-a="edit" data-from="1" data-in><span class="pi">${I.chat}</span><span class="pt"><b>건너뛴 질문이 ${sk.length}개 있어요</b><small>답하면 권장량이 내 몸에 더 잘 맞아요</small></span>${I.chev}</button>` : ''}${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
     <p class="disc" data-in>점수 100점은 공개 기준량을 그대로 쓴다는 뜻이에요. 내 몸 정보와 다음 날 피드백이 쌓일수록 내 몸에 맞게 조정돼요.</p>
     <div class="list" data-in><button class="li" data-a="edit">정보 다시 입력하기${I.chev}</button>
       <button class="li" data-a="units">표시 단위<span class="li-n">${(UC[S.units.caf] || UC.mg).sh}${ai.disabled ? '' : ' · ' + (UA[S.units.alc] || UA.g).sh}</span>${I.chev}</button>
-      <button class="li" data-a="coin-open">${COIN.name}<span class="li-n">${me ? (S.coins != null ? S.coins + COIN.unit : '') : '로그인하면 ' + COIN.grant + COIN.unit}</span>${I.chev}</button>
       <button class="li" data-a="favs-me">즐겨찾기 관리<span class="li-n">${S.favs.length}개</span>${I.chev}</button>
       <button class="li" data-a="noti-me">알림<span class="li-n">${Object.values(S.noti.kinds).filter(v => v === false).length ? '일부 끔' : '켜짐'}</span>${I.chev}</button>
       <button class="li" data-a="mine-me">내가 만든 음료·술<span class="li-n">${S.mine.length}개</span>${I.chev}</button>
@@ -3398,6 +3425,11 @@ Object.assign(ACT, {
    업데이트 소식 (패치 노트) — 배포할 때마다 맨 위에 한 묶음씩 추가해요. id가 바뀌면 내 기준에 '새 소식'이 떠요.
    ========================================================= */
 const PATCH = [
+  {id:'2026-11-19b', d:'11월 19일', t:'선명한 사진, 방울 잔액 표시', items:[
+    '사진으로 찾기 화면에서 사진이 흐리게 보이던 문제를 고쳤어요. 이제 찍은 사진을 선명하게 보여 줘요.',
+    '내 기준 맨 위에서 방울이 몇 개 남았는지 바로 볼 수 있어요.',
+    '사진 찍기·앨범 버튼에 방울 1개가 든다는 표시와 남은 개수를 붙였어요. 사진 아래에도 이번에 AI가 읽어서 방울을 썼는지, 휴대폰 안에서 찾아서 안 썼는지 알려 줘요.',
+  ]},
   {id:'2026-11-19', d:'11월 19일', t:'잠으로 배우는 카페인 속도', items:[
     '"괜찮았어요"·"잠을 설쳤어요" 답과 그날 커피를 마신 시각으로, 내 몸에서 카페인이 빠지는 속도를 사람마다 다시 맞춰요. 카페인 자세히 보기에서 "반으로 줄어드는 데 약 몇 시간"인지와 왜 바뀌었는지 볼 수 있어요. 커피 마감 시각과 잘 때 카페인 경고도 이 속도로 계산해요.',
     '술을 마신 밤의 잠 답은 빼고 배워요. 술도 잠을 방해해서 카페인 때문인지 알 수 없어서예요.',
