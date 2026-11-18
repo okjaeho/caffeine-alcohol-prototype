@@ -479,6 +479,7 @@ button,label,.row,.tab,.qchip,.tile,.opt,.li{-webkit-touch-callout:none;-webkit-
 .tl-axis{position:relative;height:22px;margin:18px 8px 0;border-bottom:2px solid var(--fill-2)}
 .tl-dot{position:absolute;bottom:0;width:var(--s);height:var(--s);margin-left:calc(var(--s) / -2);transform:translateY(50%);border-radius:50%;background:var(--alc)}
 .tl-dot.est{background:var(--bg);border:2px solid var(--alc);box-sizing:border-box}
+.tl-dot.gs{background:var(--bg);border:2px dashed var(--alc);box-sizing:border-box}
 .tl-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin:10px 0 0;font-variant-numeric:tabular-nums}
 .tl{position:relative;margin-top:4px}
 .tl::before{content:'';position:absolute;left:59px;top:24px;bottom:24px;width:2px;background:var(--fill-2)}
@@ -902,7 +903,16 @@ function normProfile(d) {
 const cyrb = s => { let a = 0xdeadbeef, b = 0x41c6ce57; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a = Math.imul(a ^ c, 2654435761); b = Math.imul(b ^ c, 1597334677); }
   a = Math.imul(a ^ (a >>> 16), 2246822507) ^ Math.imul(b ^ (b >>> 13), 3266489909); b = Math.imul(b ^ (b >>> 16), 2246822507) ^ Math.imul(a ^ (a >>> 13), 3266489909);
   return (b >>> 0).toString(36) + (a >>> 0).toString(36); };
-const fbOut = fb => (fb || []).map(f => ({kind:f.kind, ans:f.ans, amt:Math.round(f.amt * 10) / 10}));
+function fbDose(day) {   // 그날 밤 잠들기 전 24시간 동안 마신 카페인: [잠들기 몇 시간 전, mg]. 서버가 반감기마다 잘 때 남은 양을 다시 계산해요
+  if (!S.profile) return [];
+  const bed = bedAt(day);
+  return S.records.filter(r => r.caf > 0 && r.t <= bed && bed - r.t < 24 * H).sort((a, b) => a.t - b.t).slice(-20)
+    .map(r => [Math.round((bed - r.t) / H * 10) / 10, Math.round(r.caf)]);
+}
+const fbAlc = day => Math.round(sum(recsOn(day), 'alc') * 10) / 10;   // 그날 술(g): 술 마신 밤의 잠은 카페인 탓인지 알 수 없어서 서버가 빼요
+const fbOut = fb => (fb || []).map(f => f.kind === 'caf'
+  ? {kind:f.kind, ans:f.ans, amt:Math.round(f.amt * 10) / 10, dose:f.dose || (f.dose = fbDose(f.day)), alc:f.alc != null ? f.alc : (f.alc = fbAlc(f.day))}   // 예전 피드백은 처음 보낼 때 한 번 채워 둬요
+  : {kind:f.kind, ans:f.ans, amt:Math.round(f.amt * 10) / 10});
 const LIMS = {}, LIM_ASK = {};
 let limMemo = {p:null, n:-1, last:null, k:''};
 function limKey(p, fb) {
@@ -1157,19 +1167,21 @@ function recentList(n) {
 }
 
 /* ---------- 피드백 ---------- */
+const FB_MIN = {caf:10, alc:2};   // 이보다 적게 마신 날은 묻지 않아요 (디카페인·한 모금으로 기준이 흔들리지 않게)
 function pending() {
   const now = Date.now(), today = dayKey(now), oldest = dayKey(now - 3 * DAY);
   const days = [...new Set(S.records.map(r => dayKey(r.t)))].filter(d => d < today && d >= oldest).sort().reverse();
   const out = [];
   for (const d of days) for (const kind of ['caf', 'alc']) {
     const amt = sum(recsOn(d), kind);
-    if (amt > 0 && !S.feedback.some(f => f.day === d && f.kind === kind)) out.push({day:d, kind, amt});
+    if (amt >= FB_MIN[kind] && !S.feedback.some(f => f.day === d && f.kind === kind)) out.push({day:d, kind, amt});
   }
   return out.slice(0, 2);
 }
 async function applyFb(day, kind, ans) {   // 답을 저장하고, 서버에서 새 기준을 받아 와요
   const amt = sum(recsOn(day), kind), get = () => kind === 'caf' ? cafInfo() : alcInfo(), before = get().limit;
   const f = {day, kind, ans, amt, before, t:Date.now(), demo:recsOn(day).some(r => r.demo)};
+  if (kind === 'caf') { f.dose = fbDose(day); f.alc = fbAlc(day); }
   S.feedback.push(f); save();
   const got = await fetchLimits(S.profile, S.feedback), a = get(); f.after = a.limit; save();
   return {kind, ans, before, after:a.limit, capped:ans === 'ok' && a.limit >= a.pub, offline:!got && ans !== 'skip'};
@@ -2286,7 +2298,7 @@ const STEPS = {
         vmarks:[{t:now, label:'지금'}, {t:st.bed, label:'취침'}], dot:[now, st.body], label:'체내 카페인 추정 그래프', fmt:v => Math.round(v) + 'mg'});
       return {html: bar({}) + head(st.body >= 5 ? `지금 몸에 카페인이<br>${Math.round(st.body)}mg 남아 있어요` : '지금 몸에 남은<br>카페인이 거의 없어요',
           `${timeLabel(st.bed)}에 잘 때쯤 ${Math.round(st.atBed)}mg 남아요.${st.atBed >= 100 ? ' 잠들기 어려울 수 있어요.' : ''}`, '카페인', 'caf') +
-        `<div class="chart" data-in>${ch}<p class="chart-note">내 몸이 카페인을 분해하는 속도로 계산한 추정치예요. 잘 때 점선보다 높게 남으면 잠이 얕아질 수 있어요. 그래프를 누르면 그 시각에 남은 양이 나와요.</p></div>
+        `<div class="chart" data-in>${ch}<p class="chart-note">내 몸이 카페인을 분해하는 속도로 계산한 추정치예요. 잘 때 점선보다 높게 남으면 잠이 얕아질 수 있어요. 그래프를 누르면 그 시각에 남은 양이 나와요.</p>${halfNote(st.ci)}</div>
 ${linesInfo('caf', st)}
          <h2 class="sec2" data-in>최근 24시간 기록</h2><div class="rlist" data-in>${recs.map(recRow).join('') || '<p class="none">아직 기록이 없어요</p>'}</div>`};
     },
@@ -2320,6 +2332,14 @@ ${linesInfo('caf', st)}
   },
 };
 
+function halfNote(ci) {   // 반감기: 몸 정보로 정한 값, 잠 피드백으로 배운 값
+  if (!(ci && ci.half > 0)) return '';
+  const h = ci.half, h0 = ci.half0, n = ci.halfN || 0, d = h0 ? h - h0 : 0;
+  const how = !n ? '잤을 때 어땠는지 답해 주면 내 몸에 맞게 바뀌어요.'
+    : Math.abs(d) < 0.15 ? `잠 피드백 ${n}번을 봐도 몸 정보로 정한 ${fmt1(h0)}시간이 잘 맞아요.`
+    : `몸 정보로는 ${fmt1(h0)}시간인데, 잠 피드백 ${n}번을 보니 ${d > 0 ? '카페인이 더 오래 남는' : '카페인이 더 빨리 빠지는'} 편이라 바꿨어요.`;
+  return `<p class="chart-note"><b>반으로 줄어드는 데 약 ${fmt1(h)}시간</b>으로 계산해요. ${how}</p>`;
+}
 function linesInfo(k, st) {   // 기준선마다 무엇이고 어디서 왔는지
   const X = k === 'caf' ? uC : uA, val = k === 'caf' ? st.caf : st.alc;
   const why = {'내 권장량':k === 'caf' ? '식약처 권고(성인 400mg, 몸무게 1kg당 2.5mg)에서 내 몸·민감도·약·피드백을 반영해 낮춘 값이에요. 가장 보수적인 선이에요.' : '세계보건기구(WHO) 저위험 음주 기준에 내 몸·얼굴 빨개짐·약·피드백을 반영한 값이에요. 가장 보수적인 선이에요.',
@@ -3378,6 +3398,12 @@ Object.assign(ACT, {
    업데이트 소식 (패치 노트) — 배포할 때마다 맨 위에 한 묶음씩 추가해요. id가 바뀌면 내 기준에 '새 소식'이 떠요.
    ========================================================= */
 const PATCH = [
+  {id:'2026-11-19', d:'11월 19일', t:'잠으로 배우는 카페인 속도', items:[
+    '"괜찮았어요"·"잠을 설쳤어요" 답과 그날 커피를 마신 시각으로, 내 몸에서 카페인이 빠지는 속도를 사람마다 다시 맞춰요. 카페인 자세히 보기에서 "반으로 줄어드는 데 약 몇 시간"인지와 왜 바뀌었는지 볼 수 있어요. 커피 마감 시각과 잘 때 카페인 경고도 이 속도로 계산해요.',
+    '술을 마신 밤의 잠 답은 빼고 배워요. 술도 잠을 방해해서 카페인 때문인지 알 수 없어서예요.',
+    '카페인 10mg·술 2g보다 적게 마신 날은 다음 날 몸 상태를 묻지 않아요. 아주 적은 양에 답한 것 때문에 권장량이 크게 낮아지던 문제를 고쳤어요.',
+    '개인정보 처리방침에 권장량 계산에 그날 마신 시각과 양도 쓴다는 내용을 더했어요.',
+  ]},
   {id:'2026-11-18b', d:'11월 18일', t:'기준선 여러 개, AI 사진 인식과 방울, 계정 삭제', items:[
     '권장량 하나만 보여 주지 않아요. 술은 내 권장량 → 폭음 기준 → 필름이 끊길 수 있는 선(혈중알코올 0.15%), 카페인은 내 권장량 → 성인 하루 최대 400mg → 위험 1,200mg을 홈 카드와 자세히 보기에서 함께 보여 줘요. 선마다 어디서 온 기준인지도 적어 뒀어요.',
     'AI 사진 인식을 켰어요. 병 라벨, 컵 로고, 주문 스티커까지 읽어요. 로그인하면 방울 10개를 드리고, 인식 1번에 1개를 써요. 인식이 실패하면 돌려받아요. 충전은 준비 중이에요.',
@@ -3447,12 +3473,18 @@ if (/[?&]lab(=|&|$)/.test(location.search)) {
   history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : ''));
 }
 const DOT_SVC = '0000fff0-0000-1000-8000-00805f9b34fb', DOT_NTF = '0000fff1-0000-1000-8000-00805f9b34fb', DOT_CMD = '0000fff2-0000-1000-8000-00805f9b34fb';
-const SC_EMPTY = 5, SC_MIN = 2, SC_WIN = 1200, SC_TOL = 1, SC_MERGE = 20 * MIN, SC_GLASS = 150;
+const SC_EMPTY = 5, SC_MIN = 2, SC_WIN = 1200, SC_TOL = 1, SC_MERGE = 20 * MIN;
 const SC_HEAVY = 200;   // 잔+음료가 이보다 무거우면 큰 잔(하이볼잔·맥주잔), 가벼우면 소주잔
+const SC_GAP = 3000;   // 무게가 이만큼 안 들어오면(연결 끊김·화면 꺼짐) 그동안 잔을 들었던 걸로 봐요
+const SC_SMALL_CAP = 80;   // 소주잔·샷잔에 들어가는 양(g)의 넉넉한 끝. 이보다 많이 무거워져 돌아오면 다른 잔
+const SC_SHOT = 3;   // 작은 잔을 들었다가 더 무거워져 돌아왔을 때, 그 전에 이만큼(g) 넘게 남아 있었으면 "다 마시고 다시 받은 것"
+const SC_SHOT_MS = 5000;   // 같은 무게로 돌아와도 이만큼 넘게 들고 있었으면 원샷하고 다시 받은 걸로 봐요 (그냥 옮기거나 짠만 하면 더 짧아요)
+const SC_BACK = [1, 2, 4, 8, 15, 30];   // 다시 연결하는 간격(초)
 const SC_EST = {light:{key:'est:light', name:'소주', alcMl:0.16 * ETH, cafMl:0, est:true}, heavy:{key:'est:heavy', name:'하이볼', alcMl:0.07 * ETH, cafMl:0, est:true}};
 const SC_FIX = [['소주', 16], ['맥주', 4.5], ['하이볼', 7], ['소맥', 8], ['와인', 12.5], ['막걸리', 6], ['위스키', 40]];   // 고칠 때 바로 고르는 술
 const SC = {conn:null, dev:null, cmd:null, raw:new Uint8Array(0), gotAt:0, w:null, buf:[], st:null, base:null, full:null, drink:null, wake:null,
-  total:{ml:0, alc:0, caf:0}, log:[], msg:'', lastRec:null, hint:false, sim:0, simT:0, pt:0, paintAt:0};
+  lo:null, seenEmpty:false, away:false, awayAt:0, gap:false, feedAt:0, retry:0, retryT:0,   // lo: 이 잔이 가장 가벼웠던 무게(= 빈 잔으로 봐요)
+  total:{ml:0, alc:0, caf:0}, log:[], msg:'', lastRec:null, hint:false, sim:0, simT:0, simGap:0, pt:0, paintAt:0};
 const pause = ms => new Promise(r => setTimeout(r, ms));
 const r1 = n => Math.round(n * 10) / 10;
 function scDrinks() {   // 고를 수 있는 음료: 최근 마신 것(양을 아는 기록) + 기본 술
@@ -3472,6 +3504,11 @@ const scDensity = dk => 1 - (dk.alcMl / ETH) * (1 - ETH);   // 술은 물보다 
 function scLog(text) { SC.log.unshift({t:Date.now(), text}); SC.log = SC.log.slice(0, 6); }
 function scFeed(w) {   // 저울 무게가 들어올 때마다
   const now = Date.now();
+  if (SC.feedAt && now - SC.feedAt > SC_GAP && SC.base != null) {   // 무게가 끊겼다 다시 들어와요: 그동안 무슨 일이 있었는지 몰라요
+    if (!SC.gap) scLog(`무게가 ${Math.round((now - SC.feedAt) / 1000)}초 동안 안 들어왔어요`);
+    SC.gap = true; SC.buf = []; SC.st = null;
+  }
+  SC.feedAt = now;
   SC.w = w; SC.buf.push([now, w]);
   while (SC.buf.length && now - SC.buf[0][0] > SC_WIN) SC.buf.shift();
   if (SC.buf.length >= 4 && now - SC.buf[0][0] >= SC_WIN * 0.75) {
@@ -3480,43 +3517,70 @@ function scFeed(w) {   // 저울 무게가 들어올 때마다
   }
   scPaint();
 }
+const scSmall = () => (SC.full != null ? SC.full : SC.base) < SC_HEAVY;
+function scGlass(v, swap) {   // 새 잔: 처음 올렸거나 다른 잔으로 바꿨어요
+  const big = v >= SC_HEAVY;
+  Object.assign(SC, {base:v, full:v, lo:v, seenEmpty:false});
+  if (swap && SC.drink && !alcInfo().disabled) SC.drink = null;   // 잔 크기가 바뀌면 음료도 바뀌었을 수 있어서 다시 잔 무게로 추정해요
+  SC.msg = swap ? `다른 잔으로 바꾼 것 같아요 (${big ? '큰 잔' : '작은 잔'})` : `${big ? '큰 잔' : '작은 잔'}을 올렸어요`;
+  scLog(`${swap ? '잔 바꿈' : '잔 올림'} ${fmt1(v)}g`);
+}
+function scSwapped(v) {   // 들었다 놓은 잔이 같은 잔이 아닌지: 작은 잔 ↔ 큰 잔으로 바뀌면 무게로 알 수 있어요
+  if (scSmall()) return v >= SC_HEAVY && v - SC.lo > SC_SMALL_CAP + 5;   // 소주잔엔 그만큼 들어가지 않아요
+  return v < Math.min(SC_HEAVY * 0.6, SC.lo * 0.6);   // 큰 잔은 비어도 그보다 무거워요
+}
 function scStable(v) {   // 무게가 멈췄을 때: 앞의 안정된 무게와 비교
   if (SC.st != null && Math.abs(v - SC.st) <= SC_TOL) return;
   SC.st = v;
-  if (v < SC_EMPTY) { if (SC.base != null) SC.msg = '잔을 들었어요'; return; }
-  if (SC.base == null) { SC.base = v; SC.full = v; SC.msg = `${v >= SC_HEAVY ? '큰 잔' : '작은 잔'}을 올렸어요`; scLog(`잔 올림 ${fmt1(v)}g`); return; }
-  const d = v - SC.base;
+  if (v < SC_EMPTY) { if (SC.base != null) { if (!SC.away) SC.awayAt = Date.now(); SC.away = true; SC.msg = '잔을 들었어요'; } return; }
+  if (SC.base == null) { scGlass(v, false); return; }
+  const lifted = SC.away || SC.gap, long = SC.gap || (SC.away && Date.now() - SC.awayAt >= SC_SHOT_MS);
+  SC.away = false; SC.gap = false;
+  if (lifted && scSwapped(v)) { scGlass(v, true); return; }
+  const d = v - SC.base, left = SC.base - SC.lo;   // left: 들기 전에 잔에 남아 있던 양 (가장 가벼웠던 때를 빈 잔으로 봐요)
+  const shot = why => {   // 소주는 남은 잔에 더 따르지(첨잔) 않으니, 남은 걸 다 마시고 다시 받은 걸로 봐요
+    const ml = scDrinkEvent(left, true);
+    if (ml != null) { SC.msg = `${why} 다 마시고 다시 받은 걸로 봤어요 · ${Math.round(ml)}ml 추정`; scLog(`원샷 추정 ${Math.round(ml)}ml`); }
+  };
   if (d <= -SC_MIN) scDrinkEvent(-d);
-  else if (d >= SC_MIN) { SC.full = v; SC.msg = `따랐어요 +${fmt1(d)}g`; scLog(`따름 +${fmt1(d)}g`); }
-  SC.base = v;
+  else if (d >= SC_MIN) {
+    if (lifted && scSmall() && left >= SC_SHOT) shot('더 채워져 돌아왔어요.');
+    else { SC.msg = `${lifted ? '들고 받았어요' : '따랐어요'} +${fmt1(d)}g`; scLog(`${lifted ? '받음' : '따름'} +${fmt1(d)}g`); }
+    if (SC.base <= SC.lo + SC_TOL || left >= SC_SHOT) SC.seenEmpty = true;
+    SC.full = v;
+  } else if (lifted && long && scSmall() && SC.seenEmpty && left >= SC_SHOT) shot('같은 무게로 돌아왔지만 오래 들고 있었어요.');   // 가득 → 원샷 → 바로 받아서 가득
+  else if (lifted) SC.msg = '잔을 그대로 내려놓았어요';
+  SC.base = v; SC.lo = Math.min(SC.lo, v);
 }
-function scDrinkEvent(g) {
+function scDrinkEvent(g, guess) {   // g만큼 줄었어요(마심). guess: 저울로 본 게 아니라 습관으로 추정한 양. 기록한 ml를 돌려줘요
   const off = alcInfo().disabled;
-  if (!SC.drink && off) { SC.msg = `${fmt1(g)}g 줄었어요. 음료를 먼저 골라 주세요`; scLog(`${fmt1(g)}g 줄었지만 음료를 안 골라 기록 안 함`); scPaint(true); return; }
+  if (!SC.drink && off) { SC.msg = `${fmt1(g)}g 줄었어요. 음료를 먼저 골라 주세요`; scLog(`${fmt1(g)}g 줄었지만 음료를 안 골라 기록 안 함`); scPaint(true); return null; }
   const dk = SC.drink || (SC.full != null && SC.full >= SC_HEAVY ? SC_EST.heavy : SC_EST.light);   // 안 골랐으면 잔 무게로 추정
   const ml = g / scDensity(dk), alc = ml * dk.alcMl, caf = ml * dk.cafMl, now = Date.now();
   SC.total.ml += ml; SC.total.alc += alc; SC.total.caf += caf;
-  scLog(`마심 ${Math.round(ml)}ml`);
+  const sip = guess ? [now, Math.round(ml), 1] : [now, Math.round(ml)];
+  if (!guess) scLog(`마심 ${Math.round(ml)}ml`);
   SC.msg = dk.est ? `${Math.round(ml)}ml 마셨어요 · ${dk.name}로 추정` : `${Math.round(ml)}ml 마셨어요`;
   const last = SC.lastRec && S.records.find(r => r.id === SC.lastRec);
   if (last && last.scaleKey === dk.key && now - (last.tEnd || last.t) < SC_MERGE) {   // 20분 안에 같은 음료(같은 추정)면 한 기록에 합쳐요
     last.g = r1((last.g || 0) + g); last.mlx = (last.mlx || last.ml) + ml; last.ml = Math.round(last.mlx); last.unitMl = last.ml;
     last.alc = r1(last.alc + alc); last.caf = r1(last.caf + caf); last.mg = last.caf; last.tEnd = now;
-    (last.sips || (last.sips = [])).push([now, Math.round(ml)]); last.sub = scSub(last);
+    (last.sips || (last.sips = [])).push(sip); last.sub = scSub(last);
     save(); if (!ui.flow) swapCur(); else scPaint(true);
-    toast(`${dk.name}${dk.est ? '(추정)' : ''} ${Math.round(ml)}ml 더 기록했어요 (모두 ${last.ml}ml)`);
+    toast(`${dk.name}${dk.est ? '(추정)' : ''} ${Math.round(ml)}ml 더 기록했어요${guess ? ' · 원샷 추정' : ''} (모두 ${last.ml}ml)`);
   } else {
     const rec = {id:uid(), t:now, tEnd:now, name:dk.name, caf:r1(caf), alc:r1(alc), ml:Math.round(ml), mlx:ml, g:r1(g),
-      unitMl:Math.round(ml), abv:Math.round(dk.alcMl / ETH * 1000) / 10, mg:r1(caf), custom:true, scale:true, scaleKey:dk.key, est:!!dk.est, sips:[[now, Math.round(ml)]]};
+      unitMl:Math.round(ml), abv:Math.round(dk.alcMl / ETH * 1000) / 10, mg:r1(caf), custom:true, scale:true, scaleKey:dk.key, est:!!dk.est, sips:[sip]};
     rec.sub = scSub(rec);
     SC.lastRec = rec.id; addRecord(rec); scPaint(true);
   }
+  return ml;
 }
 const scSub = r => `잔 받침${r.est ? ' · 추정' : ''} · ${r.ml}ml`;
 function scFixDrink(name) { const f = SC_FIX.find(([n]) => n === name); return f ? {key:'d:' + f[0], name:f[0], alcMl:f[1] / 100 * ETH, cafMl:0} : null; }
 function scApply(r, dk) {   // 추정 기록을 고른 음료로 다시 계산 (무게가 있으면 그 음료의 밀도로 ml도 다시)
   const mlx = r.g ? r.g / scDensity(dk) : (r.mlx || r.ml), k = mlx / (r.mlx || r.ml || 1);
-  if (r.sips) r.sips = r.sips.map(([t, ml]) => [t, Math.round(ml * k)]);
+  if (r.sips) r.sips = r.sips.map(([t, ml, gs]) => gs ? [t, Math.round(ml * k), gs] : [t, Math.round(ml * k)]);
   Object.assign(r, {name:dk.name, mlx, ml:Math.round(mlx), unitMl:Math.round(mlx), alc:r1(mlx * dk.alcMl), caf:r1(mlx * dk.cafMl), mg:r1(mlx * dk.cafMl),
     abv:Math.round(dk.alcMl / ETH * 1000) / 10, scaleKey:dk.key, est:false});
   r.sub = scSub(r);
@@ -3525,15 +3589,25 @@ function agoTxt(t, now) { const m = Math.round((now - t) / MIN); return m < 1 ? 
 function scSipAlc(recs, from) {   // from 이후 모금들의 알코올(g)
   return recs.reduce((a, r) => a + (r.sips || [[r.t, r.ml]]).filter(([t]) => t >= from).reduce((b, [, ml]) => b + ml * (r.alc || 0) / (r.ml || 1), 0), 0);
 }
+const scGuessN = r => (r.sips || []).filter(x => x[2]).length;   // 습관으로 추정한 원샷 수
+function scUnguess(r) {   // 추정한 원샷을 빼요. 다 빠지면 기록을 지워요
+  const all = r.sips || [], keep = all.filter(x => !x[2]), sum = a => a.reduce((b, x) => b + x[1], 0);
+  if (keep.length === all.length) return false;
+  if (!keep.length) { S.records = S.records.filter(x => x.id !== r.id); return true; }
+  const k = sum(keep) / (sum(all) || 1), mlx = (r.mlx || r.ml) * k;
+  Object.assign(r, {sips:keep, t:keep[0][0], tEnd:keep[keep.length - 1][0], mlx, ml:Math.round(mlx), unitMl:Math.round(mlx),
+    g:r1((r.g || 0) * k), alc:r1((r.alc || 0) * k), caf:r1((r.caf || 0) * k), mg:r1((r.mg || 0) * k)});
+  r.sub = scSub(r); return true;
+}
 function scTimeline(recs, o = {}) {   // 시간 축: 위는 모금마다 점(가로), 아래는 잔 묶음마다 한 줄(누르면 음료를 고르거나 바꿔요)
   if (!recs.length) return '';
   const rs = [...recs].sort((a, b) => a.t - b.t), t0 = rs[0].t, t1 = Math.max(o.now || 0, ...rs.map(r => r.tEnd || r.t)), span = Math.max(t1 - t0, 30 * MIN);
-  const dots = rs.flatMap(r => (r.sips || [[r.t, r.ml]]).map(([t, ml]) => `<i class="tl-dot${r.est ? ' est' : ''}" style="left:${((t - t0) / span * 100).toFixed(1)}%;--s:${Math.round(Math.min(16, 7 + ml / 10))}px"></i>`)).join('');
+  const dots = rs.flatMap(r => (r.sips || [[r.t, r.ml]]).map(([t, ml, gs]) => `<i class="tl-dot${gs ? ' gs' : r.est ? ' est' : ''}" style="left:${((t - t0) / span * 100).toFixed(1)}%;--s:${Math.round(Math.min(16, 7 + ml / 10))}px"></i>`)).join('');
   const rows = rs.map(r => {
-    const open = o.sel === r.id, n = (r.sips || []).length, long = (r.tEnd || r.t) - r.t >= MIN;
-    const fix = open ? `<div class="chips tl-fix">${SC_FIX.map(([nm]) => `<button class="chip" data-a="sc-fix" data-id="${r.id}" data-v="${esc(nm)}" aria-pressed="${!r.est && r.name === nm}">${esc(nm)}</button>`).join('')}<button class="chip" data-a="sc-fixpick" data-id="${r.id}">다른 음료…</button></div>` : '';
+    const open = o.sel === r.id, n = (r.sips || []).length, gs = scGuessN(r), long = (r.tEnd || r.t) - r.t >= MIN;
+    const fix = open ? `<div class="chips tl-fix">${SC_FIX.map(([nm]) => `<button class="chip" data-a="sc-fix" data-id="${r.id}" data-v="${esc(nm)}" aria-pressed="${!r.est && r.name === nm}">${esc(nm)}</button>`).join('')}<button class="chip" data-a="sc-fixpick" data-id="${r.id}">다른 음료…</button>${gs ? `<button class="chip" data-a="sc-ungs" data-id="${r.id}">원샷 추정 빼기</button>` : ''}</div>` : '';
     return `<div class="tl-i${r.est ? ' est' : ''}"><button class="tl-row" data-a="sc-sel" data-id="${r.id}" aria-expanded="${open}"><span class="tl-t">${hm(r.t)}</span><span class="tl-m"></span>` +
-      `<span class="tl-b"><b>${esc(r.name)}${r.est ? '<em>추정</em>' : ''}</b><small>${r.ml}ml${n > 1 ? ` · ${n}모금` : ''}${long ? ` · ${hm(r.tEnd)}까지` : ''}${r.alc > 0 ? ` · 알코올 ${fmt1(r.alc)}g` : ''}${r.caf > 0 ? ` · 카페인 ${Math.round(r.caf)}mg` : ''}</small></span>` +
+      `<span class="tl-b"><b>${esc(r.name)}${r.est ? '<em>추정</em>' : ''}</b><small>${r.ml}ml${n > 1 ? ` · ${n}모금` : ''}${gs ? ` · 원샷 추정 ${gs}번` : ''}${long ? ` · ${hm(r.tEnd)}까지` : ''}${r.alc > 0 ? ` · 알코올 ${fmt1(r.alc)}g` : ''}${r.caf > 0 ? ` · 카페인 ${Math.round(r.caf)}mg` : ''}</small></span>` +
       `<span class="tl-e">${r.est ? '고르기' : '바꾸기'}</span></button>${fix}</div>`;
   }).join('');
   return `<div class="tl-axis" aria-hidden="true">${dots}</div><div class="tl-ends"><span>${hm(t0)}</span><span>${o.now ? '지금' : hm(t1)}</span></div><div class="tl">${rows}</div>`;
@@ -3550,7 +3624,11 @@ async function scWake(on) {   // 연결해 두는 동안 화면 켜 두기 (탁�
     if (!on && SC.wake) { const w = SC.wake; SC.wake = null; await w.release(); }
   } catch (e) {}
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && SC.conn) scWake(true); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !SC.conn) return;
+  scWake(true);
+  if (SC.conn === 'retry' && SC.dev) scRetry(SC.dev, true);   // 화면을 다시 켜면 바로 다시 붙어 봐요
+});
 function scFrame(op, id, data) {   // 명령 묶음: A5 5A 종류 번호 길이 내용 CRC16(IBM)
   const p = [0xA5, 0x5A, op, id, (data.length >> 8) & 255, data.length & 255, ...data];
   let c = 0xFFFF; for (const x of p) { c ^= x; for (let j = 0; j < 8; j++) c = c & 1 ? (c >> 1) ^ 0xA001 : c >> 1; }
@@ -3578,29 +3656,53 @@ async function scBle() {
   let dev;
   try { dev = await navigator.bluetooth.requestDevice({acceptAllDevices:true, optionalServices:[DOT_SVC]}); }
   catch (e) { return; }   // 고르기 창을 닫음
+  scOff(); SC.dev = dev; SC.msg = '연결하는 중이에요…'; scPaint(true);
+  dev.addEventListener('gattserverdisconnected', () => scLost(dev));
+  if (await scLink(dev)) {
+    SC.msg = '연결했어요. 빈 잔을 올려 주세요'; scWake(true); scPaint(true);
+    setTimeout(() => { if (SC.conn === 'ble' && !SC.gotAt) { SC.hint = true; scPaint(true); } }, 4000);
+  } else if (SC.dev === dev) { SC.dev = null; SC.conn = null; SC.msg = '연결하지 못했어요. 저울이 켜져 있는지 보고 다시 해 주세요'; scPaint(true); }
+}
+function scNtf(e) { const v = e.target.value; scParse(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)); }
+async function scLink(dev) {   // 저울에 붙고 무게 알림을 켜요. 처음 연결할 때도, 끊겨서 다시 붙을 때도 써요
   try {
-    SC.msg = '연결하는 중이에요…'; scPaint(true);
-    dev.addEventListener('gattserverdisconnected', () => { if (SC.dev === dev) { SC.conn = null; SC.cmd = null; SC.msg = '저울 연결이 끊겼어요'; scPaint(true); } });
     const gatt = await dev.gatt.connect(), svc = await gatt.getPrimaryService(DOT_SVC);
     const ntf = await svc.getCharacteristic(DOT_NTF), cmd = await svc.getCharacteristic(DOT_CMD);
-    scOff(); SC.dev = dev; SC.cmd = cmd; SC.conn = 'ble'; SC.raw = new Uint8Array(0); SC.gotAt = 0; SC.hint = false;
-    ntf.addEventListener('characteristicvaluechanged', e => { const v = e.target.value; scParse(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)); });
+    if (SC.dev !== dev) { try { dev.gatt.disconnect(); } catch (e) {} return false; }   // 그사이 연결 끊기를 눌렀어요
+    SC.cmd = cmd; SC.conn = 'ble'; SC.raw = new Uint8Array(0); SC.hint = false;
+    ntf.addEventListener('characteristicvaluechanged', scNtf);   // 같은 함수라 다시 붙여도 한 번만 받아요
     await ntf.startNotifications();
     await pause(500); await scCmd(0x03, 0x06, [0x00]);   // 단위: g
     await pause(200); await scCmd(0x03, 0x08, [0x01, 0x00]);   // 기본 측정 모드
     await pause(200); await scCmd(0x03, 0x0D, []);   // 연결 확인 신호 (GaggiMate가 실제 저울에서 잡은 바이트와 같음: a55a030d000064d1)
-    SC.msg = '연결했어요. 잔을 올려 주세요'; scWake(true); scPaint(true);
-    setTimeout(() => { if (SC.conn === 'ble' && !SC.gotAt) { SC.hint = true; scPaint(true); } }, 4000);
-  } catch (e) { SC.conn = null; SC.msg = '연결하지 못했어요. 저울이 켜져 있는지 보고 다시 해 주세요'; scLog('연결 실패: ' + ((e && e.message) || e)); scPaint(true); }
+    return true;
+  } catch (e) { scLog('연결 실패: ' + ((e && e.message) || e)); return false; }
+}
+function scLost(dev) {   // 저울 연결이 끊겼어요: 잔 상태는 기억한 채로 다시 붙어 봐요
+  if (SC.dev !== dev) return;   // 직접 끊었어요
+  SC.cmd = null; SC.conn = 'retry'; SC.retry = 0; if (SC.base != null) SC.gap = true;
+  SC.msg = '저울 연결이 끊겼어요. 다시 연결하는 중이에요…'; scLog('연결 끊김'); scPaint(true); scRetry(dev);
+}
+function scRetry(dev, soon) {
+  clearTimeout(SC.retryT);
+  SC.retryT = setTimeout(async () => {
+    if (SC.dev !== dev || SC.conn !== 'retry') return;
+    SC.retry++;
+    if (await scLink(dev)) { SC.msg = '다시 연결했어요. 끊긴 동안 바뀐 무게도 이어서 봐요'; scLog(`다시 연결 (${SC.retry}번째)`); scWake(true); scPaint(true); return; }
+    if (SC.dev !== dev) return;
+    if (SC.retry >= 40) { SC.conn = null; SC.dev = null; SC.msg = '저울을 다시 찾지 못했어요. 저울이 켜져 있는지 보고 다시 연결해 주세요'; scWake(false); scPaint(true); return; }   // 약 20분 동안 해 봐요
+    SC.msg = `저울 연결이 끊겼어요. 다시 연결하는 중이에요 (${SC.retry}번째)`; scPaint(true); scRetry(dev);
+  }, soon ? 300 : SC_BACK[Math.min(SC.retry, SC_BACK.length - 1)] * 1000);
 }
 function scOff() {
-  clearInterval(SC.simT); SC.simT = 0;
-  if (SC.conn === 'ble' && SC.dev && SC.dev.gatt.connected) { const d = SC.dev; SC.dev = null; try { d.gatt.disconnect(); } catch (e) {} }
-  Object.assign(SC, {conn:null, cmd:null, w:null, buf:[], st:null, base:null, full:null, hint:false}); scWake(false);
+  clearInterval(SC.simT); SC.simT = 0; clearTimeout(SC.retryT);
+  const d = SC.dev; SC.dev = null;
+  if (d && d.gatt.connected) { try { d.gatt.disconnect(); } catch (e) {} }
+  Object.assign(SC, {conn:null, cmd:null, w:null, buf:[], st:null, base:null, full:null, lo:null, seenEmpty:false, away:false, gap:false, feedAt:0, retry:0, hint:false, gotAt:0}); scWake(false);
 }
 function scSim() {   // 가상 저울: 저울 없이 흐름을 시험해요
-  scOff(); SC.conn = 'sim'; SC.sim = 0; SC.msg = '가상 저울이에요. 아래 버튼으로 시험해 보세요'; scWake(true);
-  SC.simT = setInterval(() => scFeed(Math.max(0, SC.sim + (Math.random() - 0.5) * 0.2)), 100);
+  scOff(); SC.conn = 'sim'; SC.sim = 0; SC.simGap = 0; SC.msg = '가상 저울이에요. 아래 버튼으로 시험해 보세요'; scWake(true);
+  SC.simT = setInterval(() => { if (Date.now() >= SC.simGap) scFeed(Math.max(0, SC.sim + (Math.random() - 0.5) * 0.2)); }, 100);
   scPaint(true);
 }
 function scPaint(now) {   // 화면은 1초에 4번까지만 다시 그려요
@@ -3621,15 +3723,16 @@ STEPS.scale = {
     const tn = S.records.filter(r => r.scale && !r.demo && dayKey(r.t) === dayKey(now));   // 오늘 밤(새벽 5시까지) 잔 받침 기록
     const alcG = tn.reduce((a, r) => a + (r.alc || 0), 0), mlAll = tn.reduce((a, r) => a + (r.ml || 0), 0), last = tn.length ? Math.max(...tn.map(r => r.tEnd || r.t)) : 0;
     const hour = scSipAlc(tn, now - H) / SOJU_G, fast = !off && hour >= 4;
-    const live = !SC.conn ? '' : `<div class="scale-live"><p class="scale-tag">${SC.conn === 'sim' ? '가상 저울' : '저울 연결됨'}${SC.wake ? ' · 화면 켜 둠' : ''}</p>
+    const live = !SC.conn ? '' : `<div class="scale-live"><p class="scale-tag">${SC.conn === 'sim' ? '가상 저울' : SC.conn === 'retry' ? '다시 연결하는 중' : '저울 연결됨'}${SC.wake ? ' · 화면 켜 둠' : ''}</p>
         <p class="scale-w">${off ? Math.round(mlAll) + '<span>ml</span>' : fmt1(alcG / SOJU_G) + '<span>잔</span>'}</p>
         <p class="scale-sub">${off ? '오늘 밤 마신 양' : '오늘 밤 · 소주잔으로 바꾸면'}${last ? ` · 마지막 한 모금 ${agoTxt(last, now)}` : ''}</p>
         ${!off && tn.length ? `<p class="scale-sub">최근 1시간 ${fmt1(hour)}잔</p>` : ''}
         ${fast ? '<p class="scale-warn">한 시간에 소주 4잔이 넘는 속도예요. 물 한 잔 어때요?</p>' : ''}
         <p class="scale-msg">${esc(SC.msg || '')}</p>
-        <p class="scale-wt">저울 ${SC.w == null ? '–' : fmt1(Math.max(0, SC.w))}g${SC.full != null ? ` · ${SC.full >= SC_HEAVY ? '큰 잔' : '작은 잔'}${dk ? '' : ` → ${SC.full >= SC_HEAVY ? SC_EST.heavy.name : SC_EST.light.name}로 추정`}` : ''}</p>
+        <p class="scale-wt">저울 ${SC.w == null ? '–' : fmt1(Math.max(0, SC.w))}g${SC.full != null ? ` · ${SC.full >= SC_HEAVY ? '큰 잔' : '작은 잔'}${dk ? '' : ` → ${SC.full >= SC_HEAVY ? SC_EST.heavy.name : SC_EST.light.name}로 추정`}` : ''}${SC.lo != null && scSmall() && SC.seenEmpty ? ` · 빈 잔 ${fmt1(SC.lo)}g` : ''}</p>
+        ${SC.base != null && scSmall() && !SC.seenEmpty ? '<p class="disc">빈 잔일 때 한 번 올려 두면, 잔을 든 채로 원샷하고 바로 받아도 알아봐요.</p>' : ''}
         ${SC.hint ? '<p class="disc">무게가 안 들어오면: 안드로이드 설정 → 블루투스에서 저울을 먼저 페어링한 뒤 다시 연결해 주세요.</p>' : ''}</div>
-      ${SC.conn === 'sim' ? `<div class="chips" style="justify-content:center;margin-top:16px"><button class="chip" data-a="sc-sv" data-v="small">소주잔 올리기</button><button class="chip" data-a="sc-sv" data-v="big">하이볼잔 올리기</button><button class="chip" data-a="sc-sv" data-v="pour">따르기</button><button class="chip" data-a="sc-sv" data-v="sip">한 모금 마시기</button><button class="chip" data-a="sc-sv" data-v="ice">얼음 넣기</button><button class="chip" data-a="sc-sv" data-v="lift">잔 들기</button></div>` : ''}
+      ${SC.conn === 'sim' ? `<div class="chips" style="justify-content:center;margin-top:16px">${[['small', '빈 소주잔 올리기'], ['big', '빈 하이볼잔 올리기'], ['pour', '따르기'], ['sip', '한 모금 마시기'], ['shot', '원샷하고 바로 받기'], ['swap', '잔 바꾸기'], ['ice', '얼음 넣기'], ['lift', '잔 들기'], ['gap', '무게 5초 끊김']].map(([v, t]) => `<button class="chip" data-a="sc-sv" data-v="${v}">${t}</button>`).join('')}</div>` : ''}
       <button class="txt-btn" data-a="sc-off">연결 끊기</button>`;
     const pend = scPending(now).length;
     return {html: bar({}) + head('잔 받침', off ? '저울 위에 잔을 두면 줄어든 무게만큼 마신 걸로 기록해요. 음료를 먼저 골라 주세요.' : '잔을 올려 두기만 하면 돼요. 마신 만큼 저절로 기록하고, 음료를 안 골랐으면 잔 무게로 먼저 추정해 둬요. 뭐였는지는 나중에 골라도 돼요.', '실험') +
@@ -3675,6 +3778,10 @@ Object.assign(ACT, {
     const r = S.records.find(x => x.id === el.dataset.id), dk = scFixDrink(el.dataset.v); if (!r || !dk) return;
     scApply(r, dk); ui.flow.d.sel = null; save(); swapCur(); toast(`${hm(r.t)} 기록을 ${dk.name}(으)로 바꿨어요`);
   },
+  'sc-ungs': el => {
+    const r = S.records.find(x => x.id === el.dataset.id); if (!r) return; const n = scGuessN(r);
+    if (!scUnguess(r)) return; ui.flow.d.sel = null; save(); swapCur(); toast(`추정한 원샷 ${n}번을 뺐어요`);
+  },
   'sc-fixpick': el => { const d = ui.flow.d; d.forRec = el.dataset.id; d.q = ''; go('pick'); },
   'sc-fixall': el => {
     const dk = scFixDrink(el.dataset.v), rs = S.records.filter(r => r.scale && r.est && dayKey(r.t) === el.dataset.day); if (!dk || !rs.length) return;
@@ -3690,11 +3797,14 @@ Object.assign(ACT, {
   'sc-ble': () => scBle(),
   'sc-sim': () => scSim(),
   'sc-off': () => { scOff(); SC.msg = ''; scPaint(true); },
-  'sc-sv': el => {   // 가상 저울: 소주잔(70g+45g) / 하이볼잔(320g+250g)
+  'sc-sv': el => {   // 가상 저울: 소주잔 빈 잔 70g·가득 115g / 하이볼잔 빈 잔 320g·가득 570g
     const v = el.dataset.v, cur = SC.base != null ? SC.base : SC.sim, small = (SC.full != null ? SC.full : SC.sim) < SC_HEAVY;
-    if (v === 'small') SC.sim = 115;
-    else if (v === 'big') SC.sim = 570;
-    else if (v === 'pour') SC.sim = Math.max(SC.sim, cur) + (small ? 45 : 150);
+    const later = (g, ms) => { SC.sim = 0; setTimeout(() => { SC.sim = g; }, ms); };   // 잔을 들었다가 ms 뒤에 g으로 내려놓아요
+    if (v === 'small' || v === 'big') { const g = v === 'small' ? 70 : 320; if (SC.sim > SC_EMPTY) later(g, 1500); else SC.sim = g; }
+    else if (v === 'pour') SC.sim = small ? 115 : Math.min(570, Math.max(SC.sim, cur) + 150);   // 소주잔은 가득까지
+    else if (v === 'shot') later(small ? 115 : 570, 6000);   // 들고 원샷 → 내려놓지 않고 바로 받아서 가득 찬 채로 내려놓아요
+    else if (v === 'swap') later(small ? 570 : 115, 1500);   // 다른 크기의 가득 찬 잔으로
+    else if (v === 'gap') { SC.simGap = Date.now() + 5000; toast('5초 동안 무게가 안 들어와요. 그사이 다른 버튼을 눌러 보세요'); }
     else if (v === 'ice') SC.sim = Math.max(SC.sim, cur) + 15;
     else if (v === 'lift') SC.sim = 0;
     else if (v === 'sip') { const g = small ? 45 : 30; SC.sim = 0; setTimeout(() => { SC.sim = Math.max(small ? 70 : 320, cur - g); }, 1500); }
