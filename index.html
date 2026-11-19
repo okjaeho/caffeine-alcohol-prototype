@@ -261,6 +261,37 @@ button.card:active{transform:scale(.985)}
 .prompt b{display:block;font-size:16px;font-weight:700}
 .prompt small{display:block;font-size:14px;color:var(--ink-3)}
 .prompt > svg{color:var(--ink-3);flex:none}
+.prompt .pi.alc{background:var(--alc-soft);color:var(--alc)}
+.shield{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top,0px)) 20px max(18px,env(safe-area-inset-bottom,0px));background:#0E0F12;color:#F5F6F7}
+.sh-top{display:flex;align-items:center;justify-content:space-between;height:48px}
+.sh-brand{font-size:14px;font-weight:700;color:#8B93A1}
+.sh-x{width:44px;height:44px;display:grid;place-items:center;margin-right:-10px;border-radius:22px;color:#B5BCC6}
+.sh-main{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:12px 0}
+.sh-main h2{font-size:clamp(34px,10.5vw,46px);font-weight:800;line-height:1.22;letter-spacing:-.03em}
+.sh-why{margin-top:22px;font-size:clamp(21px,6.2vw,26px);font-weight:700;line-height:1.4;color:#3CCB8F}
+.sh-data{margin-top:10px;font-size:16px;line-height:1.5;color:#B5BCC6}
+.sh-bar{display:block;width:min(260px,80%);height:10px;margin:18px auto 0;border-radius:5px;background:#2A2D33;overflow:hidden}
+.sh-bar i{display:block;height:100%;border-radius:5px}
+.sh-soft{margin-top:30px;font-size:18px;font-weight:600;line-height:1.5;color:#E3E6EA}
+.sh-pick{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.sh-chip{height:38px;padding:0 15px;border-radius:19px;background:#1E2126;color:#B5BCC6;font-size:14.5px;font-weight:600}
+.sh-chip[aria-pressed="true"]{background:#F5F6F7;color:#0E0F12}
+.sh-hint{margin-top:10px;font-size:12.5px;color:#6E7682;text-align:center}
+.sh-acts{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.sh-act{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:20px;border:1px solid #2F333A;color:#E3E6EA;font-size:14.5px;font-weight:600}
+.sh-act svg{width:18px;height:18px}
+.sh-pv{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:rgba(0,0,0,.94)}
+.sh-pv img{max-width:100%;max-height:68%;border-radius:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.sh-pv p{font-size:15px;line-height:1.5;color:#E3E6EA;text-align:center}
+.bc-box{position:relative;margin-top:20px;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.bc-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bc-box.off{display:grid;place-items:center;background:var(--fill);color:var(--ink-3)}
+.bc-box.off svg{width:56px;height:56px}
+.bc-frame{position:absolute;left:10%;right:10%;top:30%;bottom:30%;border:3px solid rgba(255,255,255,.92);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.28)}
+.bc-line{position:absolute;left:13%;right:13%;top:50%;height:2px;background:#FF5D6C;animation:bcl 1.4s ease-in-out infinite alternate}
+@keyframes bcl{from{transform:translateY(-30px)}to{transform:translateY(30px)}}
+@media (prefers-reduced-motion: reduce){.bc-line{animation:none}}
+.bc-msg{margin-top:12px;font-size:14.5px;color:var(--ink-3);text-align:center}
 .banner{display:flex;gap:10px;align-items:flex-start;padding:16px 18px;border-radius:20px;background:var(--warn-soft);color:var(--warn);font-size:15px;line-height:1.5;font-weight:500}
 .banner.danger{background:var(--danger-soft);color:var(--danger)}
 .banner svg{flex:none;margin-top:1px}
@@ -329,7 +360,7 @@ button,label,.row,.tab,.qchip,.tile,.opt,.li{-webkit-touch-callout:none;-webkit-
 .tab[aria-current="page"]{color:var(--ink)}
 .tab.rec .ic{width:46px;border-radius:11px;background:var(--accent);color:var(--on-accent)}
 
-#toast{position:absolute;left:max(20px,env(safe-area-inset-left,0px));right:max(20px,env(safe-area-inset-right,0px));bottom:88px;z-index:50;pointer-events:none}
+#toast{position:absolute;left:max(20px,env(safe-area-inset-left,0px));right:max(20px,env(safe-area-inset-right,0px));bottom:88px;z-index:60;pointer-events:none}
 #root.in-flow #toast{bottom:100px}
 .toast{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:15px;line-height:1.45;box-shadow:var(--shadow)}
 .toast button{flex:none;font-weight:700;color:var(--toast-link)}
@@ -872,6 +903,10 @@ const I = {
   back: sv('<path d="M15 5l-7 7 7 7"/>', 26, 2.2),
   x: sv('<path d="M6 6l12 12M18 6 6 18"/>', 24, 2.2),
   xs: sv('<path d="M7 7l10 10M17 7 7 17"/>', 18, 2.2),
+  share: sv('<path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 12v7h14v-7"/>', 20),
+  download: sv('<path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/>', 20),
+  barcode: sv('<path d="M4 6v12M7 6v12M10.5 6v12M13 6v12M16.5 6v12M20 6v12"/>', 20),
+  shield: sv('<path d="M12 3.2l7 2.8v5.2c0 4.4-2.9 8.1-7 9.8-4.1-1.7-7-5.4-7-9.8V6z"/><path d="M9 12l2.2 2.2L15.2 10"/>', 22),
   chev: sv('<path d="M9 6l6 6-6 6"/>', 18, 2.2),
   prevM: sv('<path d="M15 6l-6 6 6 6"/>', 20, 2.2),
   nextM: sv('<path d="M9 6l6 6-6 6"/>', 20, 2.2),
@@ -1507,7 +1542,8 @@ function pickBody(d) {
   const coinTxt = cs === 'out' ? ` · ${COIN.name}이 없어서 잔 모양·색으로만 찾아요` : cs === 'guest' ? ' · 로그인하면 AI가 라벨·로고까지 읽어요' : cs === 'has' && S.coins != null ? ` · 남은 ${COIN.name} ${S.coins}${COIN.unit}` : '';
   const pho = `<label class="row mkrow" for="photo"><span class="mk-ic p" aria-hidden="true">${I.camera}</span><span class="row-t"><b>사진 찍어서 찾기</b><small>컵·병·잔을 찍으면 메뉴를 찾아요${coinTxt}</small></span>${pill}${I.chev}</label>` +
     `<label class="row mkrow" for="photo-lib"><span class="mk-ic p" aria-hidden="true">${I.gallery}</span><span class="row-t"><b>앨범에서 찾기</b><small>찍어 둔 사진으로 찾아요</small></span>${pill}${I.chev}</label>`;
-  h += `<h2 class="grp">직접 넣기</h2><div class="rows">${pho}${dir}</div>`;
+  const bcr = `<button class="row mkrow" data-a="bc-open"><span class="mk-ic p" aria-hidden="true">${I.barcode}</span><span class="row-t"><b>바코드로 찾기</b><small>편의점 캔·병·컵의 바코드를 비춰요 · ${COIN.name}을 쓰지 않아요</small></span>${I.chev}</button>`;
+  h += `<h2 class="grp">직접 넣기</h2><div class="rows">${pho}${bcr}${dir}</div>`;
   const mine = DB.filter(x => x.mine && x.k === d.k);
   if (mine.length) h += `<h2 class="grp">내가 만든 것<button data-a="mine">편집</button></h2><div class="rows">${mine.map(it => itemRowHTML(it, false)).join('')}</div>`;
   if (d.k === 'caf') {
@@ -2163,6 +2199,149 @@ function photoView(d) {
     (C.length ? `<p class="disc" data-in style="margin-top:16px">${R.local ? '고른 사진은 기억해 두고, 비슷한 사진을 다시 찍으면 그 음료를 먼저 보여 줘요. ' : ''}카페인·알코올 양은 브랜드 공개값과 앱 기준값이에요. 양은 다음 화면에서 맞출 수 있어요.</p>` : '')};
 }
 
+/* ---------- 바코드로 찾기 ----------
+   카메라 화면에서 바코드를 읽고(휴대폰 안에서), 번호만 식약처 식품안전나라 '바코드연계제품정보(C005)'와 Open Food Facts에 보내 제품 이름을 찾아요.
+   공공 DB에는 카페인·도수 숫자가 없어서(2026-11-19 확인), 찾은 이름·식품유형으로 앱 음료 목록에서 후보를 고르고 양은 다음 화면에서 맞춰요.
+   바코드가 붙은 건 포장 제품이라 카페 매장 메뉴(브랜드 메뉴)는 후보에서 빼요. 고른 결과는 바코드별로 기억해서 다음엔 바로 보여 줘요.
+   FSK_KEY 'sample'은 식품안전나라가 공개한 시험용 키예요(한 번에 5행, 짧은 시간에 많이 부르면 잠시 막힘).
+   실서비스 전에는 식품안전나라에서 키를 받아 서버 함수에 두고 거쳐 부르세요. */
+const BC_LIB = 'https://cdn.jsdelivr.net/npm/barcode-detector@3.2.3/dist/es/ponyfill.js/+esm';   // 바코드 읽기 기능이 없는 브라우저(아이폰 사파리 등)용
+const BC_FMT = ['ean_13', 'ean_8', 'upc_a'];
+const FSK_KEY = 'sample';
+const BC_TYPE = [[/소주/, 'soju'], [/맥주/, 'beer'], [/탁주|막걸리/, 'makgeolli'], [/과실주|wine/i, 'wine'], [/약주|청주/, 'cheongju'], [/위스키|whisk/i, 'whisky'], [/커피|coffee/i, 'cancoffee'], [/커피|coffee/i, 'cupcoffee'], [/beer/i, 'beer'], [/soju/i, 'soju']];
+const BC_EN = [['red bull', '레드불'], ['monster', '몬스터'], ['bacchus', '박카스'], ['hot6', '핫식스'], ['hot 6', '핫식스'], ['cass', '카스'], ['terra', '테라'], ['kelly', '켈리'], ['hite', '맥주'], ['jinro', '진로'], ['chamisul', '참이슬'], ['chum churum', '처음처럼'], ['makgeolli', '막걸리'], ['soju', '소주']];
+let BCD = null, bcCam = null;
+function bcDetector() {
+  if (BCD) return BCD;
+  BCD = (async () => {
+    if ('BarcodeDetector' in window) { try { const ok = await window.BarcodeDetector.getSupportedFormats(); if (ok.includes('ean_13')) return new window.BarcodeDetector({formats:BC_FMT.filter(x => ok.includes(x))}); } catch (e) {} }
+    const m = await import(BC_LIB); return new m.BarcodeDetector({formats:BC_FMT});
+  })().catch(e => { BCD = null; throw e; });
+  return BCD;
+}
+function bcOk(c) {   // 숫자 자릿수와 끝자리 검사 숫자가 맞는지 (EAN-13·EAN-8·UPC-A)
+  c = String(c || ''); if (!/^(\d{8}|\d{12,13})$/.test(c)) return false;
+  const d = c.split('').map(Number), n = d.length; let t = 0;
+  for (let i = 0; i < n - 1; i++) t += d[i] * ((n - 1 - i) % 2 ? 3 : 1);
+  return (10 - t % 10) % 10 === d[n - 1];
+}
+const bcNorm = c => (c.length === 12 ? '0' + c : c);
+function bcStop() { if (bcCam) { try { bcCam.getTracks().forEach(t => t.stop()); } catch (e) {} bcCam = null; } }
+function bcPaint(d) { if (ui.flow && ui.flow.d === d && ui.flow.cur === 'barcode') swapCur(); }
+async function bcStart(el, d) {
+  const v = el.querySelector('#bc-vid'), B = d.bc; if (!v || !B) return;
+  bcStop();
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no camera');
+    const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720}}, audio:false});
+    if (!document.contains(v) || d.bc !== B || B.state !== 'scan') { st.getTracks().forEach(t => t.stop()); return; }
+    bcCam = st; v.srcObject = st; try { await v.play(); } catch (e) {}
+  } catch (e) { B.cam = 'no'; return bcPaint(d); }
+  let det; try { det = await bcDetector(); } catch (e) { bcStop(); B.cam = 'lib'; return bcPaint(d); }
+  let last = '', same = 0;
+  const tick = async () => {
+    if (!document.contains(v) || d.bc !== B || B.state !== 'scan') { if (bcCam && v.srcObject === bcCam) bcStop(); return; }
+    if (v.readyState >= 2 && v.videoWidth) {
+      try {
+        const c = (await det.detect(v)).map(x => x.rawValue).find(bcOk);
+        // 기울어진 바코드는 가끔 틀린 번호가 섞여 읽혀서, 같은 번호가 연달아 두 번 나와야 받아요
+        if (c) { same = c === last ? same + 1 : 1; last = c; if (same >= 2) { bcStop(); if (navigator.vibrate) try { navigator.vibrate(30); } catch (e) {} return bcFound(d, bcNorm(c)); } }
+      } catch (e) {}
+    }
+    setTimeout(tick, 120);
+  };
+  tick();
+}
+async function bcFromPhoto(d, file) {
+  let det; try { det = await bcDetector(); } catch (e) { return toast('바코드 읽기 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요'); }
+  try {
+    let src; try { src = await createImageBitmap(file); } catch (e) { const u = URL.createObjectURL(file); src = new Image(); src.src = u; await src.decode(); }
+    const c = (await det.detect(src)).map(x => x.rawValue).find(bcOk);
+    if (src.close) src.close();
+    if (c) { bcStop(); return bcFound(d, bcNorm(c)); }
+  } catch (e) {}
+  toast('사진에서 바코드를 찾지 못했어요. 바코드가 크게 나오게 다시 찍어 주세요');
+}
+async function bcGet(u, ms = 7000) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(u, {signal:ctl.signal}); return r.ok ? await r.json() : null; } catch (e) { return null; } finally { clearTimeout(t); }
+}
+async function bcLookup(code) {
+  const L = {name:'', alt:[], type:'', brand:'', cats:'', src:''};
+  const j = await bcGet(`https://openapi.foodsafetykorea.go.kr/api/${FSK_KEY}/C005/json/1/5/BAR_CD=${code}`);
+  const rows = (j && j.C005 && j.C005.row) || [];
+  if (rows.length) {   // 한 바코드에 여러 줄이 오고 엉뚱한 줄이 섞이기도 해서, 생산 중인 줄 중 가장 많이 나온 이름을 써요
+    const live = rows.filter(r => !r.END_DT), use = live.length ? live : rows, cnt = {};
+    use.forEach(r => { const k = String(r.PRDLST_NM || '').trim(); if (k) cnt[k] = (cnt[k] || 0) + 1; });
+    const names = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
+    if (names.length) { const top = use.find(r => String(r.PRDLST_NM).trim() === names[0]) || use[0]; Object.assign(L, {name:names[0], alt:names.slice(1, 3), type:top.PRDLST_DCNM || '', src:'fsk'}); }
+  }
+  if (!L.name) {
+    const o = await bcGet(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name_ko,product_name,brands,categories_tags`);
+    const p = o && o.status === 1 && o.product;
+    if (p) { Object.assign(L, {name:String(p.product_name_ko || p.product_name || '').trim(), brand:String(p.brands || '').split(',')[0].trim(), cats:(p.categories_tags || []).join(' ')}); if (L.name || L.brand) L.src = 'off'; }
+  }
+  return L;
+}
+const bcClean = t => String(t || '').replace(/[\d.]+\s*(ml|l|도|%|g|kg|캔|병|입|개)(?![a-z가-힣])/gi, ' ').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+function bcMatch(L) {
+  const ids = [], add = id => { if (id && BYID[id] && !ids.includes(id) && !(alcInfo().disabled && BYID[id].k === 'alc')) ids.push(id); };
+  // 식품유형으로 술인지 음료인지 정해지면 다른 쪽은 후보에서 빼요 (예: 커피 캔에 '에스프레소 마티니'가 섞이지 않게)
+  const kk = /소주|맥주|탁주|약주|청주|과실주|증류주|리큐르|주류|와인|위스키|beer|soju|wine|liqu|spirit|whisk/i.test(`${L.type} ${L.cats}`) ? 'alc' : L.type ? 'caf' : null;
+  const pool = q => q ? searchDB(q, alcInfo().disabled).filter(x => !x.brand && !x.builder && (!kk || x.k === kk)) : [];
+  const names = []; [L.name, ...(L.alt || []), L.brand].filter(Boolean).forEach(n => { names.push(n.replace(/\([^)]*\)/g, ' ')); (n.match(/\(([^)]*)\)/g) || []).forEach(p => names.push(p.slice(1, -1))); });
+  const ty = `${L.type} ${L.cats}`;
+  BC_TYPE.forEach(([re, id]) => { if (re.test(ty)) add(id); });   // 식품유형(소주·맥주·커피…)이 가장 믿을 만해서 먼저
+  names.forEach(n => { const lo = n.toLowerCase(); BC_EN.forEach(([e, k]) => { if (lo.includes(e)) pool(k).slice(0, 2).forEach(x => add(x.id)); }); });
+  names.map(bcClean).forEach(q => pool(q).slice(0, 3).forEach(x => add(x.id)));
+  if (ids.length < 3) names.forEach(n => bcClean(n).split(' ').filter(t => t.length >= 2).forEach(t => pool(t).slice(0, 2).forEach(x => add(x.id))));
+  return ids.slice(0, 5).map(id => ({id}));
+}
+function bcRemember(code, id, o, name) {
+  if (!code || !id) return; const M = S.bcmem || (S.bcmem = {});
+  M[code] = {id, o:o || null, name:name || '', t:Date.now()};
+  const ks = Object.keys(M); if (ks.length > 200) ks.sort((a, b) => M[a].t - M[b].t).slice(0, ks.length - 200).forEach(k => delete M[k]);
+  save();
+}
+async function bcFound(d, code) {
+  const B = d.bc = {state:'look', code};
+  bcPaint(d);
+  const m = S.bcmem && S.bcmem[code];
+  if (m && BYID[m.id]) { Object.assign(B, {state:'done', mine:true, name:m.name || '', type:'', cands:[{id:m.id, o:m.o || undefined}]}); return bcPaint(d); }
+  const L = await bcLookup(code);
+  if (d.bc !== B) return;
+  Object.assign(B, {state:'done', name:L.name || L.brand, type:L.type, src:L.src, cands:L.src ? bcMatch(L) : []});
+  bcPaint(d);
+}
+function bcView(d) {
+  const B = d.bc || (d.bc = {state:'scan'});
+  if (B.state === 'scan') {
+    const msg = B.cam === 'no' ? '카메라를 열 수 없어요. 아래 사진으로 찍기를 눌러 주세요' : B.cam === 'lib' ? '바코드 읽기 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요' : '네모 안에 바코드를 맞추면 바로 읽어요';
+    return {html: bar({close:true}) + head('바코드를 비춰 주세요', '캔·병·컵에 있는 줄무늬 바코드를 찍어요') +
+      (B.cam ? `<div class="bc-box off" data-in aria-hidden="true">${I.barcode}</div>` : '<div class="bc-box" data-in><video id="bc-vid" playsinline muted autoplay></video><i class="bc-frame" aria-hidden="true"></i><i class="bc-line" aria-hidden="true"></i></div>') +
+      `<p class="bc-msg" role="status" data-in>${msg}</p>` +
+      `<div class="ph-acts" data-in style="margin-top:16px"><label class="ghost" for="bc-photo">${I.camera}사진으로 찍기</label><button class="ghost" data-a="back">직접 찾기</button></div>` +
+      '<input id="bc-photo" type="file" accept="image/*" capture="environment" hidden>' +
+      `<p class="disc" data-in style="margin-top:16px">바코드는 휴대폰 안에서 읽고, 제품 이름을 찾으려고 바코드 번호만 식약처 식품안전나라와 Open Food Facts에 보내요.</p>`,
+      mount:el => { if (!B.cam) bcStart(el, d); }};
+  }
+  if (B.state === 'look') {
+    const skel = `<div class="sk-list" aria-hidden="true"><span class="sk sk-h"></span>${[0, 1].map(() => `<div class="sk-row"><span class="sk-t"><span class="sk sk-a"></span><span class="sk sk-b"></span></span><span class="sk sk-r"></span></div>`).join('')}</div>`;
+    return {html: bar({close:true}) + head('제품을 찾고 있어요', `바코드 ${esc(B.code)}`) + skel};
+  }
+  const now = Date.now(), C = B.cands || [], info = B.name ? esc(B.name) + (B.type ? ` · ${esc(B.type)}` : '') : `바코드 ${esc(B.code)}`;
+  const row = (c, i) => {
+    const r = makeRec(BYID[c.id], Object.assign({}, c.o, {qty:1}), now), k = r.alc > 0 ? 'alc' : 'caf';
+    return `<button class="row" data-a="bccand" data-i="${i}"><span class="row-t"><b>${esc(r.name)}</b><small>${esc(r.sub)}</small></span><span class="row-r ${k}">${k === 'alc' ? fmt1(r.alc) + 'g' : fmtMg(r.caf)}</span></button>`;
+  };
+  const hd = C.length ? head(B.mine ? '전에 고른 제품이에요' : '이 중에 있나요?', info) :
+    head(B.name ? '목록에 없는 제품이에요' : '모르는 바코드예요', `${info}. 이름으로 찾거나 직접 기록해 주세요`);
+  const src = B.mine ? '이 바코드로 전에 고른 제품이에요.' : B.src === 'fsk' ? '제품 이름은 식약처 바코드 정보에서 찾았어요.' : B.src === 'off' ? '제품 이름은 Open Food Facts에서 찾았어요.' : '';
+  return {html: bar({close:true}) + hd + (C.length ? `<div class="rows" data-in style="margin-top:20px">${C.map(row).join('')}</div>` : '') +
+    `<div class="ph-acts" data-in style="margin-top:20px"><button class="ghost" data-a="bc-again">${I.barcode}다시 찍기</button><button class="ghost" data-a="bc-search">직접 찾기</button></div>` +
+    (C.length ? `<p class="disc" data-in style="margin-top:16px">${src} 카페인·알코올 양은 앱 기준값이라 다음 화면에서 용량을 맞춰 주세요. 고른 제품은 이 바코드로 기억해요.</p>` : '')};
+}
+
 onSave = notiRefresh;
 function favList() {
   const now = Date.now(), rows = S.favs.map(f => {
@@ -2275,6 +2454,7 @@ const STEPS = {
     },
     favs: () => favList(),
     photo: d => photoView(d),
+    barcode: d => bcView(d),
     mine: () => mineList(),
   },
   fav: {list: () => favList()},
@@ -2493,7 +2673,7 @@ function vHome() {
   h += hconsCard();
   h += scCard();
   h += gaugeCard('caf', st);
-  if (!st.ai.disabled) h += gaugeCard('alc', st);
+  if (!st.ai.disabled) { h += gaugeCard('alc', st); if (shieldShow(st)) h += `<button class="prompt" data-a="shield" data-in><span class="pi alc">${I.shield}</span><span class="pt"><b>회식 방패</b><small>권하는 술, 이 화면을 보여 주고 거절해요</small></span>${I.chev}</button>`; }
   if (st.alerts.length) {
     const a = [...st.alerts].sort(bySev)[0];
     h += `<div class="banner ${a.lv === 'danger' ? 'danger' : ''}" data-in>${I.alert}<span>${esc(a.text)}${st.alerts.length > 1 ? `<small>알림 ${st.alerts.length - 1}개가 더 있어요 · 카드를 눌러 자세히 보기</small>` : ''}</span></div>`;
@@ -2711,6 +2891,120 @@ function toast(text, undo) {
   toastT = setTimeout(() => { r.innerHTML = ''; undoFn = null; }, undo ? 5000 : 3200);
 }
 
+/* 회식 방패: 권하는 술을 거절할 때 상대에게 보여 주는 화면.
+   몰라서가 아니라 거절하기 어려워서 더 마시는 경우가 많아요. '내 생각'이 아니라 '내 몸 숫자'를 보여 주면 거절이 쉬워져요.
+   짠은 같이 하고 잔만 물로 채우자고 해서 분위기를 깨지 않게 해요. */
+const shieldShow = st => { const h = new Date().getHours(); return st.alc > 0 || h >= 17 || h < 5; };
+function shieldReasons() {
+  const st = status(), now = Date.now(), pct = st.ai.limit > 0 ? Math.round(st.alc / st.ai.limit * 100) : 0;
+  const more = bacState(now, [...S.records, {t:now, alc:SOJU_G, food:true}]).soberAt;   // 소주 한 잔을 더 마시면 술이 깨는 시각
+  const sober = st.bac.soberAt;
+  // 기준은 가장 보수적인 '내 권장량'. 금방 닿아서 일찍부터 거절하기 쉬워요. 남에게 보여 주는 화면이라 소주 잔 수로 말해요
+  const sj = g => { const v = Math.max(0.5, Math.round(g / SOJU_G * 2) / 2); return (v % 1 ? v.toFixed(1) : String(v)) + '잔'; };
+  const lim = sj(st.ai.limit), had = sj(st.alc);
+  return [
+    {id:'body', t:'몸 권장량', why:pct >= 100 ? '오늘 제 몸 권장량을 다 마셨어요' : pct >= 70 ? '제 몸 권장량을 거의 다 채웠어요' : st.alc > 0 ? `제 몸 권장량은 하루 소주 ${lim}이에요` : '오늘은 술을 쉬기로 했어요',
+      data:st.alc > 0 ? (pct >= 70 ? `권장량은 하루 소주 ${lim}, 오늘 ${had} 마셨어요` : `오늘 벌써 ${had} 마셨어요`) : `제 몸 권장량은 하루 소주 ${lim}이에요`, pct:st.alc > 0 ? pct : null},
+    {id:'drive', t:'운전', why:'내일 운전해야 해요',
+      data:sober ? `지금 멈춰도 ${timeLabel(sober)}에 술이 깨요.${more ? ` 한 잔 더 마시면 ${timeLabel(more)}${/분$/.test(timeLabel(more)) ? '으로' : '로'} 늦어져요` : ''}` : more ? `한 잔만 마셔도 ${timeLabel(more)}까지 술이 남아요` : ''},
+    {id:'meds', t:'약', why:'약을 먹고 있어서 술은 안 돼요', data:'약과 술이 만나면 몸에 무리가 올 수 있어요'},
+    {id:'flush', t:'체질', why:'한두 잔에도 얼굴이 빨개지는 체질이에요', data:'알코올 분해 효소가 약해서 같은 양도 몸에 더 부담이 돼요'},
+    {id:'early', t:'내일 일정', why:'내일 아침 일찍 중요한 일정이 있어요', data:''},
+  ];
+}
+function shieldPick() {   // 처음 보여 줄 이유: 내 몸 정보에 맞는 것
+  const p = S.profile || {};
+  return (p.meds || []).length ? 'meds' : p.ride ? 'drive' : p.flush === 'often' ? 'flush' : 'body';
+}
+function shieldHtml(id) {
+  const R = shieldReasons(), r = R.find(x => x.id === id) || R[0];
+  return `<div class="sh-top"><span class="sh-brand">잔잔 · 회식 방패</span><button class="sh-x" data-a="shield-close" aria-label="닫기">${I.x}</button></div>` +
+    `<div class="sh-main" aria-live="polite"><h2 id="sh-h">오늘은 여기까지<br>마실게요</h2><p class="sh-why">${esc(r.why)}</p>${r.data ? `<p class="sh-data">${esc(r.data)}</p>` : ''}` +
+    `${r.pct != null ? `<span class="sh-bar" role="img" aria-label="하루 기준의 ${r.pct}%"><i style="width:${Math.min(100, r.pct)}%;background:${shBarC(r.pct)}"></i></span>` : ''}` +
+    `<p class="sh-soft">짠은 같이 할게요.<br>제 잔은 물로 채워 주세요</p></div>` +
+    `<div class="sh-pick" role="group" aria-label="이유 고르기">${R.map(x => `<button class="sh-chip" data-a="shield-r" data-r="${x.id}" aria-pressed="${x.id === r.id}">${x.t}</button>`).join('')}</div>` +
+    `<div class="sh-acts"><button class="sh-act" data-a="shield-save">${I.download}이미지로 저장</button><button class="sh-act" data-a="shield-share">${I.share}공유</button></div>` +
+    `<p class="sh-hint">화면을 보여 주거나, 단톡방에 미리 공유해 두세요</p>`;
+}
+const shBarC = p => p >= 100 ? '#FF5D6C' : p >= 70 ? '#FFB547' : '#3CCB8F';
+/* 회식 방패 이미지(1080×1350): 저장하거나 단톡방에 미리 공유해 두면 자리에서 말 꺼내기가 쉬워요.
+   공유는 누른 순간에 바로 열어야(사파리) 해서 이유를 고를 때마다 미리 만들어 둬요 */
+let shImg = null;
+function shReason() { const s = $('#shield'), R = shieldReasons(); return R.find(x => x.id === (s && s.dataset.r)) || R[0]; }
+function shPrep() { const r = shReason(); shImg = {r, blob:null}; const me_ = shImg; shieldImage(r).then(b => { me_.blob = b; }); }
+async function shieldImage(r) {
+  try { await document.fonts.ready; } catch (e) {}
+  try {
+    const W = 1080, Hh = 1350, c = document.createElement('canvas'); c.width = W; c.height = Hh;
+    const x = c.getContext('2d'), F = getComputedStyle(document.body).fontFamily;
+    const font = (w, px) => { x.font = `${w} ${px}px ${F}`; };
+    const wrap = t => { const out = []; t.split('\n').forEach(par => { let line = ''; par.split(' ').forEach(wd => { const tr = line ? line + ' ' + wd : wd; if (!line || x.measureText(tr).width <= W - 160) line = tr; else { out.push(line); line = wd; } }); out.push(line); }); return out; };
+    const rr = (X, Y, w, h, rad) => { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, rad); else x.rect(X, Y, w, h); x.fill(); };
+    x.fillStyle = '#0E0F12'; x.fillRect(0, 0, W, Hh);
+    const bar = r.pct != null;
+    const B = [[800, 104, '#F5F6F7', '오늘은 여기까지\n마실게요', 1.22, 0], [700, 60, '#3CCB8F', r.why, 1.35, 64]];
+    if (r.data) B.push([500, 40, '#B5BCC6', r.data, 1.5, 28]);
+    B.push([600, 48, '#E3E6EA', '짠은 같이 할게요.\n제 잔은 물로 채워 주세요', 1.45, bar ? 130 : 84]);
+    const L = B.map(b => { font(b[0], b[1]); return wrap(b[3]); });
+    const total = B.reduce((a, b, i) => a + b[5] + L[i].length * b[1] * b[4], 0);
+    let y = Math.max(190, (Hh - total) / 2 - 10);
+    x.textAlign = 'center'; x.textBaseline = 'top';
+    B.forEach((b, i) => {
+      y += b[5]; font(b[0], b[1]); x.fillStyle = b[2];
+      L[i].forEach(l => { x.fillText(l, W / 2, y + b[1] * (b[4] - 1) / 2); y += b[1] * b[4]; });
+      if (bar && i === B.length - 2) { const bw = 560, bx = (W - bw) / 2, by = y + 44; x.fillStyle = '#2A2D33'; rr(bx, by, bw, 22, 11); x.fillStyle = shBarC(r.pct); rr(bx, by, Math.max(22, bw * Math.min(100, r.pct) / 100), 22, 11); }
+    });
+    x.textAlign = 'left'; font(700, 34); x.fillStyle = '#8B93A1'; x.fillText('잔잔 · 회식 방패', 72, 84);
+    const d = new Date(); x.textAlign = 'center'; font(500, 30); x.fillStyle = '#6E7682';
+    x.fillText(`${d.getMonth() + 1}월 ${d.getDate()}일 · 제 키·몸무게·체질로 계산한 권장량 기준`, W / 2, Hh - 96);
+    return await new Promise(res => c.toBlob(res, 'image/png'));
+  } catch (e) { return null; }
+}
+const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function shSaveBlob(b) {
+  const url = URL.createObjectURL(b), s = $('#shield');
+  if (isIOS() && s) {   // 아이폰은 내려받기가 '파일'로 가서, 이미지를 띄우고 길게 눌러 사진에 저장하게 해요
+    const p = document.createElement('div'); p.className = 'sh-pv'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', '회식 방패 이미지');
+    p.innerHTML = `<img src="${url}" alt="회식 방패 이미지"><p>이미지를 길게 눌러<br>'사진 앱에 저장'을 골라 주세요</p><button class="sh-act" data-a="shield-pv-close">닫기</button>`;
+    p.dataset.url = url; s.appendChild(p); return;
+  }
+  const a = document.createElement('a'); a.href = url; a.download = `잔잔_회식방패_${dayKey(Date.now())}.png`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000); toast('이미지를 저장했어요');
+}
+async function shieldSave() {
+  const r = shReason(), b = shImg && shImg.r.id === r.id && shImg.blob ? shImg.blob : await shieldImage(r);
+  if (!b) return toast('이미지를 만들지 못했어요'); shSaveBlob(b);
+}
+async function shieldShare() {
+  const r = shReason(), text = `오늘은 여기까지 마실게요. ${r.why}.`;
+  let b = shImg && shImg.r.id === r.id ? shImg.blob : null;
+  if (!b) b = await shieldImage(r);
+  const file = b && new File([b], '잔잔_회식방패.png', {type:'image/png'});
+  try {
+    if (file && navigator.canShare && navigator.canShare({files:[file]})) { await navigator.share({files:[file], text}); return; }
+    if (navigator.share) { await navigator.share({title:'회식 방패', text}); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  if (b) { shSaveBlob(b); toast('공유를 쓸 수 없어서 이미지로 저장했어요'); } else toast('공유하지 못했어요');
+}
+let shieldLock = null;
+function openShield(id) {
+  closeShield(true);
+  const s = document.createElement('div'); s.className = 'shield'; s.id = 'shield';
+  s.setAttribute('role', 'dialog'); s.setAttribute('aria-modal', 'true'); s.setAttribute('aria-labelledby', 'sh-h');
+  s.innerHTML = shieldHtml(id); s.dataset.r = id;
+  $('#root').appendChild(s); shPrep();
+  anim(s, [{opacity:0}, {opacity:1}], {duration:200});
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { shieldLock = l; }, () => {}); } catch (e) {}   // 보여 주는 동안 화면이 꺼지지 않게
+  const x = s.querySelector('.sh-x'); if (x) x.focus({preventScroll:true});
+}
+function closeShield(now) {
+  const s = $('#shield'); if (!s) return; s.removeAttribute('id');
+  try { if (shieldLock) shieldLock.release(); } catch (e) {} shieldLock = null; shImg = null;
+  if (now || reduce) { s.remove(); return; }
+  anim(s, [{opacity:1}, {opacity:0}], {duration:160, fill:'forwards'});
+  setTimeout(() => s.remove(), 180);
+}
+
 /* 확인 창: 바깥을 누르거나 Esc면 닫혀요 */
 function sheet(html) {
   closeSheet(true);
@@ -2802,6 +3096,12 @@ const ACT = {
     if (!d.edit) d.skipped = L.slice(Math.max(0, L.indexOf(f.cur)));   // 다시 입력할 때는 이미 답한 값이 남아 있으니 그대로 둬요
     go('calc');
   },
+  shield: () => openShield(shieldPick()),
+  'shield-r': el => { const s = $('#shield'); if (!s) return; s.innerHTML = shieldHtml(el.dataset.r); s.dataset.r = el.dataset.r; shPrep(); const b = s.querySelector(`[data-r="${el.dataset.r}"]`); if (b) b.focus({preventScroll:true}); },
+  'shield-close': () => closeShield(),
+  'shield-save': () => shieldSave(),
+  'shield-share': () => shieldShare(),
+  'shield-pv-close': el => { const p = el.closest('.sh-pv'); if (!p) return; try { URL.revokeObjectURL(p.dataset.url); } catch (e) {} p.remove(); },
   'sheet-close': (el, e) => { if (el.id === 'sheet' && e && e.target !== el) return; closeSheet(); },
   'ob-finish': el => {
     const d = ui.flow.d, edit = d.edit;
@@ -2826,7 +3126,7 @@ const ACT = {
     cur.querySelector('#plist').innerHTML = pickBody(d);
     const hs = cur.querySelector('#plist .hscroll'); if (hs) hs.scrollLeft = sl;
   },
-  ritem: el => { const it = BYID[el.dataset.id]; if (it) openItem(it); },
+  ritem: el => { const it = BYID[el.dataset.id]; if (!it) return; const d = ui.flow && ui.flow.d; if (d && d.bcCode) { bcRemember(d.bcCode, it.id, null, ''); d.bcCode = null; } openItem(it); },
   rtpl: el => {
     if (el.dataset.fav) {
       const f = S.favs.find(x => x.key === el.dataset.fav); if (!f) return;
@@ -2870,6 +3170,17 @@ const ACT = {
   'mine-me': () => startFlow('mine', 'list', {}, 'fwd'),
   'noti-me': () => startFlow('noti', 'set', {}, 'fwd'),
   'noti-perm': () => { try { Notifier.ask(); } catch (e) { toast('이 브라우저에서는 알림을 켤 수 없어요'); } },
+  'bc-open': () => { const d = ui.flow.d; d.bc = {state:'scan'}; d.bcCode = null; go('barcode'); },
+  'bc-again': () => { bcStop(); ui.flow.d.bc = {state:'scan'}; swapCur(); },
+  'bc-search': () => {   // 직접 찾기: 찾은 이름으로 검색해 두고, 여기서 고르면 이 바코드로 기억
+    const d = ui.flow.d, B = d.bc || {}; bcStop();
+    d.bcCode = B.code || null; d.q = B.name ? (bcClean(B.name.replace(/\([^)]*\)/g, ' ')).split(' ').find(t => t.length >= 2 && /[가-힣]/.test(t)) || '') : '';
+    goBack();
+  },
+  bccand: el => {
+    const d = ui.flow.d, B = d.bc, c = B && B.cands && B.cands[Number(el.dataset.i)]; if (!c || !BYID[c.id]) return;
+    bcRemember(B.code, c.id, c.o, B.name); openItem(BYID[c.id], c.o);
+  },
   pcand: el => {
     const d = ui.flow.d, c = d.recog && d.recog.cands[Number(el.dataset.i)]; if (!c || !BYID[c.id]) return;
     if (d.recog.emb) { S.vis.push({e:d.recog.emb, id:c.id, o:c.o || null}); if (S.vis.length > 40) S.vis.shift(); save(); }   // 고른 결과 기억 (기기 안 인식)
@@ -3425,6 +3736,12 @@ Object.assign(ACT, {
    업데이트 소식 (패치 노트) — 배포할 때마다 맨 위에 한 묶음씩 추가해요. id가 바뀌면 내 기준에 '새 소식'이 떠요.
    ========================================================= */
 const PATCH = [
+  {id:'2026-11-19c', d:'11월 19일', t:'회식 방패, 바코드로 찾기', items:[
+    '권하는 술을 거절하기 어려울 때 쓰는 회식 방패가 생겼어요. 술을 마셨거나 저녁이면 홈의 술 카드 아래에 있어요.',
+    '"오늘은 여기까지 마실게요"와 이유(내 몸 권장량, 운전, 약, 체질, 내일 일정)를 큰 글씨로 보여 줘요. 짠은 같이 하고 잔만 물로 채워 달라고 해서 분위기는 지켜요.',
+    '회식 방패를 이미지로 저장하거나 단톡방에 미리 공유할 수 있어요.',
+    '기록 화면에 바코드로 찾기가 생겼어요. 편의점 캔·병·컵의 바코드를 비추면 제품을 찾아 줘요. 방울은 쓰지 않아요.',
+  ]},
   {id:'2026-11-19b', d:'11월 19일', t:'선명한 사진, 방울 잔액 표시', items:[
     '사진으로 찾기 화면에서 사진이 흐리게 보이던 문제를 고쳤어요. 이제 찍은 사진을 선명하게 보여 줘요.',
     '내 기준 맨 위에서 방울이 몇 개 남았는지 바로 볼 수 있어요.',
@@ -3921,6 +4238,7 @@ document.addEventListener('input', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.classList && t.classList.contains('swi')) { S.noti.kinds[t.dataset.noti] = t.checked; save(); swapCur(); return; }
+  if (t.id === 'bc-photo' && t.files && t.files[0] && ui.flow && ui.flow.cur === 'barcode') { const file = t.files[0]; t.value = ''; bcFromPhoto(ui.flow.d, file); return; }
   if ((t.id === 'photo' || t.id === 'photo-lib') && t.files && t.files[0] && ui.flow) {
     const f = ui.flow;
     const file = t.files[0]; t.value = '';
@@ -3935,6 +4253,7 @@ document.addEventListener('change', e => {
   }
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#shield')) { closeShield(); return; }
   if (e.key === 'Escape' && $('#sheet')) { closeSheet(); return; }
   if (e.key === 'Escape' && ui.flow) { goBack(); return; }
   if (e.target.classList && e.target.classList.contains('wlist') && /^Arrow(Up|Down)$/.test(e.key)) { e.preventDefault(); e.target.scrollTop += (e.key === 'ArrowUp' ? -1 : 1) * WH; return; }
