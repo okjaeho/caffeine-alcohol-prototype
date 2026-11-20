@@ -276,7 +276,7 @@ button.card:active{transform:scale(.985)}
 .sh-card::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;
   background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,.1) 30%,rgba(140,255,200,.04) 62%,rgba(150,255,205,.7));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
-.sh-card::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.15),rgba(255,255,255,0) 30%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='18'%3E%3Cpath d='M0 9C24 1 24 17 48 9S72 1 96 9M0 9C24 17 24 1 48 9S72 17 96 9' fill='none' stroke='%23A8FFD6' stroke-opacity='.055'/%3E%3C/svg%3E")}
+.sh-card::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.15),rgba(255,255,255,0) 30%)}
 .sh-head{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:rgba(200,245,224,.72)}
 .sh-no{letter-spacing:.12em;font-variant-numeric:tabular-nums}
 .sh-emb{display:block;width:104px;height:104px;margin:4px auto 0;animation:shfl 3.6s ease-in-out infinite}
@@ -291,7 +291,7 @@ button.card:active{transform:scale(.985)}
 .sh-f dd{margin:0;font-size:15px;line-height:1.5;color:#E6F7EE}
 .sh-bar{display:block;height:8px;margin-top:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
 .sh-bar i{display:block;height:100%;border-radius:4px}
-.sh-soft{margin-top:18px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);font-size:16px;font-weight:600;line-height:1.5;color:#EAF7F0}
+.sh-soft{margin-top:18px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);font-size:16px;font-weight:600;line-height:1.5;color:#EAF7F0;word-break:keep-all;overflow-wrap:anywhere}
 .sh-pick{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;flex:none}
 .sh-chip{height:36px;padding:0 14px;border-radius:18px;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);color:#CFE9DC;font-size:14.5px;font-weight:600}
 .sh-chip[aria-pressed="true"]{background:#E9FFF4;color:#0B2A1D;box-shadow:none}
@@ -302,6 +302,17 @@ button.card:active{transform:scale(.985)}
 .sh-pv{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:rgba(3,8,6,.95)}
 .sh-pv img{max-width:100%;max-height:66%;border-radius:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
 .sh-pv p{font-size:15px;line-height:1.5;color:#E3E6EA;text-align:center}
+/* 한마디 고르기: 아래에서 올라오는 판. 고르는 대로 카드에 바로 보여요 */
+.sh-msg{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(3,8,6,.5)}
+.sh-sheet{padding:18px 18px max(18px,env(safe-area-inset-bottom,0px));border-radius:24px 24px 0 0;background:rgba(12,30,22,.97);box-shadow:inset 0 1px 0 rgba(190,255,222,.18),0 -20px 40px rgba(0,0,0,.45)}
+.sh-sheet h3{margin-bottom:12px;font-size:16px;font-weight:700;color:#F2FBF6}
+.sh-opts{display:grid;gap:8px}
+.sh-opt{display:flex;align-items:center;width:100%;min-height:46px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.06);color:#E6F7EE;font-size:15px;font-weight:600;line-height:1.4;text-align:left}
+.sh-opt[aria-pressed="true"]{background:#E9FFF4;color:#0B2A1D}
+.sh-in{display:block;width:100%;height:46px;margin-top:8px;padding:0 14px;border-radius:14px;border:1px solid rgba(190,255,222,.3);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px}
+.sh-in::placeholder{color:rgba(190,230,210,.45)}
+.sh-in[hidden]{display:none}
+.sh-done{width:100%;height:48px;text-align:center;margin-top:14px;border-radius:14px;background:#E9FFF4;color:#0B2A1D;font-size:16px;font-weight:700}
 .bc-box{position:relative;margin-top:20px;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .bc-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .bc-box.off{display:grid;place-items:center;background:var(--fill);color:var(--ink-3)}
@@ -924,6 +935,7 @@ const I = {
   xs: sv('<path d="M7 7l10 10M17 7 7 17"/>', 18, 2.2),
   share: sv('<path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 12v7h14v-7"/>', 20),
   download: sv('<path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/>', 20),
+  pen: sv('<path d="M5 19h4L19 9l-4-4L5 15z"/><path d="M13.5 6.5l4 4"/>', 20),
   barcode: sv('<path d="M4 6v12M7 6v12M10.5 6v12M13 6v12M16.5 6v12M20 6v12"/>', 20),
   shield: sv('<path d="M12 3.2l7 2.8v5.2c0 4.4-2.9 8.1-7 9.8-4.1-1.7-7-5.4-7-9.8V6z"/><path d="M9 12l2.2 2.2L15.2 10"/>', 22),
   chev: sv('<path d="M9 6l6 6-6 6"/>', 18, 2.2),
@@ -954,9 +966,11 @@ function normProfile(d) {
   const sex = d.sex || 'x', weight = Number(d.weight) || 62;
   const height = Number(d.height) || (sex === 'm' ? 174 : sex === 'f' ? 161 : 167);
   const birth = Number(d.birth) || (THIS_YEAR - (d.adult === false ? 17 : 22)), adult = THIS_YEAR - birth >= 19;
+  const skipped = [...(d.skipped || [])];
+  if (d.sauna === undefined && adult && !skipped.includes('sauna')) skipped.push('sauna');   // 찜질방 질문이 생기기 전에 가입했으면 '답하지 않은 질문'으로 보여요
   return {weight, height, birth, sex, adult, pregnant:sex !== 'm' && d.pregnant === true, cafSens:d.cafSens || 'mid', bed:d.bed || '01:00',
     conds:[...(d.conds || [])], smoke:d.smoke || 'none', meds:[...(d.meds || [])], flush:adult ? (d.flush || 'none') : 'none',
-    ahealth:adult ? [...(d.ahealth || [])] : [], afreq:adult && d.afreq != null ? Number(d.afreq) : null, aqty:d.aqty != null ? Number(d.aqty) : null, abinge:d.abinge != null ? Number(d.abinge) : null, ride:d.ride === true, skipped:[...(d.skipped || [])]};
+    ahealth:adult ? [...(d.ahealth || [])] : [], afreq:adult && d.afreq != null ? Number(d.afreq) : null, aqty:d.aqty != null ? Number(d.aqty) : null, abinge:d.abinge != null ? Number(d.abinge) : null, ride:d.ride === true, sauna:adult && d.sauna === true, skipped};
 }
 /* 하루 권장량과 개인 보정은 서버 함수(limits)에서 계산해요. 계산식은 이 페이지에 없어요.
    앱은 받은 결과를 기기에 저장해 두고 쓰고, 서버에 닿지 못하면 마지막 결과나 공개 기준(식약처 카페인 권고, WHO 저위험 음주)만으로 계산해요. */
@@ -1102,6 +1116,8 @@ function status(recs = S.records, now = Date.now()) {
     if ((p.ahealth || []).some(h => h === 'liver' || h === 'hep') && alc > 0) A.push({id:'liver', lv:'warn', text:'간 질환이 있으면 적은 양도 간에 부담이 돼요. 오늘은 이쯤에서 멈추는 게 좋아요'});
     if ((p.ahealth || []).includes('dm') && recs.some(r => r.alc > 0 && r.food === false && win(r, 3 * H))) A.push({id:'dm', lv:'danger', text:'당뇨가 있으면 빈속에 마신 술 때문에 저혈당이 올 수 있어요. 뭐라도 같이 드세요'});
     if (p.ride && bac.now >= 0.005) A.push({id:'ride', lv:'danger', text:`아직 술이 남아 있어요. ${bac.soberAt ? timeLabel(bac.soberAt) + ' 전에는' : '술이 다 깰 때까지'} 운전이나 킥보드를 타지 마세요`});
+    // 국내 찜질방 사망 103건 중 74%가 혈중알코올 0.08% 이상 (Kim 2018), 술 마시고 사우나에 들어가면 혈압이 크게 떨어짐 (Kauppinen 1992)
+    if (p.sauna && bac.now >= 0.005) A.push({id:'sauna', lv:'danger', text:`술이 남아 있어요. ${bac.soberAt ? timeLabel(bac.soberAt) + ' 전에는' : '술이 다 깰 때까지'} 찜질방·사우나·뜨거운 탕에 들어가지 마세요. 혈압이 떨어져 쓰러질 수 있어요`});
     if (p.meds.includes('psy') && recentAlc > 0) A.push({id:'meds', lv:'danger', text:'먹고 있는 약과 술이 만나면 위험할 수 있어요. 약사나 의사에게 꼭 확인해 주세요'});
   }
   return {key, today, ci, ai, caf, alc, bed, body, atBed, bac, alerts:A};
@@ -1429,8 +1445,8 @@ function photoBanner(d) {
 /* =========================================================
    단계별 화면
    ========================================================= */
-const OB_Q = ['body', 'birth', 'sex', 'preg', 'sens', 'conds', 'smoke', 'meds', 'bed', 'flush', 'ahealth', 'afreq', 'aqty', 'abinge', 'ride'];
-const ALC_Q = ['flush', 'ahealth', 'afreq', 'aqty', 'abinge', 'ride'];
+const OB_Q = ['body', 'birth', 'sex', 'preg', 'sens', 'conds', 'smoke', 'meds', 'bed', 'flush', 'ahealth', 'afreq', 'aqty', 'abinge', 'ride', 'sauna'];
+const ALC_Q = ['flush', 'ahealth', 'afreq', 'aqty', 'abinge', 'ride', 'sauna'];
 const AH_Q = {liver:'지방간이 있거나 간 수치가 높다고 들었어요', hep:'B형이나 C형 간염이 있어요', gout:'통풍이 있어요', bp:'고혈압이 있어요', dm:'당뇨가 있어요'};
 const validB = b => { const n = Number(b); return n >= 1930 && n <= THIS_YEAR - 8; };
 const adultOf = d => validB(d.birth) ? THIS_YEAR - Number(d.birth) >= 19 : d.adult !== false;
@@ -1442,7 +1458,7 @@ const obNext = (d, s) => {
 const obProg = (d, s) => { const L = obList(d); return (L.indexOf(s) + 1) / L.length; };
 // 키·몸무게·태어난 해는 계산과 성인 확인에 꼭 필요해서 건너뛸 수 없어요. 나머지는 건너뛰면 일반적인 경우로 계산해요.
 const OB_REQ = ['body', 'birth'];
-const OB_KEY = {sex:'sex', preg:'pregnant', sens:'cafSens', smoke:'smoke', bed:'bed', flush:'flush', afreq:'afreq', aqty:'aqty', abinge:'abinge', ride:'ride'};
+const OB_KEY = {sex:'sex', preg:'pregnant', sens:'cafSens', smoke:'smoke', bed:'bed', flush:'flush', afreq:'afreq', aqty:'aqty', abinge:'abinge', ride:'ride', sauna:'sauna'};
 const obBar = (d, s) => bar({prog:obProg(d, s), skip:!OB_REQ.includes(s)});
 const skippedOf = p => (p && p.skipped || []).filter(s => obList(p).includes(s));
 const validW = w => { const n = Number(w); return n >= 20 && n <= 300; };
@@ -1819,7 +1835,7 @@ const NOTI_T = {
   pace:{t:'술자리 속도 알림', d:'1시간 안에 소주 4잔 넘게 마셨을 때'},
   water:{t:'물 마시기 알림', d:'술을 마시기 시작하고 1시간마다'},
   limit:{t:'권장량 근접 알림', d:'다음 한 잔이면 권장량을 넘을 때'},
-  sober:{t:'술 깨는 시각 알림', d:'운전·킥보드를 탄다고 답했으면, 혈중알코올이 0%가 되는 시각에'},
+  sober:{t:'술 깨는 시각 알림', d:'운전·킥보드를 타거나 찜질방·사우나에 자주 간다고 답했으면, 혈중알코올이 0%가 되는 시각에'},
   morning:{t:'다음 날 아침 질문', d:'전날 권장량의 절반 넘게 마셨으면, 일어날 즈음 몸 상태를 물어요'},
   weekly:{t:'주간 리포트', d:'일요일 저녁 8시'},
 };
@@ -1845,7 +1861,7 @@ function planNoti(now = Date.now()) {
     if (hour > 4 * SOJU_G) add('pace', now, '속도가 빨라요', `최근 1시간에 소주 ${nf(hour / SOJU_G)}잔만큼 마셨어요. 천천히 마셔요`, '1시간에 소주 4잔 넘게');
     const k = Math.floor((now - ses[0].t) / H) + 1; add('water', ses[0].t + k * H, '물 한 잔 마실 시간이에요', '술 한 잔에 물 한 잔이 숙취를 줄여요', '술 시작 후 1시간마다');
     const left = st.ai.limit - st.alc; if (left > 0 && left < SOJU_G * 1.5) add('limit', now, '다음 한 잔이면 권장량을 넘어요', `오늘 남은 양은 ${uA(left)}예요`, '권장량까지 한 잔 남음');
-    if (p.ride && st.bac.soberAt) add('sober', st.bac.soberAt, '이제 술이 다 깼어요', '혈중알코올이 0%로 떨어졌을 시각이에요. 몸이 무거우면 조금 더 쉬어요', '운전·킥보드 탄다고 답함');
+    if ((p.ride || p.sauna) && st.bac.soberAt) add('sober', st.bac.soberAt, '이제 술이 다 깼어요', '혈중알코올이 0%로 떨어졌을 시각이에요. 몸이 무거우면 조금 더 쉬어요', p.ride ? '운전·킥보드 탄다고 답함' : '찜질방·사우나 자주 간다고 답함');
   }
   // 4) 다음 날 아침: 잠든 뒤 8시간, 늦어도 오전 9시 이후
   if ((!st.ai.disabled && st.alc >= st.ai.limit * 0.5) || st.caf >= st.ci.limit * 0.8) {
@@ -2420,6 +2436,8 @@ const STEPS = {
         opts('abinge', d.abinge, [{v:0, t:'없어요'}, {v:1, t:'한 달에 한 번보다 적게'}, {v:2, t:'한 달에 한 번쯤'}, {v:3, t:'일주일에 한 번쯤'}, {v:4, t:'거의 매일'}])}),
     ride: d => ({html: obBar(d, 'ride') + head('운전을 하거나<br>전동킥보드를 타나요?', '술이 완전히 깨는 시각을 더 잘 보이게 알려 드릴게요.') +
         opts('ride', d.ride, [{v:true, t:'네, 자주 타요'}, {v:false, t:'거의 안 타요'}])}),
+    sauna: d => ({html: obBar(d, 'sauna') + head('찜질방이나 사우나에<br>자주 가나요?', '자주 간다면, 술이 남아 있는 동안은 들어가지 말라고 알려 드릴게요. 술 마시고 뜨거운 곳에 들어가면 혈압이 떨어져 쓰러질 수 있어요.') +
+        opts('sauna', d.sauna, [{v:true, t:'네, 자주 가요', s:'뜨거운 탕 목욕 포함'}, {v:false, t:'거의 안 가요'}])}),
     calc: () => ({html:`<div class="center"><div class="spinner" aria-hidden="true" data-in></div><h1 class="h" data-in>권장량을 계산하고 있어요</h1><p class="sub" data-in>공개 기준에 답변을 반영하는 중이에요</p></div>`,
       mount:(el, re) => {   // 서버에서 권장량을 받아 오는 동안 보여 줘요 (최소 1.2초)
         if (re) return; const f = ui.flow, t0 = Date.now();
@@ -2662,7 +2680,7 @@ function gaugeCard(k, st) {
   let extra = '';
   if (!caf && st.bac.any && st.bac.ahead > 0) {
     const sober = st.bac.soberAt ? timeLabel(st.bac.soberAt) : '';
-    extra = `<span class="c-extra"><span>혈중알코올 <b>${st.bac.now >= 0.0005 ? st.bac.now.toFixed(3) + '%' : '오르는 중'}</b></span><span>${sober ? (S.profile.ride ? `운전은 <b>${sober}</b> 이후` : sober + '쯤 0%') : ''}</span></span>`;
+    extra = `<span class="c-extra"><span>혈중알코올 <b>${st.bac.now >= 0.0005 ? st.bac.now.toFixed(3) + '%' : '오르는 중'}</b></span><span>${sober ? (S.profile.ride ? `운전은 <b>${sober}</b> 이후` : S.profile.sauna ? `찜질방은 <b>${sober}</b> 이후` : sober + '쯤 0%') : ''}</span></span>`;
   }
   if (caf) {
     const now = Date.now(), cut = cafCutoff(now);
@@ -2881,7 +2899,7 @@ function vMe() {
         <button class="li" data-a="logout">로그아웃${I.chev}</button>
         <button class="li danger" data-a="acct-del">계정 삭제${I.chev}</button></div>`
     : `<button class="prompt" data-a="auth-open" data-from="me" data-in><span class="pi">${I.cloud}</span><span class="pt"><b>로그인하고 기록 보관하기</b><small>폰을 바꾸거나 브라우저를 지워도 기록이 남아요. AI 사진 인식에 쓰는 ${COIN.name} ${COIN.grant}${COIN.unit}도 드려요</small></span>${I.chev}</button>`;
-  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${me ? coinCard() : acct}${sk.length ? `<button class="prompt" data-a="edit" data-from="1" data-in><span class="pi">${I.chat}</span><span class="pt"><b>건너뛴 질문이 ${sk.length}개 있어요</b><small>답하면 권장량이 내 몸에 더 잘 맞아요</small></span>${I.chev}</button>` : ''}${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
+  return {html: `<div class="home"><h1 class="tab-h" data-in>내 기준</h1>${me ? coinCard() : acct}${sk.length ? `<button class="prompt" data-a="edit" data-from="1" data-in><span class="pi">${I.chat}</span><span class="pt"><b>답하지 않은 질문이 ${sk.length}개 있어요</b><small>${sk.length === 1 && sk[0] === 'sauna' ? '찜질방·사우나에 자주 가는지 새로 물어봐요' : '답하면 권장량이 내 몸에 더 잘 맞아요'}</small></span>${I.chev}</button>` : ''}${scoreCard('caf', ci)}${ai.disabled ? '' : scoreCard('alc', ai) + auditCard(ai)}
     <p class="disc" data-in>점수 100점은 공개 기준량을 그대로 쓴다는 뜻이에요. 내 몸 정보와 다음 날 피드백이 쌓일수록 내 몸에 맞게 조정돼요.</p>
     <div class="list" data-in><button class="li" data-a="edit">정보 다시 입력하기${I.chev}</button>
       <button class="li" data-a="units">표시 단위<span class="li-n">${(UC[S.units.caf] || UC.mg).sh}${ai.disabled ? '' : ' · ' + (UA[S.units.alc] || UA.g).sh}</span>${I.chev}</button>
@@ -2958,6 +2976,41 @@ function shieldSvg(p, s) {
     '<path d="M45.5 57L55.5 67" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2.4" stroke-linecap="round"/></svg>';
 }
 const shNo = d => 'No. ' + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+/* 카드 아래 한마디: 기본은 없음. 고른 것은 이 기기에만 기억해요 */
+const SH_MSG_KEY = 'jango.shmsg', SH_OWN_MAX = 40;
+const SH_MSGS = [
+  {id:'none', t:'없음'},
+  {id:'water', t:'짠은 같이 할게요.\n제 잔은 물로 채워 주세요'},
+  {id:'mood', t:'분위기는 끝까지\n함께할게요'},
+  {id:'soda', t:'음료수로 같이\n짠할게요'},
+  {id:'thanks', t:'마음만 감사히\n받을게요'},
+  {id:'own', t:'직접 입력'},
+];
+let shM = {id:'none', own:''};
+try { const v = JSON.parse(localStorage.getItem(SH_MSG_KEY)); if (v && SH_MSGS.some(m => m.id === v.id)) shM = {id:v.id, own:String(v.own || '').slice(0, SH_OWN_MAX)}; } catch (e) {}
+const shMsgSave = () => { try { localStorage.setItem(SH_MSG_KEY, JSON.stringify(shM)); } catch (e) {} };
+const shMsgText = () => shM.id === 'own' ? shM.own.replace(/\s+/g, ' ').trim() : shM.id === 'none' ? '' : (SH_MSGS.find(m => m.id === shM.id) || {t:''}).t;
+const shSoft = () => { const t = shMsgText(); return t ? `<p class="sh-soft">${esc(t).replace(/\n/g, '<br>')}</p>` : ''; };
+function shMsgApply() { const m = $('#sh-m'); if (m) m.innerHTML = shSoft(); }
+function shMsgOpen() {
+  const s = $('#shield'); if (!s) return; shPvClose(); shMsgClose();
+  s.scrollTop = 0; s.style.overflow = 'hidden';
+  const p = document.createElement('div'); p.className = 'sh-msg'; p.dataset.a = 'shield-m-done'; p.dataset.was = shMsgText();
+  p.innerHTML = `<div class="sh-sheet" role="dialog" aria-modal="true" aria-labelledby="sh-mh"><h3 id="sh-mh">카드에 넣을 한마디</h3>` +
+    `<div class="sh-opts">${SH_MSGS.map(m => `<button class="sh-opt" data-a="shield-m" data-m="${m.id}" aria-pressed="${m.id === shM.id}">${esc(m.t.replace('\n', ' '))}</button>`).join('')}</div>` +
+    `<input id="sh-in" class="sh-in" type="text" maxlength="${SH_OWN_MAX}" enterkeyhint="done" placeholder="예: 노래는 제가 책임질게요" aria-label="직접 입력할 한마디" value="${esc(shM.own)}"${shM.id === 'own' ? '' : ' hidden'}>` +
+    `<button class="sh-done" data-a="shield-m-done">완료</button></div>`;
+  s.appendChild(p);
+  const on = p.querySelector('[aria-pressed="true"]'); if (on) on.focus({preventScroll:true});
+}
+function shMsgClose() {
+  const s = $('#shield'), p = s && s.querySelector('.sh-msg'); if (!p) return false;
+  if (shM.id === 'own' && !shMsgText()) { shM = {id:'none', own:''}; shMsgSave(); shMsgApply(); }   // 비워 두고 닫으면 없음
+  const changed = p.dataset.was !== shMsgText();
+  p.remove(); s.style.overflow = ''; if (changed) shPrep();
+  const b = s.querySelector('[data-a="shield-m-open"]'); if (b) b.focus({preventScroll:true});
+  return true;
+}
 function shieldHtml(id) {
   const R = shieldReasons(), r = R.find(x => x.id === id) || R[0], d = new Date();
   const bar = r.pct != null ? `<span class="sh-bar" role="img" aria-label="권장량의 ${r.pct}%"><i style="width:${Math.min(100, r.pct)}%;background:${shBarC(r.pct)}"></i></span>` : '';
@@ -2965,9 +3018,9 @@ function shieldHtml(id) {
     `<div class="sh-main"><div class="sh-card" aria-live="polite"><div class="sh-head"><span>잔잔 · 회식 방패</span><span class="sh-no">${shNo(d)}</span></div>` +
     `<span class="sh-emb">${shieldSvg('she', 104)}</span><h2 id="sh-h">오늘은 여기까지<br>마실게요</h2><p class="sh-why">${esc(r.why)}</p>` +
     `<dl class="sh-f">${r.data ? `<div><dt>근거</dt><dd>${esc(r.data)}${bar}</dd></div>` : ''}<div><dt>유효</dt><dd>${d.getMonth() + 1}월 ${d.getDate()}일 하루</dd></div></dl>` +
-    `<p class="sh-soft">짠은 같이 할게요.<br>제 잔은 물로 채워 주세요</p></div></div>` +
+    `<div id="sh-m">${shSoft()}</div></div></div>` +
     `<div class="sh-pick" role="group" aria-label="이유 고르기">${R.map(x => `<button class="sh-chip" data-a="shield-r" data-r="${x.id}" aria-pressed="${x.id === r.id}">${x.t}</button>`).join('')}</div>` +
-    `<div class="sh-acts"><button class="sh-act" data-a="shield-save">${I.download}이미지로 저장</button><button class="sh-act" data-a="shield-share">${I.share}공유</button></div>` +
+    `<div class="sh-acts"><button class="sh-act" data-a="shield-m-open">${I.pen}한마디</button><button class="sh-act" data-a="shield-save">${I.download}저장</button><button class="sh-act" data-a="shield-share">${I.share}공유</button></div>` +
     `<p class="sh-hint">화면을 보여 주거나, 단톡방에 미리 공유해 두세요</p>`;
 }
 const shBarC = p => p >= 100 ? '#FF5D6C' : p >= 70 ? '#FFB547' : '#3CCB8F';
@@ -2989,25 +3042,28 @@ async function shieldImage(r, plain) {
     const lg = (x0, y0, x1, y1, st) => { const g = x.createLinearGradient(x0, y0, x1, y1); st.forEach(v => g.addColorStop(v[0], v[1])); return g; };
     const blob = (cx, cy, rad, rgb, a) => { const g = x.createRadialGradient(cx, cy, 0, cx, cy, rad); g.addColorStop(0, `rgba(${rgb},${a})`); g.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = g; x.fillRect(0, 0, W, Hh); };
     const d = new Date(), CX = 72, CW = W - 144, PAD = 56, IW = CW - PAD * 2, LBL = 120, ES = emb ? 220 : 0;
-    const FL = 56, PILL = 26 * 2 + 2 * 42 * 1.4;   // 칸 한 줄 높이, '짠은 같이' 상자 높이
+    const FL = 56;   // 칸 한 줄 높이
+    // 직접 쓴 한마디는 띄어쓰기 없이 길 수도 있어서 글자 단위로도 줄을 나눠요
+    const wrapC = (t, mw) => { const out = []; let ln = ''; for (const ch of t) { const tr = ln + ch; if (ln && x.measureText(tr).width > mw) { const sp = ln.lastIndexOf(' '); if (ch !== ' ' && sp > 0) { out.push(ln.slice(0, sp)); ln = ln.slice(sp + 1) + ch; } else { out.push(ln); ln = ch === ' ' ? '' : ch; } } else ln = tr; } if (ln) out.push(ln); return out; };
     // 높이를 먼저 재서 카드를 가운데에 둬요
+    const msg = shMsgText(); font(600, 42);
+    const ml = !msg ? [] : shM.id === 'own' ? wrapC(msg, IW - 64) : msg.split('\n');
+    const PILL = ml.length ? 26 * 2 + ml.length * 42 * 1.4 : 0;   // 한마디 상자 높이 (없으면 상자도 없음)
     font(700, 50); const why = wrap(r.why, IW);
     const fields = [];
     font(400, 38); if (r.data) fields.push(['근거', wrap(r.data, IW - LBL), r.pct]);
     fields.push(['유효', [`${d.getMonth() + 1}월 ${d.getDate()}일 하루`], null]);
     const hF = fields.reduce((a, f, i) => a + (i ? 20 : 0) + f[1].length * FL + (f[2] != null ? 36 : 0), 0);
-    const CH = (PAD - 8) + 38 + (ES ? ES + 10 : 20) + 2 * 84 * 1.22 + 26 + why.length * 50 * 1.4 + 38 + 34 + hF + 36 + PILL + PAD;
+    const CH = (PAD - 8) + 38 + (ES ? ES + 10 : 20) + 2 * 84 * 1.22 + 26 + why.length * 50 * 1.4 + 38 + 34 + hF + (PILL ? 36 + PILL : 0) + PAD;
     const CY = Math.max(40, Math.round((Hh - CH - 70) / 2));
     // 배경: 어두운 초록 + 빛 번짐
     x.fillStyle = '#050C09'; x.fillRect(0, 0, W, Hh);
     blob(150, 110, 1000, '46,204,138', .34); blob(1040, 1320, 900, '20,140,120', .3);
-    // 카드: 유리 바탕 → 등록증 물결무늬 → 비스듬한 빛 → 빛 받는 테두리
+    // 카드: 유리 바탕 → 비스듬한 빛 → 빛 받는 테두리
     x.save(); x.shadowColor = 'rgba(40,190,125,.32)'; x.shadowBlur = 130; path(CX, CY, CW, CH, 76); x.fillStyle = '#0A1A13'; x.fill(); x.restore();
     x.save(); path(CX, CY, CW, CH, 76); x.clip();
     blob(CX + 140, CY + 80, 760, '70,220,150', .24); blob(CX + CW, CY + CH, 760, '20,150,120', .2);
     x.fillStyle = lg(CX, CY, CX + CW, CY + CH, [[0, 'rgba(150,255,205,.16)'], [.42, 'rgba(60,170,125,.06)'], [1, 'rgba(8,40,28,.36)']]); x.fillRect(CX, CY, CW, CH);
-    x.lineWidth = 2; x.strokeStyle = 'rgba(168,255,214,.05)';
-    for (let yy = CY + 24; yy < CY + CH; yy += 48) for (const ph of [0, Math.PI]) { x.beginPath(); for (let xx = CX; xx <= CX + CW; xx += 8) { const v = yy + Math.sin(xx / 42 + ph) * 13; if (xx === CX) x.moveTo(xx, v); else x.lineTo(xx, v); } x.stroke(); }
     x.fillStyle = lg(CX, CY, CX + CW * .55, CY + CH * .45, [[0, 'rgba(255,255,255,.15)'], [.55, 'rgba(255,255,255,0)']]); x.fillRect(CX, CY, CW, CH);
     x.restore();
     path(CX + 2, CY + 2, CW - 4, CH - 4, 74); x.lineWidth = 4;
@@ -3028,9 +3084,11 @@ async function shieldImage(r, plain) {
       font(400, 38); x.fillStyle = '#E6F7EE'; f[1].forEach(t => { x.fillText(t, CX + PAD + LBL, y + 9); y += FL; });
       if (f[2] != null) { y += 16; const bx = CX + PAD + LBL, bw = IW - LBL; x.fillStyle = 'rgba(255,255,255,.12)'; path(bx, y, bw, 20, 10); x.fill(); x.fillStyle = shBarC(f[2]); path(bx, y, Math.max(20, bw * Math.min(100, f[2]) / 100), 20, 10); x.fill(); y += 20; }
     });
-    y += 36; path(CX + PAD, y, IW, PILL, 36); x.fillStyle = 'rgba(255,255,255,.07)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,.09)'; x.lineWidth = 2; x.stroke();
-    y += 26; x.textAlign = 'center'; font(600, 42); x.fillStyle = '#EAF7F0'; ['짠은 같이 할게요.', '제 잔은 물로 채워 주세요'].forEach(t => line(t, 42, 1.4));
-    if (r.id === 'body' || r.id === 'drive') { font(500, 28); x.fillStyle = 'rgba(190,230,210,.5)'; x.fillText('제 키·몸무게·체질로 계산한 기준이에요', W / 2, CY + CH + 34); }
+    if (PILL) {
+      y += 36; path(CX + PAD, y, IW, PILL, 36); x.fillStyle = 'rgba(255,255,255,.07)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,.09)'; x.lineWidth = 2; x.stroke();
+      y += 26; x.textAlign = 'center'; font(600, 42); x.fillStyle = '#EAF7F0'; ml.forEach(t => line(t, 42, 1.4));
+    }
+    if (r.id === 'body' || r.id === 'drive') { x.textAlign = 'center'; font(500, 28); x.fillStyle = 'rgba(190,230,210,.5)'; x.fillText('제 키·몸무게·체질로 계산한 기준이에요', W / 2, CY + CH + 34); }
     return await new Promise(res => c.toBlob(res, 'image/png'));
   } catch (e) { return plain ? null : shieldImage(r, true); }   // 그림 때문에 막히면(드문 브라우저) 문장 없이 다시 그려요
 }
@@ -3059,7 +3117,7 @@ async function shieldSave() {
   if (!b) return toast('이미지를 만들지 못했어요'); shSaveBlob(b);
 }
 async function shieldShare() {
-  const r = shReason(), text = `오늘은 여기까지 마실게요. ${r.why}.`;
+  const r = shReason(), m = shMsgText().replace(/\n/g, ' '), text = `오늘은 여기까지 마실게요. ${r.why}.${m ? ' ' + m : ''}`;
   let b = shImg && shImg.r.id === r.id ? shImg.blob : null;
   if (!b) b = await shieldImage(r);
   const file = b && new File([b], '잔잔_회식방패.png', {type:'image/png'});
@@ -3116,7 +3174,7 @@ const SKIP_LOSS = [
 /* =========================================================
    동작
    ========================================================= */
-const draft = () => ({weight:'', height:'', birth:'', sex:null, pregnant:null, cafSens:null, conds:[], smoke:null, meds:[], bed:null, flush:null, ahealth:[], afreq:null, aqty:null, abinge:null, ride:null});
+const draft = () => ({weight:'', height:'', birth:'', sex:null, pregnant:null, cafSens:null, conds:[], smoke:null, meds:[], bed:null, flush:null, ahealth:[], afreq:null, aqty:null, abinge:null, ride:null, sauna:null});
 const ACT = {
   back: () => goBack(),
   close: () => closeFlow(),
@@ -3186,6 +3244,14 @@ const ACT = {
   'shield-save': () => shieldSave(),
   'shield-share': () => shieldShare(),
   'shield-pv-close': () => shPvClose(),
+  'shield-m-open': () => shMsgOpen(),
+  'shield-m': el => {
+    const p = $('#shield .sh-msg'); if (!p) return;
+    shM.id = el.dataset.m; shMsgSave(); shMsgApply();
+    p.querySelectorAll('.sh-opt').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+    const inp = p.querySelector('#sh-in'); inp.hidden = shM.id !== 'own'; if (shM.id === 'own') inp.focus();
+  },
+  'shield-m-done': (el, e) => { if (el.classList.contains('sh-msg') && e.target !== el) return; shMsgClose(); },   // 판 바깥(어두운 곳)을 눌러도 닫혀요
   'sheet-close': (el, e) => { if (el.id === 'sheet' && e && e.target !== el) return; closeSheet(); },
   'ob-finish': el => {
     const d = ui.flow.d, edit = d.edit;
@@ -3820,7 +3886,13 @@ Object.assign(ACT, {
    업데이트 소식 (패치 노트) — 배포할 때마다 맨 위에 한 묶음씩 추가해요. id가 바뀌면 내 기준에 '새 소식'이 떠요.
    ========================================================= */
 const PATCH = [
-  {id:'2026-11-20', d:'11월 20일', t:'새 회식 방패 카드', items:[
+  {id:'2026-11-20b', d:'11월 20일', t:'방패 한마디, 찜질방 알림', items:[
+    '회식 방패 카드의 무늬를 덜어 내서 더 깔끔해졌어요.',
+    '카드 아래 문구는 기본으로 비워 뒀어요. 한마디 버튼을 누르면 몇 가지 문구 중에 고르거나 직접 쓸 수 있어요.',
+    '처음 질문에 찜질방·사우나에 자주 가는지 묻는 질문이 생겼어요. 자주 간다면, 술이 남아 있는 동안은 들어가지 말라고 알려 드려요.',
+    '이미 가입했다면 내 기준 탭의 "답하지 않은 질문"에서 답할 수 있어요.',
+  ]},
+  {id:'2026-11-20',d:'11월 20일', t:'새 회식 방패 카드', items:[
     '회식 방패가 초록 유리 느낌의 등록증 카드로 바뀌었어요. 가운데 반투명 방패와 오늘 날짜 번호, 근거·유효 칸이 있어요.',
     '이미지로 저장해도 화면과 같은 카드 모양으로 저장돼요.',
     '카카오톡·네이버 앱 안에서 열었거나 아이폰이면, 이미지를 화면에 띄워 줘요. 길게 눌러서 저장하면 돼요.',
@@ -4300,6 +4372,7 @@ document.addEventListener('pointerdown', e => {
 document.addEventListener('pointermove', e => { if (chartDrag && e.buttons) chartProbe(chartDrag, e.clientX); });
 ['pointerup', 'pointercancel'].forEach(n => document.addEventListener(n, () => { chartDrag = null; }));
 document.addEventListener('input', e => {
+  if (e.target.id === 'sh-in') { shM.own = e.target.value.slice(0, SH_OWN_MAX); shMsgSave(); shMsgApply(); return; }
   const t = e.target, f = ui.flow; if (!f) return;
   if (t.closest('.big-in')) fitInput(t);
   if (t.id === 'sc-q') { f.d.q = t.value; const box = cur.querySelector('#sc-res'); if (box) box.innerHTML = scResults(t.value); return; }
@@ -4343,7 +4416,8 @@ document.addEventListener('change', e => {
   }
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && $('#shield')) { if (!shPvClose()) closeShield(); return; }
+  if (e.key === 'Escape' && $('#shield')) { if (!shPvClose() && !shMsgClose()) closeShield(); return; }
+  if (e.key === 'Enter' && e.target.id === 'sh-in' && !e.isComposing) { e.preventDefault(); shMsgClose(); return; }   // 한글 조합 중 Enter는 글자 확정이라 넘겨요
   if (e.key === 'Escape' && $('#sheet')) { closeSheet(); return; }
   if (e.key === 'Escape' && ui.flow) { goBack(); return; }
   if (e.target.classList && e.target.classList.contains('wlist') && /^Arrow(Up|Down)$/.test(e.key)) { e.preventDefault(); e.target.scrollTop += (e.key === 'ArrowUp' ? -1 : 1) * WH; return; }
