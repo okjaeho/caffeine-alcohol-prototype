@@ -262,26 +262,45 @@ button.card:active{transform:scale(.985)}
 .prompt small{display:block;font-size:14px;color:var(--ink-3)}
 .prompt > svg{color:var(--ink-3);flex:none}
 .prompt .pi.alc{background:var(--alc-soft);color:var(--alc)}
-.shield{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top,0px)) 20px max(18px,env(safe-area-inset-bottom,0px));background:#0E0F12;color:#F5F6F7}
-.sh-top{display:flex;align-items:center;justify-content:space-between;height:48px}
-.sh-brand{font-size:14px;font-weight:700;color:#8B93A1}
-.sh-x{width:44px;height:44px;display:grid;place-items:center;margin-right:-10px;border-radius:22px;color:#B5BCC6}
-.sh-main{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:12px 0}
-.sh-main h2{font-size:clamp(34px,10.5vw,46px);font-weight:800;line-height:1.22;letter-spacing:-.03em}
-.sh-why{margin-top:22px;font-size:clamp(21px,6.2vw,26px);font-weight:700;line-height:1.4;color:#3CCB8F}
-.sh-data{margin-top:10px;font-size:16px;line-height:1.5;color:#B5BCC6}
-.sh-bar{display:block;width:min(260px,80%);height:10px;margin:18px auto 0;border-radius:5px;background:#2A2D33;overflow:hidden}
-.sh-bar i{display:block;height:100%;border-radius:5px}
-.sh-soft{margin-top:30px;font-size:18px;font-weight:600;line-height:1.5;color:#E3E6EA}
-.sh-pick{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.sh-chip{height:38px;padding:0 15px;border-radius:19px;background:#1E2126;color:#B5BCC6;font-size:14.5px;font-weight:600}
-.sh-chip[aria-pressed="true"]{background:#F5F6F7;color:#0E0F12}
-.sh-hint{margin-top:10px;font-size:12.5px;color:#6E7682;text-align:center}
-.sh-acts{display:flex;justify-content:center;gap:10px;margin-top:12px}
-.sh-act{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:20px;border:1px solid #2F333A;color:#E3E6EA;font-size:14.5px;font-weight:600}
+.shield{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;overflow-y:auto;padding:max(6px,env(safe-area-inset-top,0px)) 18px max(14px,env(safe-area-inset-bottom,0px));color:#F2FBF6;
+  background:radial-gradient(120% 60% at 12% 6%,rgba(46,204,138,.34),rgba(46,204,138,0) 62%),radial-gradient(90% 55% at 96% 96%,rgba(20,140,120,.32),rgba(20,140,120,0) 62%),rgba(5,12,9,.88);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%)}
+.sh-top{display:flex;justify-content:flex-end;align-items:center;height:46px;flex:none}
+.sh-x{width:40px;height:40px;display:grid;place-items:center;border-radius:20px;color:#D4EEE1;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.sh-main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:4px 0 16px}
+/* 리퀴드 글라스 카드: 비치는 초록 유리 + 빛 받는 테두리 + 등록증 무늬 */
+.sh-card{position:relative;isolation:isolate;overflow:hidden;border-radius:30px;padding:16px 22px 22px;text-align:center;
+  background:linear-gradient(150deg,rgba(150,255,205,.22),rgba(60,170,125,.10) 42%,rgba(8,40,28,.44));
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.45),inset 0 -14px 28px rgba(120,255,190,.07),0 30px 60px -20px rgba(0,0,0,.8),0 0 50px rgba(60,203,143,.18)}
+.sh-card::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,.1) 30%,rgba(140,255,200,.04) 62%,rgba(150,255,205,.7));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.sh-card::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.15),rgba(255,255,255,0) 30%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='18'%3E%3Cpath d='M0 9C24 1 24 17 48 9S72 1 96 9M0 9C24 17 24 1 48 9S72 17 96 9' fill='none' stroke='%23A8FFD6' stroke-opacity='.055'/%3E%3C/svg%3E")}
+.sh-head{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:rgba(200,245,224,.72)}
+.sh-no{letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.sh-emb{display:block;width:104px;height:104px;margin:4px auto 0;animation:shfl 3.6s ease-in-out infinite}
+.sh-emb svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes shfl{50%{transform:translateY(-5px)}}
+@media (max-height:700px){.sh-emb{width:80px;height:80px}.sh-card h2{font-size:28px}}
+.sh-card h2{margin-top:2px;font-size:clamp(28px,8.4vw,36px);font-weight:800;line-height:1.24;letter-spacing:-.03em;color:#fff}
+.sh-why{margin-top:12px;font-size:clamp(18px,5.3vw,21px);font-weight:700;line-height:1.4;color:#7CF2B8}
+.sh-f{display:grid;gap:9px;margin:18px 0 0;padding-top:14px;border-top:1px dashed rgba(190,255,222,.3);text-align:left}
+.sh-f div{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:baseline}
+.sh-f dt{font-size:13px;font-weight:700;color:rgba(190,240,215,.62)}
+.sh-f dd{margin:0;font-size:15px;line-height:1.5;color:#E6F7EE}
+.sh-bar{display:block;height:8px;margin-top:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
+.sh-bar i{display:block;height:100%;border-radius:4px}
+.sh-soft{margin-top:18px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);font-size:16px;font-weight:600;line-height:1.5;color:#EAF7F0}
+.sh-pick{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;flex:none}
+.sh-chip{height:36px;padding:0 14px;border-radius:18px;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);color:#CFE9DC;font-size:14.5px;font-weight:600}
+.sh-chip[aria-pressed="true"]{background:#E9FFF4;color:#0B2A1D;box-shadow:none}
+.sh-hint{margin-top:10px;font-size:12.5px;color:rgba(190,230,210,.5);text-align:center;flex:none}
+.sh-acts{display:flex;justify-content:center;gap:10px;margin-top:12px;flex:none}
+.sh-act{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:20px;border:1px solid rgba(190,255,222,.22);background:rgba(255,255,255,.06);color:#E6F7EE;font-size:14.5px;font-weight:600}
 .sh-act svg{width:18px;height:18px}
-.sh-pv{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:rgba(0,0,0,.94)}
-.sh-pv img{max-width:100%;max-height:68%;border-radius:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.sh-pv{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:rgba(3,8,6,.95)}
+.sh-pv img{max-width:100%;max-height:66%;border-radius:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
 .sh-pv p{font-size:15px;line-height:1.5;color:#E3E6EA;text-align:center}
 .bc-box{position:relative;margin-top:20px;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .bc-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -2916,59 +2935,123 @@ function shieldPick() {   // 처음 보여 줄 이유: 내 몸 정보에 맞는 
   const p = S.profile || {};
   return (p.meds || []).length ? 'meds' : p.ride ? 'drive' : p.flush === 'often' ? 'flush' : 'body';
 }
+/* 방패 문장: 반투명 유리 방패. 뒤의 초록 구슬이 유리에 흐리게 비쳐요. 화면과 이미지가 같은 그림을 써요 */
+function shieldSvg(p, s) {
+  const P = 'M60 13C72 21 84 24 97 25C98.5 33 98.5 47 97.5 59C95.5 81 80 97 60 107C40 97 24.5 81 22.5 59C21.5 47 21.5 33 23 25C36 24 48 21 60 13Z';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="${s}" height="${s}" aria-hidden="true"><defs>` +
+    `<linearGradient id="${p}o" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86F7C4"/><stop offset="1" stop-color="#0E9F67"/></linearGradient>` +
+    `<linearGradient id="${p}g" x1=".15" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".8"/><stop offset=".55" stop-color="#DDFFEE" stop-opacity=".36"/><stop offset="1" stop-color="#9EF0C8" stop-opacity=".3"/></linearGradient>` +
+    `<linearGradient id="${p}r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".45" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#B9FFE0" stop-opacity=".75"/></linearGradient>` +
+    `<linearGradient id="${p}d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1BAA72" stop-opacity=".6"/><stop offset="1" stop-color="#0B6E48" stop-opacity=".8"/></linearGradient>` +
+    `<linearGradient id="${p}c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34D892"/><stop offset="1" stop-color="#0C9A60"/></linearGradient>` +
+    `<radialGradient id="${p}h"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>` +
+    `<clipPath id="${p}k"><path d="${P}"/></clipPath>` +
+    `<filter id="${p}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>` +
+    `<filter id="${p}s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>` +
+    `<filter id="${p}t" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2" flood-color="#06603C" flood-opacity=".45"/></filter></defs>` +
+    `<ellipse cx="60" cy="112" rx="30" ry="4.5" fill="#03140D" opacity=".5" filter="url(#${p}s)"/><circle cx="86" cy="34" r="24" fill="url(#${p}o)"/>` +
+    `<path d="${P}" transform="translate(1.5 4)" fill="url(#${p}d)"/>` +
+    `<g clip-path="url(#${p}k)"><circle cx="86" cy="34" r="24" fill="url(#${p}o)" filter="url(#${p}b)"/><path d="${P}" fill="url(#${p}g)"/><ellipse cx="40" cy="30" rx="26" ry="13" transform="rotate(-28 40 30)" fill="url(#${p}h)" opacity=".7"/></g>` +
+    `<path d="${P}" fill="none" stroke="url(#${p}r)" stroke-width="1.6"/>` +
+    '<path d="M60 22C70 28.5 80 31 90 32C91 38.5 91 48 90 57.5C88.5 75 77 88.5 60 97C43 88.5 31.5 75 30 57.5C29 48 29 38.5 30 32C40 31 50 28.5 60 22Z" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="1"/>' +
+    `<path d="M44.5 58.5L55.5 69.5L77 47" fill="none" stroke="url(#${p}c)" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#${p}t)"/>` +
+    '<path d="M45.5 57L55.5 67" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2.4" stroke-linecap="round"/></svg>';
+}
+const shNo = d => 'No. ' + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
 function shieldHtml(id) {
-  const R = shieldReasons(), r = R.find(x => x.id === id) || R[0];
-  return `<div class="sh-top"><span class="sh-brand">잔잔 · 회식 방패</span><button class="sh-x" data-a="shield-close" aria-label="닫기">${I.x}</button></div>` +
-    `<div class="sh-main" aria-live="polite"><h2 id="sh-h">오늘은 여기까지<br>마실게요</h2><p class="sh-why">${esc(r.why)}</p>${r.data ? `<p class="sh-data">${esc(r.data)}</p>` : ''}` +
-    `${r.pct != null ? `<span class="sh-bar" role="img" aria-label="하루 기준의 ${r.pct}%"><i style="width:${Math.min(100, r.pct)}%;background:${shBarC(r.pct)}"></i></span>` : ''}` +
-    `<p class="sh-soft">짠은 같이 할게요.<br>제 잔은 물로 채워 주세요</p></div>` +
+  const R = shieldReasons(), r = R.find(x => x.id === id) || R[0], d = new Date();
+  const bar = r.pct != null ? `<span class="sh-bar" role="img" aria-label="권장량의 ${r.pct}%"><i style="width:${Math.min(100, r.pct)}%;background:${shBarC(r.pct)}"></i></span>` : '';
+  return `<div class="sh-top"><button class="sh-x" data-a="shield-close" aria-label="닫기">${I.x}</button></div>` +
+    `<div class="sh-main"><div class="sh-card" aria-live="polite"><div class="sh-head"><span>잔잔 · 회식 방패</span><span class="sh-no">${shNo(d)}</span></div>` +
+    `<span class="sh-emb">${shieldSvg('she', 104)}</span><h2 id="sh-h">오늘은 여기까지<br>마실게요</h2><p class="sh-why">${esc(r.why)}</p>` +
+    `<dl class="sh-f">${r.data ? `<div><dt>근거</dt><dd>${esc(r.data)}${bar}</dd></div>` : ''}<div><dt>유효</dt><dd>${d.getMonth() + 1}월 ${d.getDate()}일 하루</dd></div></dl>` +
+    `<p class="sh-soft">짠은 같이 할게요.<br>제 잔은 물로 채워 주세요</p></div></div>` +
     `<div class="sh-pick" role="group" aria-label="이유 고르기">${R.map(x => `<button class="sh-chip" data-a="shield-r" data-r="${x.id}" aria-pressed="${x.id === r.id}">${x.t}</button>`).join('')}</div>` +
     `<div class="sh-acts"><button class="sh-act" data-a="shield-save">${I.download}이미지로 저장</button><button class="sh-act" data-a="shield-share">${I.share}공유</button></div>` +
     `<p class="sh-hint">화면을 보여 주거나, 단톡방에 미리 공유해 두세요</p>`;
 }
 const shBarC = p => p >= 100 ? '#FF5D6C' : p >= 70 ? '#FFB547' : '#3CCB8F';
-/* 회식 방패 이미지(1080×1350): 저장하거나 단톡방에 미리 공유해 두면 자리에서 말 꺼내기가 쉬워요.
+/* 회식 방패 이미지(1080×1350): 화면의 등록증 카드를 그대로 그려요. 저장하거나 단톡방에 미리 공유해 두면 자리에서 말 꺼내기가 쉬워요.
    공유는 누른 순간에 바로 열어야(사파리) 해서 이유를 고를 때마다 미리 만들어 둬요 */
 let shImg = null;
 function shReason() { const s = $('#shield'), R = shieldReasons(); return R.find(x => x.id === (s && s.dataset.r)) || R[0]; }
 function shPrep() { const r = shReason(); shImg = {r, blob:null}; const me_ = shImg; shieldImage(r).then(b => { me_.blob = b; }); }
-async function shieldImage(r) {
+async function shieldImage(r, plain) {
   try { await document.fonts.ready; } catch (e) {}
+  let emb = null;
+  if (!plain) try { emb = new Image(); emb.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(shieldSvg('shi', 280)); await emb.decode(); } catch (e) { emb = null; }
   try {
     const W = 1080, Hh = 1350, c = document.createElement('canvas'); c.width = W; c.height = Hh;
     const x = c.getContext('2d'), F = getComputedStyle(document.body).fontFamily;
     const font = (w, px) => { x.font = `${w} ${px}px ${F}`; };
-    const wrap = t => { const out = []; t.split('\n').forEach(par => { let line = ''; par.split(' ').forEach(wd => { const tr = line ? line + ' ' + wd : wd; if (!line || x.measureText(tr).width <= W - 160) line = tr; else { out.push(line); line = wd; } }); out.push(line); }); return out; };
-    const rr = (X, Y, w, h, rad) => { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, rad); else x.rect(X, Y, w, h); x.fill(); };
-    x.fillStyle = '#0E0F12'; x.fillRect(0, 0, W, Hh);
-    const bar = r.pct != null;
-    const B = [[800, 104, '#F5F6F7', '오늘은 여기까지\n마실게요', 1.22, 0], [700, 60, '#3CCB8F', r.why, 1.35, 64]];
-    if (r.data) B.push([500, 40, '#B5BCC6', r.data, 1.5, 28]);
-    B.push([600, 48, '#E3E6EA', '짠은 같이 할게요.\n제 잔은 물로 채워 주세요', 1.45, bar ? 130 : 84]);
-    const L = B.map(b => { font(b[0], b[1]); return wrap(b[3]); });
-    const total = B.reduce((a, b, i) => a + b[5] + L[i].length * b[1] * b[4], 0);
-    let y = Math.max(190, (Hh - total) / 2 - 10);
-    x.textAlign = 'center'; x.textBaseline = 'top';
-    B.forEach((b, i) => {
-      y += b[5]; font(b[0], b[1]); x.fillStyle = b[2];
-      L[i].forEach(l => { x.fillText(l, W / 2, y + b[1] * (b[4] - 1) / 2); y += b[1] * b[4]; });
-      if (bar && i === B.length - 2) { const bw = 560, bx = (W - bw) / 2, by = y + 44; x.fillStyle = '#2A2D33'; rr(bx, by, bw, 22, 11); x.fillStyle = shBarC(r.pct); rr(bx, by, Math.max(22, bw * Math.min(100, r.pct) / 100), 22, 11); }
+    const wrap = (t, mw) => { const out = []; t.split('\n').forEach(par => { let line = ''; par.split(' ').forEach(wd => { const tr = line ? line + ' ' + wd : wd; if (!line || x.measureText(tr).width <= mw) line = tr; else { out.push(line); line = wd; } }); out.push(line); }); return out; };
+    const path = (X, Y, w, h, rad) => { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, rad); else x.rect(X, Y, w, h); };
+    const lg = (x0, y0, x1, y1, st) => { const g = x.createLinearGradient(x0, y0, x1, y1); st.forEach(v => g.addColorStop(v[0], v[1])); return g; };
+    const blob = (cx, cy, rad, rgb, a) => { const g = x.createRadialGradient(cx, cy, 0, cx, cy, rad); g.addColorStop(0, `rgba(${rgb},${a})`); g.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = g; x.fillRect(0, 0, W, Hh); };
+    const d = new Date(), CX = 72, CW = W - 144, PAD = 56, IW = CW - PAD * 2, LBL = 120, ES = emb ? 220 : 0;
+    const FL = 56, PILL = 26 * 2 + 2 * 42 * 1.4;   // 칸 한 줄 높이, '짠은 같이' 상자 높이
+    // 높이를 먼저 재서 카드를 가운데에 둬요
+    font(700, 50); const why = wrap(r.why, IW);
+    const fields = [];
+    font(400, 38); if (r.data) fields.push(['근거', wrap(r.data, IW - LBL), r.pct]);
+    fields.push(['유효', [`${d.getMonth() + 1}월 ${d.getDate()}일 하루`], null]);
+    const hF = fields.reduce((a, f, i) => a + (i ? 20 : 0) + f[1].length * FL + (f[2] != null ? 36 : 0), 0);
+    const CH = (PAD - 8) + 38 + (ES ? ES + 10 : 20) + 2 * 84 * 1.22 + 26 + why.length * 50 * 1.4 + 38 + 34 + hF + 36 + PILL + PAD;
+    const CY = Math.max(40, Math.round((Hh - CH - 70) / 2));
+    // 배경: 어두운 초록 + 빛 번짐
+    x.fillStyle = '#050C09'; x.fillRect(0, 0, W, Hh);
+    blob(150, 110, 1000, '46,204,138', .34); blob(1040, 1320, 900, '20,140,120', .3);
+    // 카드: 유리 바탕 → 등록증 물결무늬 → 비스듬한 빛 → 빛 받는 테두리
+    x.save(); x.shadowColor = 'rgba(40,190,125,.32)'; x.shadowBlur = 130; path(CX, CY, CW, CH, 76); x.fillStyle = '#0A1A13'; x.fill(); x.restore();
+    x.save(); path(CX, CY, CW, CH, 76); x.clip();
+    blob(CX + 140, CY + 80, 760, '70,220,150', .24); blob(CX + CW, CY + CH, 760, '20,150,120', .2);
+    x.fillStyle = lg(CX, CY, CX + CW, CY + CH, [[0, 'rgba(150,255,205,.16)'], [.42, 'rgba(60,170,125,.06)'], [1, 'rgba(8,40,28,.36)']]); x.fillRect(CX, CY, CW, CH);
+    x.lineWidth = 2; x.strokeStyle = 'rgba(168,255,214,.05)';
+    for (let yy = CY + 24; yy < CY + CH; yy += 48) for (const ph of [0, Math.PI]) { x.beginPath(); for (let xx = CX; xx <= CX + CW; xx += 8) { const v = yy + Math.sin(xx / 42 + ph) * 13; if (xx === CX) x.moveTo(xx, v); else x.lineTo(xx, v); } x.stroke(); }
+    x.fillStyle = lg(CX, CY, CX + CW * .55, CY + CH * .45, [[0, 'rgba(255,255,255,.15)'], [.55, 'rgba(255,255,255,0)']]); x.fillRect(CX, CY, CW, CH);
+    x.restore();
+    path(CX + 2, CY + 2, CW - 4, CH - 4, 74); x.lineWidth = 4;
+    x.strokeStyle = lg(CX, CY, CX + CW, CY + CH, [[0, 'rgba(255,255,255,.9)'], [.3, 'rgba(255,255,255,.1)'], [.62, 'rgba(140,255,200,.05)'], [1, 'rgba(150,255,205,.65)']]); x.stroke();
+    // 내용
+    let y = CY + PAD - 8;
+    const line = (t, px, lh) => { x.fillText(t, W / 2, y + px * (lh - 1) / 2); y += px * lh; };
+    x.textBaseline = 'top'; font(700, 30); x.fillStyle = 'rgba(200,245,224,.75)';
+    x.textAlign = 'left'; x.fillText('잔잔 · 회식 방패', CX + PAD, y); x.textAlign = 'right'; x.fillText(shNo(d), CX + CW - PAD, y); y += 38;
+    if (emb) { x.drawImage(emb, (W - ES) / 2, y, ES, ES); y += ES + 10; } else y += 20;
+    x.textAlign = 'center'; font(800, 84); x.fillStyle = '#FFFFFF'; ['오늘은 여기까지', '마실게요'].forEach(t => line(t, 84, 1.22));
+    y += 26; font(700, 50); x.fillStyle = '#7CF2B8'; why.forEach(t => line(t, 50, 1.4));
+    y += 38; x.setLineDash([10, 10]); x.strokeStyle = 'rgba(190,255,222,.32)'; x.lineWidth = 2; x.beginPath(); x.moveTo(CX + PAD, y); x.lineTo(CX + CW - PAD, y); x.stroke(); x.setLineDash([]); y += 34;
+    x.textAlign = 'left';
+    fields.forEach((f, i) => {
+      if (i) y += 20;
+      font(700, 32); x.fillStyle = 'rgba(190,240,215,.62)'; x.fillText(f[0], CX + PAD, y + 12);
+      font(400, 38); x.fillStyle = '#E6F7EE'; f[1].forEach(t => { x.fillText(t, CX + PAD + LBL, y + 9); y += FL; });
+      if (f[2] != null) { y += 16; const bx = CX + PAD + LBL, bw = IW - LBL; x.fillStyle = 'rgba(255,255,255,.12)'; path(bx, y, bw, 20, 10); x.fill(); x.fillStyle = shBarC(f[2]); path(bx, y, Math.max(20, bw * Math.min(100, f[2]) / 100), 20, 10); x.fill(); y += 20; }
     });
-    x.textAlign = 'left'; font(700, 34); x.fillStyle = '#8B93A1'; x.fillText('잔잔 · 회식 방패', 72, 84);
-    const d = new Date(); x.textAlign = 'center'; font(500, 30); x.fillStyle = '#6E7682';
-    x.fillText(`${d.getMonth() + 1}월 ${d.getDate()}일 · 제 키·몸무게·체질로 계산한 권장량 기준`, W / 2, Hh - 96);
+    y += 36; path(CX + PAD, y, IW, PILL, 36); x.fillStyle = 'rgba(255,255,255,.07)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,.09)'; x.lineWidth = 2; x.stroke();
+    y += 26; x.textAlign = 'center'; font(600, 42); x.fillStyle = '#EAF7F0'; ['짠은 같이 할게요.', '제 잔은 물로 채워 주세요'].forEach(t => line(t, 42, 1.4));
+    if (r.id === 'body' || r.id === 'drive') { font(500, 28); x.fillStyle = 'rgba(190,230,210,.5)'; x.fillText('제 키·몸무게·체질로 계산한 기준이에요', W / 2, CY + CH + 34); }
     return await new Promise(res => c.toBlob(res, 'image/png'));
-  } catch (e) { return null; }
+  } catch (e) { return plain ? null : shieldImage(r, true); }   // 그림 때문에 막히면(드문 브라우저) 문장 없이 다시 그려요
 }
 const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-function shSaveBlob(b) {
-  const url = URL.createObjectURL(b), s = $('#shield');
-  if (isIOS() && s) {   // 아이폰은 내려받기가 '파일'로 가서, 이미지를 띄우고 길게 눌러 사진에 저장하게 해요
-    const p = document.createElement('div'); p.className = 'sh-pv'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', '회식 방패 이미지');
-    p.innerHTML = `<img src="${url}" alt="회식 방패 이미지"><p>이미지를 길게 눌러<br>'사진 앱에 저장'을 골라 주세요</p><button class="sh-act" data-a="shield-pv-close">닫기</button>`;
-    p.dataset.url = url; s.appendChild(p); return;
-  }
-  const a = document.createElement('a'); a.href = url; a.download = `잔잔_회식방패_${dayKey(Date.now())}.png`; document.body.appendChild(a); a.click(); a.remove();
+// 앱 안 브라우저(카톡·네이버·인스타 등)는 공유 기능이 없고 내려받기도 자주 막혀요
+const inApp = () => /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|DaumApps|; wv\)|Claude\/|Electron/i.test(navigator.userAgent);
+const pvHow = () => isIOS() ? "이미지를 길게 눌러<br>'사진 앱에 저장'을 골라 주세요" : /Android|Mobi/i.test(navigator.userAgent) ? '이미지를 길게 눌러 저장해 주세요' : '이미지를 오른쪽 클릭해서 저장해 주세요';
+function shPvClose() {
+  const s = $('#shield'), p = s && s.querySelector('.sh-pv'); if (!p) return false;
+  try { URL.revokeObjectURL(p.dataset.url); } catch (e) {} p.remove(); s.style.overflow = ''; return true;
+}
+function shPreview(b, msg) {
+  const s = $('#shield'); if (!s) return;
+  shPvClose(); s.scrollTop = 0; s.style.overflow = 'hidden';   // 작은 화면에서 내려 둔 채로 열어도 가운데에 보이게
+  const url = URL.createObjectURL(b), p = document.createElement('div'); p.className = 'sh-pv'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', '회식 방패 이미지');
+  p.innerHTML = `<img src="${url}" alt="회식 방패 이미지"><p>${msg}</p><button class="sh-act" data-a="shield-pv-close">닫기</button>`;
+  p.dataset.url = url; s.appendChild(p);
+}
+function shSaveBlob(b, why) {
+  if (why || isIOS() || inApp()) return shPreview(b, (why ? why + '<br>' : '') + pvHow());   // 아이폰은 내려받기가 '파일'로 가요
+  const url = URL.createObjectURL(b), a = document.createElement('a'); a.href = url; a.download = `잔잔_회식방패_${dayKey(Date.now())}.png`; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000); toast('이미지를 저장했어요');
 }
 async function shieldSave() {
@@ -2984,7 +3067,7 @@ async function shieldShare() {
     if (file && navigator.canShare && navigator.canShare({files:[file]})) { await navigator.share({files:[file], text}); return; }
     if (navigator.share) { await navigator.share({title:'회식 방패', text}); return; }
   } catch (e) { if (e && e.name === 'AbortError') return; }
-  if (b) { shSaveBlob(b); toast('공유를 쓸 수 없어서 이미지로 저장했어요'); } else toast('공유하지 못했어요');
+  if (b) shSaveBlob(b, '이 브라우저에서는 공유 창을 열 수 없어요.'); else toast('공유하지 못했어요');
 }
 let shieldLock = null;
 function openShield(id) {
@@ -2994,6 +3077,7 @@ function openShield(id) {
   s.innerHTML = shieldHtml(id); s.dataset.r = id;
   $('#root').appendChild(s); shPrep();
   anim(s, [{opacity:0}, {opacity:1}], {duration:200});
+  anim(s.querySelector('.sh-card'), [{transform:'translateY(18px) scale(.96)', opacity:0}, {transform:'none', opacity:1}], {duration:420, easing:'cubic-bezier(.2,.8,.2,1)'});
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { shieldLock = l; }, () => {}); } catch (e) {}   // 보여 주는 동안 화면이 꺼지지 않게
   const x = s.querySelector('.sh-x'); if (x) x.focus({preventScroll:true});
 }
@@ -3101,7 +3185,7 @@ const ACT = {
   'shield-close': () => closeShield(),
   'shield-save': () => shieldSave(),
   'shield-share': () => shieldShare(),
-  'shield-pv-close': el => { const p = el.closest('.sh-pv'); if (!p) return; try { URL.revokeObjectURL(p.dataset.url); } catch (e) {} p.remove(); },
+  'shield-pv-close': () => shPvClose(),
   'sheet-close': (el, e) => { if (el.id === 'sheet' && e && e.target !== el) return; closeSheet(); },
   'ob-finish': el => {
     const d = ui.flow.d, edit = d.edit;
@@ -3736,6 +3820,12 @@ Object.assign(ACT, {
    업데이트 소식 (패치 노트) — 배포할 때마다 맨 위에 한 묶음씩 추가해요. id가 바뀌면 내 기준에 '새 소식'이 떠요.
    ========================================================= */
 const PATCH = [
+  {id:'2026-11-20', d:'11월 20일', t:'새 회식 방패 카드', items:[
+    '회식 방패가 초록 유리 느낌의 등록증 카드로 바뀌었어요. 가운데 반투명 방패와 오늘 날짜 번호, 근거·유효 칸이 있어요.',
+    '이미지로 저장해도 화면과 같은 카드 모양으로 저장돼요.',
+    '카카오톡·네이버 앱 안에서 열었거나 아이폰이면, 이미지를 화면에 띄워 줘요. 길게 눌러서 저장하면 돼요.',
+    '공유 창을 열 수 없는 브라우저에서 공유를 누르면 같은 방법으로 저장하게 안내해요.',
+  ]},
   {id:'2026-11-19c', d:'11월 19일', t:'회식 방패, 바코드로 찾기', items:[
     '권하는 술을 거절하기 어려울 때 쓰는 회식 방패가 생겼어요. 술을 마셨거나 저녁이면 홈의 술 카드 아래에 있어요.',
     '"오늘은 여기까지 마실게요"와 이유(내 몸 권장량, 운전, 약, 체질, 내일 일정)를 큰 글씨로 보여 줘요. 짠은 같이 하고 잔만 물로 채워 달라고 해서 분위기는 지켜요.',
@@ -4253,7 +4343,7 @@ document.addEventListener('change', e => {
   }
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && $('#shield')) { closeShield(); return; }
+  if (e.key === 'Escape' && $('#shield')) { if (!shPvClose()) closeShield(); return; }
   if (e.key === 'Escape' && $('#sheet')) { closeSheet(); return; }
   if (e.key === 'Escape' && ui.flow) { goBack(); return; }
   if (e.target.classList && e.target.classList.contains('wlist') && /^Arrow(Up|Down)$/.test(e.key)) { e.preventDefault(); e.target.scrollTop += (e.key === 'ArrowUp' ? -1 : 1) * WH; return; }
